@@ -23,6 +23,10 @@ func Get(pattern string, handler ParametrizedHttpHandlerFunc) route {
 	return createRoute("GET", pattern, handler)
 }
 
+func Post(pattern string, handler ParametrizedHttpHandlerFunc) route {
+	return createRoute("POST", pattern, handler)
+}
+
 func WrapHandler(handler ParametrizedHttpHandlerFunc) http.HandlerFunc {
 	return func(response http.ResponseWriter, request *http.Request) {
 		var parameters HttpParameters = mux.Vars(request)
