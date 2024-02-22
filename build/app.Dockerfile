@@ -1,5 +1,5 @@
 FROM golang:1.22.0 as build
-COPY .. /src/
+COPY ./ /src/
 RUN go build -o /app/app /src/cmd/thunderlight/thunderlight.go
 
 FROM scratch

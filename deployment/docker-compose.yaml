@@ -7,8 +7,8 @@ services:
       context: ../
       dockerfile: build/app.Dockerfile
     image: thunderlight-app:latest
-  container_name: app
-  env_file: app.env
+    container_name: app
+    env_file: app.env
   
   # MySQL container
   database:
