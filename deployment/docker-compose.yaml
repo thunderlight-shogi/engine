@@ -8,23 +8,35 @@ services:
       dockerfile: build/app.Dockerfile
     image: thunderlight-app:latest
     container_name: app
-    env_file: app.env
+    env_file: 
+      - app.env
+      - prod.env
     networks:
       - app-network
     ports:
       - 80:80
+    depends_on:
+      database:
+        condition: service_healthy
   
   # MySQL container
   database:
     image: mysql:8.3.0
     container_name: database
-    env_file: db.env
+    env_file:
+      - db.env
+      - prod.env
     volumes:
       - db-data:/var/lib/mysql:rw
     networks:
       - app-network
     ports:
       - 3306:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
 
 networks:
   app-network:
