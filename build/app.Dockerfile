@@ -1,8 +1,8 @@
-FROM golang:1.22.0 as build
+FROM golang:1.22.0-alpine as build
 COPY ./ /src/
 RUN go build -o /app/app /src/cmd/thunderlight/thunderlight.go
 
-FROM scratch
+FROM alpine:3.19.1
 WORKDIR /app
 COPY --from=build /app/app /app/app
 CMD ["/app/app"]

@@ -9,6 +9,10 @@ services:
     image: thunderlight-app:latest
     container_name: app
     env_file: app.env
+    networks:
+      - app-network
+    ports:
+      - 80:80
   
   # MySQL container
   database:
