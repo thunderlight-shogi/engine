@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  # App container
+  app:
+    build:
+      context: ../
+      dockerfile: build/app.Dockerfile
+    image: thunderlight-app:latest
+  container_name: app
+  env_file: app.env
+  
+  # MySQL container
+  database:
+    image: mysql:8.3.0
+    container_name: database
+    env_file: db.env
+    volumes:
+      - db-data:/var/lib/mysql:rw
+    networks:
+      - app-network
+    ports:
+      - 3306:3306
+
+networks:
+  app-network:
+    driver: bridge
+volumes:
+  db-data:
