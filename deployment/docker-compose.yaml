@@ -8,9 +8,8 @@ services:
       dockerfile: build/app.Dockerfile
     image: thunderlight-app:latest
     container_name: app
-    env_file: 
-      - app.env
-      - prod.env
+    environment:
+      - MYSQL_LINK=${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(database:3306)/${MYSQL_DATABASE}?charset=utf8&parseTime=True&loc=Local
     networks:
       - app-network
     ports:
@@ -23,9 +22,11 @@ services:
   database:
     image: mysql:8.3.0
     container_name: database
-    env_file:
-      - db.env
-      - prod.env
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
     volumes:
       - db-data:/var/lib/mysql:rw
     networks:
