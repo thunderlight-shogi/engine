@@ -7,6 +7,13 @@ import (
 	"gorm.io/gorm"
 )
 
+type Player uint
+
+const (
+	Sente Player = iota
+	Gote
+)
+
 type FigureType struct {
 	Id           uint `gorm:"primarykey"`
 	Name         string
@@ -22,10 +29,10 @@ type StartingPosition struct {
 }
 
 type Move struct {
-	Id           uint `gorm:"primarykey"`
-	FigureTypeId uint
-	ShiftX       int // Horizontal shift
-	ShiftY       int // Vertical shift
+	Id              uint `gorm:"primarykey"`
+	FigureTypeId    uint
+	HorizontalShift int
+	VerticalShift   int
 }
 
 type StartingPositionFigure struct {
@@ -33,8 +40,9 @@ type StartingPositionFigure struct {
 	StartingPositionId uint
 	FigureTypeId       uint
 	FigureType         FigureType
-	PositionX          uint // Horizontal offset
-	PositionY          uint // Vertical offset
+	HorizontalOffset   uint
+	VerticalOffset     uint
+	Player             Player
 }
 
 var db *gorm.DB
@@ -53,7 +61,7 @@ func init() {
 
 	result := db.Find(&FigureType{})
 	if result.RowsAffected == 0 {
-		// Seed database
+		seed()
 	}
 }
 
