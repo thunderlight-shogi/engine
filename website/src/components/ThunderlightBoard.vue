@@ -37,10 +37,18 @@ function onPieceDrop(_: HTMLElement) {
     hand.style.position = '';
     hand.style.top = '';
     hand.style.left = '';
-    underlyingCell.appendChild(hand);
-    jukebox.play("piece.drop", 0.3);
-    fadeCells();
 
+    if(underlyingCell.children.length === 0) {
+        jukebox.play("piece.drop", 0.3);
+        underlyingCell.replaceChildren(hand);
+    } else if(underlyingCell.firstChild === hand) {
+        jukebox.play("piece.back", 0.3);
+    } else {
+        underlyingCell.replaceChildren(hand);
+        jukebox.play("piece.attack", 0.5);
+    }
+    
+    fadeCells();
     hand = undefined;
 }
 
