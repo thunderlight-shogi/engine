@@ -19,6 +19,7 @@ function onPieceGrab(event: MouseEvent): void {
 
     const element: HTMLElement = event.currentTarget as HTMLElement;
     element.style.transition = '';
+    element.style.zIndex = '99';
 
     emit("grab", element);
 }
@@ -30,6 +31,7 @@ function onPieceDrop(event: MouseEvent) {
 
     const element: HTMLElement = event.currentTarget as HTMLElement;
 
+    element.style.zIndex = '0';
     element.style.transition = '200ms ease-in-out';
     element.style.transform = `rotate(${shake(0, 15)}deg)`;
 
@@ -70,6 +72,7 @@ function onPieceDrop(event: MouseEvent) {
         transform: rotateY(0deg)
 
 .piece
+    position: absolute
     display: grid
     width: 3em
     height: 3em
@@ -85,8 +88,7 @@ function onPieceDrop(event: MouseEvent) {
         transform: rotate(0)
 
         &:active
-            scale: 2.5
-            opacity: 0.7
+            scale: 1.5
             cursor: grabbing
 
     & > *
@@ -105,7 +107,7 @@ function onPieceDrop(event: MouseEvent) {
     z-index: 1
 
 .piece.promoted
-    // animation: piece-promotion 300ms ease-in-out
+    animation: piece-promotion 300ms ease-in-out
 
     .piece-kanji
         color: $primary
