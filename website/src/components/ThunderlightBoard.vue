@@ -96,6 +96,7 @@ $cell-gap: 0.66em
     grid-template-rows: repeat(9, $cell-size)
     grid-template-columns: repeat(9, $cell-size)
     gap: $cell-gap
+    user-select: none
 
 .cell
     background: $gray
