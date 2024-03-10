@@ -4,7 +4,7 @@ function randomSign(): number {
     return flipCoin() ? 1 : -1;
 }
 
-function randomUpTo(threshold: number): number {
+export function randomUpTo(threshold: number): number {
     return Math.random() * threshold;
 }
 
