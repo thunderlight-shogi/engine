@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ThunderlightBoard from './components/ThunderlightBoard.vue';
+import Board from './components/Board.vue';
 </script>
 
 <template>
-  <ThunderlightBoard></ThunderlightBoard>
+  <Board></Board>
 </template>
 
 <style scoped>
@@ -20,3 +20,4 @@ import ThunderlightBoard from './components/ThunderlightBoard.vue';
   filter: drop-shadow(0 0 2em #42b883aa);
 }
 </style>
+./components/Board.vue
