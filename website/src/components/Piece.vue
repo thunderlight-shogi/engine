@@ -71,6 +71,14 @@ function onPieceDrop(event: MouseEvent) {
     100%
         transform: rotateY(0deg)
 
+@keyframes piece-drop
+    0%
+        scale: 1.50
+    50%
+        scale: 2.00
+    100%
+        scale: 1.00
+
 .piece
     position: absolute
     display: grid
@@ -82,6 +90,8 @@ function onPieceDrop(event: MouseEvent) {
     cursor: not-allowed
     transform-style: preserve-3d
     transform: rotate(180deg)
+    animation: piece-drop 200ms ease-in
+    transition: 75ms
     &.grabbable
         opacity: 1
         cursor: grab
@@ -90,6 +100,7 @@ function onPieceDrop(event: MouseEvent) {
         &:active
             scale: 1.5
             cursor: grabbing
+            filter: drop-shadow(0 0 5px $primary)
 
     & > *
         grid-row: 1
@@ -107,8 +118,6 @@ function onPieceDrop(event: MouseEvent) {
     z-index: 1
 
 .piece.promoted
-    animation: piece-promotion 300ms ease-in-out
-
     .piece-kanji
         color: $primary
 
