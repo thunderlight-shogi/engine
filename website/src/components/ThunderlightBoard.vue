@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { pick } from '../utils/arrays';
 import { flipCoin } from '../utils/booleans';
+import { jukebox } from '../utils/jukebox';
+import { shake } from '../utils/numbers';
 import Piece from './Piece.vue';
 
 
 let grabbingPiece: any = undefined;
 
 
-function onPieceGrab(event: Event): void {
+function onPieceGrab(event: MouseEvent): void {
     const element = event.currentTarget;
     
     grabbingPiece = element;
-    onMouseMove(event)
+    grabbingPiece.style.transition = '';
+    jukebox.play("piece.grab", 0.1);
+    onMouseMove(event);
 }
 
-function onMouseMove(event: Event): void {
+function onMouseMove(event: MouseEvent): void {
     if(grabbingPiece === undefined) {
         return;
     }
@@ -27,8 +31,10 @@ function onMouseMove(event: Event): void {
     grabbingPiece.style.top = `${mouseY}px`;
 }
 
-function onPieceRelease(event: Event) {
-    grabbingPiece.style = '';
+function onPieceRelease(_: MouseEvent) {
+    jukebox.play("piece.drop");
+    grabbingPiece.style.transition = '200ms ease-in-out';
+    grabbingPiece.style.transform = `rotate(${shake(0, 15)}deg)`;
     grabbingPiece = undefined;
 }
 </script>
