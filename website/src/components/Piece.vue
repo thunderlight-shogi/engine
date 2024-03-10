@@ -26,9 +26,9 @@ defineProps<{
 <style scoped lang="sass">
 @keyframes piece-hover
     0%
-        transform: scale(1.00)
+        scale: 1.00
     100%
-        transform: scale(0.93)
+        scale: 0.93
 
 @keyframes piece-promotion
     0%
@@ -47,12 +47,11 @@ defineProps<{
     opacity: 0.5
     cursor: not-allowed
     transform-style: preserve-3d
+    transform: rotate(180deg)
     &.grabbable
         opacity: 1
         cursor: grab
-        &:hover
-            animation: piece-hover 500ms ease-in-out infinite alternate
-
+        transform: rotate(0)
 
     & > *
         grid-row: 1
@@ -70,7 +69,7 @@ defineProps<{
     z-index: 1
 
 .piece.promoted
-    animation: piece-promotion 300ms ease-in-out
+    // animation: piece-promotion 300ms ease-in-out
 
     .piece-kanji
         color: $primary
@@ -81,6 +80,7 @@ defineProps<{
         stroke-linejoin: miter
 
 .piece:active
-    scale: 2
+    scale: 2.5
+    opacity: 0.7
     cursor: grabbing
 </style>
