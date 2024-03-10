@@ -11,3 +11,7 @@ export function distanceBetween(first: Location2D, second: Location2D): number {
 export function byDistanceTo(location: Location2D): Comparator<Location2D> {
     return (first, second) => distanceBetween(first, location) - distanceBetween(second, location);
 }
+
+export function angleBetween(first: Location2D, second: Location2D): number {
+    return Math.atan2(second.y - first.y, second.x - first.x);
+}
