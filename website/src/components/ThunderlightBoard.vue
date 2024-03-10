@@ -2,53 +2,47 @@
 import { pick } from '../utils/arrays';
 import { flipCoin } from '../utils/booleans';
 import { jukebox } from '../utils/jukebox';
-import { shake } from '../utils/numbers';
 import Piece from './Piece.vue';
 
 
-let grabbingPiece: any = undefined;
+let hand: HTMLElement | undefined = undefined;
 
-
-function onPieceGrab(event: MouseEvent): void {
-    const element = event.currentTarget;
-    
-    grabbingPiece = element;
-    grabbingPiece.style.transition = '';
-    jukebox.play("piece.grab", 0.1);
-    onMouseMove(event);
+function onPieceGrab(element: HTMLElement) {
+    jukebox.play("piece.grab", 0.2);
+    hand = element;
 }
 
-function onMouseMove(event: MouseEvent): void {
-    if(grabbingPiece === undefined) {
+function onPieceDrop(_: HTMLElement) {
+    jukebox.play("piece.drop", 0.3);
+    hand = undefined;
+}
+
+function onPieceMove(event: MouseEvent): void {
+    if(hand === undefined) {
         return;
     }
 
     const mouseX = event.clientX - 20;
     const mouseY = event.clientY - 20;
 
-    grabbingPiece.style.position = 'absolute';
-    grabbingPiece.style.left = `${mouseX}px`;
-    grabbingPiece.style.top = `${mouseY}px`;
+    hand.style.position = 'absolute';
+    hand.style.left = `${mouseX}px`;
+    hand.style.top = `${mouseY}px`;
 }
 
-function onPieceRelease(_: MouseEvent) {
-    jukebox.play("piece.drop");
-    grabbingPiece.style.transition = '200ms ease-in-out';
-    grabbingPiece.style.transform = `rotate(${shake(0, 15)}deg)`;
-    grabbingPiece = undefined;
-}
+
 </script>
 
 <template>
-    <div id="board" @mousemove="onMouseMove">
+    <div id="board" @mousemove="onPieceMove">
         <div class="cell" v-for="_ in 9 ** 2">
             <Piece 
                 :kanji="pick(['王', '飛', '龍', '角', '馬', '金', '銀', '全', '桂', '今', '香', '杏', '歩', 'と'])" 
                 :promoted="flipCoin()" 
                 :grabbable="flipCoin()"
-                @mousedown="onPieceGrab"
-                @mouseup="onPieceRelease"
                 v-if="flipCoin(0.2)"
+                @grab="onPieceGrab"
+                @drop="onPieceDrop"
             ></Piece>
         </div>
     </div>

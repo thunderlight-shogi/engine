@@ -1,11 +1,40 @@
 <script setup lang="ts">
+import { shake } from '../utils/numbers';
 
-defineProps<{ 
+const emit = defineEmits([
+    'grab',
+    'drop',
+]);
+
+const props = defineProps<{ 
     kanji: string, 
     promoted: boolean,
     grabbable: boolean,
-}>()
+}>();
 
+function onPieceGrab(event: MouseEvent): void {
+    if (!props.grabbable) {
+        return;
+    }
+
+    const element: HTMLElement = event.currentTarget as HTMLElement;
+    element.style.transition = '';
+
+    emit("grab", element);
+}
+
+function onPieceDrop(event: MouseEvent) {
+    if (!props.grabbable) {
+        return;
+    }
+
+    const element: HTMLElement = event.currentTarget as HTMLElement;
+
+    element.style.transition = '200ms ease-in-out';
+    element.style.transform = `rotate(${shake(0, 15)}deg)`;
+
+    emit("drop", element);
+}
 </script>
 
 <template>
@@ -13,6 +42,8 @@ defineProps<{
     class="piece" 
     :class="{grabbable, promoted}"
     :title="grabbable ? `😈⚔️ Grab this ${kanji} to move!` : `⛔🤚 This is not your ${kanji}!`"
+    @mousedown="onPieceGrab"
+    @mouseup="onPieceDrop"
 >
     <svg class="piece-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 59.97 62.8">
         <polygon class="piece-body" points="54.67 14.25 29.99 0 29.99 0 29.99 0 5.3 14.25 0 62.8 29.99 62.8 59.97 62.8 54.67 14.25"/>
@@ -53,6 +84,11 @@ defineProps<{
         cursor: grab
         transform: rotate(0)
 
+        &:active
+            scale: 2.5
+            opacity: 0.7
+            cursor: grabbing
+
     & > *
         grid-row: 1
         grid-column: 1
@@ -78,9 +114,4 @@ defineProps<{
         stroke: $primary
         stroke-width: 3px
         stroke-linejoin: miter
-
-.piece:active
-    scale: 2.5
-    opacity: 0.7
-    cursor: grabbing
 </style>
