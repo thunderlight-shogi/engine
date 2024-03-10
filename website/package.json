@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@prisma/client": "^5.10.2",
     "vue": "^3.4.19"
   },
   "devDependencies": {
