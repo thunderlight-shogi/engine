@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { byClass, closest } from '../dom/dom';
+import { byClass, closest, heightOf, widthOf } from '../dom/dom';
 import { pick } from '../utils/arrays';
 import { flipCoin } from '../utils/booleans';
+import { Location2D } from '../utils/geometry';
 import { jukebox } from '../utils/jukebox';
 import Piece from './Piece.vue';
 
@@ -48,11 +49,10 @@ function onPieceMove(event: MouseEvent): void {
         return;
     }
 
-    const mouseX = event.pageX - 20;
-    const mouseY = event.pageY - 20;
-
-    hand.style.left = `${mouseX}px`;
-    hand.style.top = `${mouseY}px`;
+    const mouse = new Location2D(event.pageX + widthOf(hand) / 4, event.pageY + heightOf(hand) / 4);
+    
+    hand.style.left = `${mouse.x}px`;
+    hand.style.top = `${mouse.y}px`;
 
     const cells = getCells();
     const underlyingCell = closest(cells, hand);
