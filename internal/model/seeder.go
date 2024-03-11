@@ -3,7 +3,8 @@ package model
 func seed() {
 	// Silver+
 	SilverPlus := FigureType{
-		Name: "Silver+",
+		Name:  "Silver+",
+		Kanji: '全',
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -34,7 +35,8 @@ func seed() {
 
 	// Knight+
 	KnightPlus := FigureType{
-		Name: "Knight+",
+		Name:  "Knight+",
+		Kanji: '圭',
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -65,7 +67,8 @@ func seed() {
 
 	// Lance+
 	LancePlus := FigureType{
-		Name: "Lance+",
+		Name:  "Lance+",
+		Kanji: '杏',
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -96,7 +99,8 @@ func seed() {
 
 	// Pawn+
 	PawnPlus := FigureType{
-		Name: "Pawn+",
+		Name:  "Pawn+",
+		Kanji: 'と',
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -126,7 +130,8 @@ func seed() {
 	}
 	// Rook+
 	RookPlus := FigureType{
-		Name: "Rook+",
+		Name:  "Rook+",
+		Kanji: '竜',
 		Moves: []Move{
 			{
 				HorizontalShift: 0,
@@ -281,7 +286,8 @@ func seed() {
 
 	// Bishop+
 	BishopPlus := FigureType{
-		Name: "Bishop+",
+		Name:  "Bishop+",
+		Kanji: '馬',
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -433,7 +439,8 @@ func seed() {
 
 	// King
 	King := FigureType{
-		Name: "King",
+		Name:  "King",
+		Kanji: '王',
 		Moves: []Move{
 			{
 				HorizontalShift: -1,
@@ -472,7 +479,8 @@ func seed() {
 
 	// Gold
 	Gold := FigureType{
-		Name: "Gold",
+		Name:  "Gold",
+		Kanji: '金',
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -503,7 +511,8 @@ func seed() {
 
 	// Silver
 	Silver := FigureType{
-		Name: "Silver",
+		Name:  "Silver",
+		Kanji: '銀',
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -531,7 +540,8 @@ func seed() {
 
 	// Knight
 	Knight := FigureType{
-		Name: "Knight",
+		Name:  "Knight",
+		Kanji: '桂',
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -547,7 +557,8 @@ func seed() {
 
 	// Lance
 	Lance := FigureType{
-		Name: "Lance",
+		Name:  "Lance",
+		Kanji: '香',
 		Moves: []Move{
 			{
 				HorizontalShift: 0,
@@ -587,7 +598,8 @@ func seed() {
 
 	// Rook
 	Rook := FigureType{
-		Name: "Rook",
+		Name:  "Rook",
+		Kanji: '飛',
 		Moves: []Move{
 			{
 				HorizontalShift: 0,
@@ -726,7 +738,8 @@ func seed() {
 
 	// Bishop
 	Bishop := FigureType{
-		Name: "Bishop",
+		Name:  "Bishop",
+		Kanji: '角',
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -862,7 +875,8 @@ func seed() {
 
 	// Pawn
 	Pawn := FigureType{
-		Name: "Pawn",
+		Name:  "Pawn",
+		Kanji: '歩',
 		Moves: []Move{
 			{
 				HorizontalShift: 0,

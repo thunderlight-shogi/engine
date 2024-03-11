@@ -20,6 +20,7 @@ type FigureType struct {
 	Moves        []Move `gorm:"foreignKey:FigureTypeId"`
 	TurnFigureId *uint
 	TurnFigure   *FigureType
+	Kanji        rune
 }
 
 type StartingPosition struct {
