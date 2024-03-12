@@ -16,7 +16,7 @@ class Jukebox {
         }
     }
 
-    public play(soundTag: SoundTag, pitchShake: number = 0.0): void {
+    public play(soundTag: SoundTag, pitchShake: number = 0.0, pitchShift: number = 0.0): void {
         const originalAudio = this.getOriginalAudioBySoundTag(soundTag);
 
         if (originalAudio === undefined) {
@@ -30,7 +30,7 @@ class Jukebox {
         const audio = originalAudio.cloneNode() as HTMLAudioElement;
 
         audio.preservesPitch = false;
-        audio.playbackRate = shake(1, pitchShake);
+        audio.playbackRate = shake(1 + pitchShift, pitchShake);
         audio.play();
     }
 

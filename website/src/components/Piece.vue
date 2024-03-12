@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { locateMouse } from '../dom/dom';
 import { shake } from '../utils/numbers';
 
 const emit = defineEmits([
@@ -13,29 +14,29 @@ const props = defineProps<{
 }>();
 
 function onPieceGrab(event: MouseEvent): void {
-    if (!props.grabbable) {
-        return;
-    }
+    // if (!props.grabbable) {
+    //     return;
+    // }
 
     const element: HTMLElement = event.currentTarget as HTMLElement;
     element.style.transition = '';
     element.style.zIndex = '99';
 
-    emit("grab", element);
+    emit("grab", element, locateMouse(event));
 }
 
 function onPieceDrop(event: MouseEvent) {
-    if (!props.grabbable) {
-        return;
-    }
+    // if (!props.grabbable) {
+    //     return;
+    // }
 
     const element: HTMLElement = event.currentTarget as HTMLElement;
 
     element.style.zIndex = '0';
     element.style.transition = '200ms ease-in-out';
-    element.style.transform = `rotate(${shake(0, 15)}deg)`;
+    element.style.transform = `rotate(${shake(0, 15) + (props.grabbable ? 0 : 180)}deg)`;
 
-    emit("drop", element);
+    emit("drop", element, locateMouse(event));
 }
 </script>
 
@@ -75,9 +76,14 @@ function onPieceDrop(event: MouseEvent) {
     0%
         scale: 1.50
     50%
-        scale: 2.00
+        scale: 3.00
+        filter: none
+    60%
+        scale: 0.90
+        filter: drop-shadow(0 0 15px white) drop-shadow(0 0 45px white) drop-shadow(0 0 100px white)
     100%
         scale: 1.00
+        filter: none
 
 .piece
     position: absolute
@@ -86,7 +92,8 @@ function onPieceDrop(event: MouseEvent) {
     height: 3em
     place-items: center
     user-select: none
-    opacity: 0.5
+    filter: hue-rotate(180deg)
+    opacity: 0.7
     cursor: not-allowed
     transform-style: preserve-3d
     transform: rotate(180deg)
@@ -95,12 +102,13 @@ function onPieceDrop(event: MouseEvent) {
     &.grabbable
         opacity: 1
         cursor: grab
-        transform: rotate(0)
+        transform: rotate(0) 
+        filter: grayscale(0)
 
         &:active
             scale: 1.5
             cursor: grabbing
-            filter: drop-shadow(0 0 5px $primary)
+            filter: drop-shadow(10px 10px 5px transparentize($background, 0.60))
 
     & > *
         grid-row: 1
