@@ -17,6 +17,17 @@ func (board *Board) Clone() (newby *Board) {
 	newby.Cells = make([][]*Figure, 9)
 	for i := range newby.Cells {
 		newby.Cells[i] = make([]*Figure, 9)
+		copy(newby.Cells[i], board.Cells[i])
+	}
+	return
+}
+
+func Construct() (newby *Board) {
+	newby = new(Board)
+
+	newby.Cells = make([][]*Figure, 9)
+	for i := range newby.Cells {
+		newby.Cells[i] = make([]*Figure, 9)
 	}
 	return
 }

@@ -15,12 +15,13 @@ const (
 )
 
 type FigureType struct {
-	Id           uint `gorm:"primarykey"`
-	Name         string
-	Moves        []Move `gorm:"foreignKey:FigureTypeId"`
-	TurnFigureId *uint
-	TurnFigure   *FigureType
-	Kanji        rune
+	Id              uint `gorm:"primarykey"`
+	Name            string
+	Moves           []Move `gorm:"foreignKey:FigureTypeId"`
+	TurnFigureId    *uint
+	TurnFigure      *FigureType
+	Kanji           rune
+	ImportantFigure bool
 }
 
 type StartingPosition struct {

@@ -439,8 +439,9 @@ func seed() {
 
 	// King
 	King := FigureType{
-		Name:  "King",
-		Kanji: '王',
+		Name:            "King",
+		Kanji:           '王',
+		ImportantFigure: true,
 		Moves: []Move{
 			{
 				HorizontalShift: -1,
