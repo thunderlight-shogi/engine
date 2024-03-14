@@ -17,7 +17,7 @@ class Environment extends Vector2D {
 
 class Particle {
 	private static readonly FPS: number = 60;
-	private static readonly LIFETIME_MS: number = 15000;
+	private static readonly LIFETIME_MS: number = 4000;
     private readonly despawnTime: number;
     private readonly element: HTMLImageElement;
     private readonly location: Location2D;

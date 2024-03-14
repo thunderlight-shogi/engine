@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { locateMouse } from '../dom/dom';
+import { Ref, ref } from 'vue';
 import { shake } from '../utils/numbers';
+import { PieceState } from '../thunderlight/piece-type';
 
 const emit = defineEmits([
     'grab',
@@ -8,21 +9,29 @@ const emit = defineEmits([
 ]);
 
 const props = defineProps<{ 
-    kanji: string, 
-    promoted: boolean,
+    kanji: string,
     grabbable: boolean,
+    enemy: boolean,
+    promoted: boolean,
+    state: PieceState
 }>();
+
+const piece: Ref<HTMLElement | null> = ref(null);
 
 function onPieceGrab(event: MouseEvent): void {
     // if (!props.grabbable) {
     //     return;
     // }
 
-    const element: HTMLElement = event.currentTarget as HTMLElement;
-    element.style.transition = '';
-    element.style.zIndex = '99';
+    if (!piece.value) {
+        return;
+    }
 
-    emit("grab", element, locateMouse(event));
+    // const element: HTMLElement = event.currentTarget as HTMLElement;
+    piece.value.style.transition = '';
+    piece.value.style.zIndex = '99';
+
+    emit("grab", piece.value);
 }
 
 function onPieceDrop(event: MouseEvent) {
@@ -30,20 +39,25 @@ function onPieceDrop(event: MouseEvent) {
     //     return;
     // }
 
-    const element: HTMLElement = event.currentTarget as HTMLElement;
+    // const element: HTMLElement = event.currentTarget as HTMLElement;
 
-    element.style.zIndex = '0';
-    element.style.transition = '200ms ease-in-out';
-    element.style.transform = `rotate(${shake(0, 15) + (props.grabbable ? 0 : 180)}deg)`;
+    if (!piece.value) {
+        return;
+    }
 
-    emit("drop", element, locateMouse(event));
+    piece.value.style.zIndex = '0';
+    piece.value.style.transition = '200ms ease-in-out';
+    piece.value.style.transform = `rotate(${shake(0, 15) + (props.enemy ? 180 : 0)}deg)`;
+
+    emit("drop", piece.value);
 }
 </script>
 
 <template>
 <div 
     class="piece" 
-    :class="{grabbable, promoted}"
+    ref="piece"
+    :class="{grabbable, promoted, enemy, [state]: true }"
     :title="grabbable ? `😈⚔️ Grab this ${kanji} to move!` : `⛔🤚 This is not your ${kanji}!`"
     @mousedown="onPieceGrab"
     @mouseup="onPieceDrop"
@@ -86,29 +100,34 @@ function onPieceDrop(event: MouseEvent) {
         filter: none
 
 .piece
-    position: absolute
     display: grid
     width: 3em
     height: 3em
     place-items: center
     user-select: none
-    filter: hue-rotate(180deg)
-    opacity: 0.7
     cursor: not-allowed
     transform-style: preserve-3d
-    transform: rotate(180deg)
-    animation: piece-drop 200ms ease-in
     transition: 75ms
+    filter: hue-rotate(0deg)
+    
+    &.drop
+        animation: piece-drop 200ms ease-in
+
+    &.enemy
+        transform: rotate(180deg)
+
     &.grabbable
         opacity: 1
         cursor: grab
-        transform: rotate(0) 
-        filter: grayscale(0)
+        filter: hue-rotate(0)
 
         &:active
             scale: 1.5
             cursor: grabbing
             filter: drop-shadow(10px 10px 5px transparentize($background, 0.60))
+
+    &:not(.grabbable)
+        opacity: 0.3
 
     & > *
         grid-row: 1

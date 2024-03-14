@@ -56,9 +56,30 @@ export function removeClass(element: HTMLElement, className: string) {
     element.classList.remove(className);
 }
 
+export function triggerReflow(element: HTMLElement) {
+    element.offsetHeight;
+}
+
+export function triggerClass(element: HTMLElement, className: string) {
+    removeClass(element, className);
+    triggerReflow(element);
+    setTimeout(() => addClass(element, className), 3000);
+}
+
 export function locateMouse(event: MouseEvent): Location2D {
     const x = event.pageX;
     const y = event.pageY;
 
     return new Location2D(x, y);
+}
+
+export function indexOfChild(child: HTMLElement): number {
+    const parent = child.parentNode;
+
+    if (parent === null) {
+        throw Error("The element has no parent, hence doesn't have child index.");
+    }
+
+    const siblings: HTMLElement[] = [...parent?.children] as HTMLElement[];
+    return siblings.indexOf(child);
 }

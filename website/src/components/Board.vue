@@ -1,19 +1,46 @@
 <script setup lang="ts">
-import { byClass, closest, heightOf, locate, locateMouse, measure, move, widthOf } from '../dom/dom';
+import { ref } from 'vue';
+import { generateUUIDv4 } from '../crypto/uuids';
+import { byClass, closest, indexOfChild, locate, locateMouse, measure, move } from '../dom/dom';
 import { firecracker } from '../particles/particles';
-import { pick } from '../utils/arrays';
-import { flipCoin } from '../utils/booleans';
-import { Location2D, distanceBetween } from '../utils/geometry';
+import { MoveType, useBoard } from '../stores/board-store';
+import { Coordinate } from '../thunderlight/coordinate';
+import { EngineMode } from '../thunderlight/engine-mode';
 import { jukebox } from '../utils/jukebox';
-import { translate } from '../utils/numbers';
 import { sleep } from '../utils/sleep';
-import Piece from './Piece.vue';
+import DraggablePiece from './DraggablePiece.vue';
+import Inventory from './Inventory.vue';
+import ModeSwitch from './ModeSwitch.vue';
 
 
 let hand: HTMLElement | undefined = undefined;
+const board = useBoard();
+const mode = ref<EngineMode>('board');
 
 function getCells(): HTMLElement[] {
     return byClass("cell");
+}
+
+function locateHand(): Coordinate {
+    if (hand === undefined) {
+        throw new Error("Cannot locate an empty hand");
+    }
+
+    const cell = hand.parentElement;
+
+    if (cell === null) {
+        throw new Error("Cannot locate a hand with no parent")
+    }
+
+    return locateCell(cell);
+}
+
+function locateCell(cell: HTMLElement): Coordinate {
+    const childIndex = indexOfChild(cell);
+    const x = childIndex % 9;
+    const y = Math.floor(childIndex / 9); 
+
+    return new Coordinate(x, y);
 }
 
 function fadeCells() {
@@ -29,35 +56,47 @@ function highlight(cell: HTMLElement) {
 function onPieceGrab(element: HTMLElement) {
     jukebox.play("piece.grab", 0.2);
     hand = element;
+    hand.style.position = 'absolute';
 }
 
-async function onPieceDrop(_: HTMLElement, mouseLocation: Location2D) {
+async function onPieceDrop(piece: HTMLElement) {
     if (hand === undefined) {
         return;
     }
 
-    const location = locate(hand);
     const cells = getCells();
     const underlyingCell = closest(cells, hand);
+    const source = locateHand();
+    const destination = locateCell(underlyingCell);
 
     hand.style.position = '';
     hand.style.top = '';
     hand.style.left = '';
 
-    if(underlyingCell.children.length === 0) {
-        jukebox.play("piece.drop", 0.3);
-        underlyingCell.replaceChildren(hand);
-    } else if(underlyingCell.firstChild === hand) {
-        jukebox.play("piece.back", 0.3);
-    } else {
-        underlyingCell.replaceChildren(hand);
-        hand = undefined;
-        
-        await sleep(100);
-        jukebox.play("piece.attack", 0.5, 1);
+    const move = board.move(source, destination);
 
-        await sleep(20);
-        firecracker.splash("piece.shred", locate(underlyingCell), 20, 25);
+    switch (move) {
+        case MoveType.TRAVEL:
+            jukebox.play("piece.drop", 0.3);
+            break;
+
+        case MoveType.ATTACK:
+            hand = undefined;
+            
+            await sleep(100);
+            jukebox.play("piece.attack", 0.8, 0.3);
+
+            await sleep(20);
+            firecracker.splash("piece.shred", locate(underlyingCell), 30, 25);
+            break;
+
+        case MoveType.BACK:
+            jukebox.play("piece.back", 0.8, 0.3);
+            break;
+
+        case MoveType.PROHIBITED:
+            jukebox.play("piece.prohibited");
+            break;
     }
     
     fadeCells();
@@ -73,6 +112,8 @@ function onPieceMove(event: MouseEvent): void {
     const cells = getCells();
     const underlyingCell = closest(cells, hand);
 
+    console.info(`${mouse}`, hand);
+
     if(!underlyingCell.classList.contains('highlighted')) {
         fadeCells();
     }
@@ -81,63 +122,36 @@ function onPieceMove(event: MouseEvent): void {
     highlight(underlyingCell);
 }
 
-class PieceType {
-    constructor(public readonly kanji: string, public readonly promoted: boolean = false) {}
-}
-
-class ActivePiece {
-    constructor(public readonly type: PieceType,
-                public readonly mine: boolean) {}
-}
-
-const pawn: PieceType = { kanji: '歩', promoted: false };
-const king: PieceType = { kanji: '王', promoted: false };
-const rook: PieceType = { kanji: '飛', promoted: false };
-const dragon: PieceType = { kanji: '龍', promoted: false };
-const bishop: PieceType = { kanji: '角', promoted: false };
-const horse: PieceType = { kanji: '馬', promoted: false };
-const gold: PieceType = { kanji: '金', promoted: false };
-const silver: PieceType = { kanji: '銀', promoted: false };
-const knight: PieceType = { kanji: '桂', promoted: false };
-const goldenKnight: PieceType = { kanji: '今', promoted: false };
-const lance: PieceType = { kanji: '香', promoted: false };
-const goldenLance: PieceType = { kanji: '杏', promoted: false };
-const tokin: PieceType = { kanji: 'と', promoted: false };
-
-function e(type: PieceType) {
-    return new ActivePiece(type, false);
-}
-
-function f(type: PieceType) {
-    return new ActivePiece(type, true);
-}
-
-const board: (ActivePiece | null)[] = [
-    e(lance), e(knight), e(silver), e(gold), e(king), e(gold), e(silver), e(knight), e(lance),
-    null, e(rook), null, null, null, null, null, e(bishop), null,
-    e(pawn), e(pawn), e(pawn), e(pawn), e(pawn), e(pawn), e(pawn), e(pawn), e(pawn),
-    null, null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null,
-    f(pawn), f(pawn), f(pawn), f(pawn), f(pawn), f(pawn), f(pawn), f(pawn), f(pawn),
-    null, f(bishop), null, null, null, null, null, f(rook), null,
-    f(lance), f(knight), f(silver), f(gold), f(king), f(gold), f(silver), f(knight), f(lance),
-];
 </script>
 
 <template>
-    <div id="board" @mousemove="onPieceMove">
-        <div class="cell" v-for="piece of board">
-            <Piece 
-                :kanji="piece?.type.kanji"
-                :promoted="piece?.type.promoted" 
-                :grabbable="piece?.mine"
-                v-if="piece !== null"
-                @grab="onPieceGrab"
-                @drop="onPieceDrop"
-            ></Piece>
+    <div id="board-ui">
+        <ModeSwitch v-model="mode"></ModeSwitch>
+
+        <div id="board">
+            <Inventory player="gote"></Inventory>
+
+            <div id="cells" @mousemove="onPieceMove">
+                <div class="cell" v-for="piece of board.cells">
+                    <DraggablePiece 
+                        v-if="piece !== undefined"
+                        :key="piece?.id ?? generateUUIDv4()"
+                        :kanji="piece.type.kanji"
+                        :promoted="piece?.type.promoted" 
+                        :grabbable="piece?.player === board.player"
+                        :enemy="piece?.player === 'gote'"
+                        :state="piece?.state"
+                        ref="pieces"
+                        @grab="onPieceGrab"
+                        @drop="onPieceDrop"
+                    ></DraggablePiece>
+                </div>
+            </div>
+
+            <Inventory player="sente"></Inventory>
         </div>
     </div>
+    
 </template> 
 
 <style scoped lang="sass">
@@ -150,7 +164,20 @@ $cell-gap: 0.66em
     100%
         transform: scale(0.95)
 
+#board-ui
+    display: flex
+    align-items: center
+    flex-direction: column
+    row-gap: 1em
+
+    & > *
+        flex: 1
+
 #board
+    display: flex
+    gap: 2em
+
+#cells
     display: grid
     aspect-ratio: 1 / 1
     grid-template-rows: repeat(9, $cell-size)

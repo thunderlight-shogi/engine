@@ -39,4 +39,12 @@ class Jukebox {
     }
 }
 
-export const jukebox: Jukebox = new Jukebox("piece.grab", "piece.drop", "piece.attack", "piece.back");
+export const jukebox: Jukebox = new Jukebox(
+    "piece.grab", 
+    "piece.drop", 
+    "piece.attack", 
+    "piece.back", 
+    "piece.prohibited",
+    
+    "mode.switch",
+);

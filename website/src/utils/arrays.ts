@@ -38,3 +38,23 @@ export function minBy<T, K>(iterable: Iterable<T>, propertyExtractor: (element: 
     
     return firstFrom(sortedMap).element;
 }
+
+export function create2DArray<E>(width: number, height: number): (E | undefined)[][] {
+    const array = new Array<(E | undefined)[]>(height);
+
+    for (let x = 0; x < height; x += 1) {
+        array.push(new Array<E | undefined>(width));
+    }
+
+    return array;
+}
+
+export function flatten<E>(array: E[][]): E[] {
+    let flattenArray: E[] = [];
+
+    for(const row of array) {
+        flattenArray = flattenArray.concat(row);
+    }
+
+    return flattenArray;
+}
