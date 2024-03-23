@@ -25,6 +25,26 @@ type PickedMove struct {
 	moveType  MoveType
 }
 
-func Search() PickedMove {
-	return PickedMove{}
+func Search(currentBoard board.Board) (pickedMove PickedMove) {
+	var found bool = false
+	var curPiece *board.Piece
+	for horiz := 0; horiz < len(currentBoard.Cells); horiz++ {
+		for vert := 0; vert < len(currentBoard.Cells[horiz]); vert++ {
+			if currentBoard.Cells[horiz][vert] != nil {
+				curPiece = currentBoard.Cells[horiz][vert]
+				found = true
+				break
+			}
+		}
+		if found {
+			break
+		}
+	}
+	if curPiece == nil {
+		panic("Board has no pieces!")
+	}
+	pickedMove.piece = curPiece
+	pickedMove.newCoords = Coordinates{horizontal: 4, vertical: 4}
+	pickedMove.moveType = Moving
+	return pickedMove
 }
