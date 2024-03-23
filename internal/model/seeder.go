@@ -2,7 +2,7 @@ package model
 
 func seed() {
 	// Silver+
-	SilverPlus := FigureType{
+	SilverPlus := PieceType{
 		Name:  "Silver+",
 		Kanji: '全',
 		Moves: []Move{
@@ -34,7 +34,7 @@ func seed() {
 	}
 
 	// Knight+
-	KnightPlus := FigureType{
+	KnightPlus := PieceType{
 		Name:  "Knight+",
 		Kanji: '圭',
 		Moves: []Move{
@@ -66,7 +66,7 @@ func seed() {
 	}
 
 	// Lance+
-	LancePlus := FigureType{
+	LancePlus := PieceType{
 		Name:  "Lance+",
 		Kanji: '杏',
 		Moves: []Move{
@@ -98,7 +98,7 @@ func seed() {
 	}
 
 	// Pawn+
-	PawnPlus := FigureType{
+	PawnPlus := PieceType{
 		Name:  "Pawn+",
 		Kanji: 'と',
 		Moves: []Move{
@@ -129,7 +129,7 @@ func seed() {
 		},
 	}
 	// Rook+
-	RookPlus := FigureType{
+	RookPlus := PieceType{
 		Name:  "Rook+",
 		Kanji: '竜',
 		Moves: []Move{
@@ -285,7 +285,7 @@ func seed() {
 	}
 
 	// Bishop+
-	BishopPlus := FigureType{
+	BishopPlus := PieceType{
 		Name:  "Bishop+",
 		Kanji: '馬',
 		Moves: []Move{
@@ -438,10 +438,10 @@ func seed() {
 	}
 
 	// King
-	King := FigureType{
-		Name:            "King",
-		Kanji:           '王',
-		ImportantFigure: true,
+	King := PieceType{
+		Name:           "King",
+		Kanji:          '王',
+		ImportantPiece: true,
 		Moves: []Move{
 			{
 				HorizontalShift: -1,
@@ -479,7 +479,7 @@ func seed() {
 	}
 
 	// Gold
-	Gold := FigureType{
+	Gold := PieceType{
 		Name:  "Gold",
 		Kanji: '金',
 		Moves: []Move{
@@ -511,7 +511,7 @@ func seed() {
 	}
 
 	// Silver
-	Silver := FigureType{
+	Silver := PieceType{
 		Name:  "Silver",
 		Kanji: '銀',
 		Moves: []Move{
@@ -536,11 +536,11 @@ func seed() {
 				VerticalShift:   1,
 			},
 		},
-		TurnFigure: &SilverPlus,
+		TurnPiece: &SilverPlus,
 	}
 
 	// Knight
-	Knight := FigureType{
+	Knight := PieceType{
 		Name:  "Knight",
 		Kanji: '桂',
 		Moves: []Move{
@@ -553,11 +553,11 @@ func seed() {
 				VerticalShift:   -2,
 			},
 		},
-		TurnFigure: &KnightPlus,
+		TurnPiece: &KnightPlus,
 	}
 
 	// Lance
-	Lance := FigureType{
+	Lance := PieceType{
 		Name:  "Lance",
 		Kanji: '香',
 		Moves: []Move{
@@ -594,11 +594,11 @@ func seed() {
 				VerticalShift:   -8,
 			},
 		},
-		TurnFigure: &LancePlus,
+		TurnPiece: &LancePlus,
 	}
 
 	// Rook
-	Rook := FigureType{
+	Rook := PieceType{
 		Name:  "Rook",
 		Kanji: '飛',
 		Moves: []Move{
@@ -734,11 +734,11 @@ func seed() {
 				VerticalShift:   0,
 			},
 		},
-		TurnFigure: &RookPlus,
+		TurnPiece: &RookPlus,
 	}
 
 	// Bishop
-	Bishop := FigureType{
+	Bishop := PieceType{
 		Name:  "Bishop",
 		Kanji: '角',
 		Moves: []Move{
@@ -871,11 +871,11 @@ func seed() {
 				VerticalShift:   -8,
 			},
 		},
-		TurnFigure: &BishopPlus,
+		TurnPiece: &BishopPlus,
 	}
 
 	// Pawn
-	Pawn := FigureType{
+	Pawn := PieceType{
 		Name:  "Pawn",
 		Kanji: '歩',
 		Moves: []Move{
@@ -884,255 +884,255 @@ func seed() {
 				VerticalShift:   -1,
 			},
 		},
-		TurnFigure: &PawnPlus,
+		TurnPiece: &PawnPlus,
 	}
 
-	db.Create([]*FigureType{&King, &Gold, &Silver, &Knight, &Lance, &Rook, &Bishop, &Pawn})
+	db.Create([]*PieceType{&King, &Gold, &Silver, &Knight, &Lance, &Rook, &Bishop, &Pawn})
 
 	DefaultPosition := StartingPosition{
 		Name: "Default",
-		Figures: []StartingPositionFigure{
+		Pieces: []StartingPositionPiece{
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 1,
 				VerticalOffset:   3,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 2,
 				VerticalOffset:   3,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 3,
 				VerticalOffset:   3,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 4,
 				VerticalOffset:   3,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 5,
 				VerticalOffset:   3,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 6,
 				VerticalOffset:   3,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 7,
 				VerticalOffset:   3,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 8,
 				VerticalOffset:   3,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 9,
 				VerticalOffset:   3,
 				Player:           Gote,
 			},
 
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 1,
 				VerticalOffset:   7,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 2,
 				VerticalOffset:   7,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 3,
 				VerticalOffset:   7,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 4,
 				VerticalOffset:   7,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 5,
 				VerticalOffset:   7,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 6,
 				VerticalOffset:   7,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 7,
 				VerticalOffset:   7,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 8,
 				VerticalOffset:   7,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Pawn,
+				PieceType:        Pawn,
 				HorizontalOffset: 9,
 				VerticalOffset:   7,
 				Player:           Sente,
 			},
 
 			{
-				FigureType:       Rook,
+				PieceType:        Rook,
 				HorizontalOffset: 8,
 				VerticalOffset:   2,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Rook,
+				PieceType:        Rook,
 				HorizontalOffset: 2,
 				VerticalOffset:   8,
 				Player:           Sente,
 			},
 
 			{
-				FigureType:       Bishop,
+				PieceType:        Bishop,
 				HorizontalOffset: 2,
 				VerticalOffset:   2,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Bishop,
+				PieceType:        Bishop,
 				HorizontalOffset: 8,
 				VerticalOffset:   8,
 				Player:           Sente,
 			},
 
 			{
-				FigureType:       Lance,
+				PieceType:        Lance,
 				HorizontalOffset: 1,
 				VerticalOffset:   1,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Knight,
+				PieceType:        Knight,
 				HorizontalOffset: 2,
 				VerticalOffset:   1,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Silver,
+				PieceType:        Silver,
 				HorizontalOffset: 3,
 				VerticalOffset:   1,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Gold,
+				PieceType:        Gold,
 				HorizontalOffset: 4,
 				VerticalOffset:   1,
 				Player:           Gote,
 			},
 			{
-				FigureType:       King,
+				PieceType:        King,
 				HorizontalOffset: 5,
 				VerticalOffset:   1,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Gold,
+				PieceType:        Gold,
 				HorizontalOffset: 6,
 				VerticalOffset:   1,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Silver,
+				PieceType:        Silver,
 				HorizontalOffset: 7,
 				VerticalOffset:   1,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Knight,
+				PieceType:        Knight,
 				HorizontalOffset: 8,
 				VerticalOffset:   1,
 				Player:           Gote,
 			},
 			{
-				FigureType:       Lance,
+				PieceType:        Lance,
 				HorizontalOffset: 9,
 				VerticalOffset:   1,
 				Player:           Gote,
 			},
 
 			{
-				FigureType:       Lance,
+				PieceType:        Lance,
 				HorizontalOffset: 1,
 				VerticalOffset:   9,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Knight,
+				PieceType:        Knight,
 				HorizontalOffset: 2,
 				VerticalOffset:   9,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Silver,
+				PieceType:        Silver,
 				HorizontalOffset: 3,
 				VerticalOffset:   9,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Gold,
+				PieceType:        Gold,
 				HorizontalOffset: 4,
 				VerticalOffset:   9,
 				Player:           Sente,
 			},
 			{
-				FigureType:       King,
+				PieceType:        King,
 				HorizontalOffset: 5,
 				VerticalOffset:   9,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Gold,
+				PieceType:        Gold,
 				HorizontalOffset: 6,
 				VerticalOffset:   9,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Silver,
+				PieceType:        Silver,
 				HorizontalOffset: 7,
 				VerticalOffset:   9,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Knight,
+				PieceType:        Knight,
 				HorizontalOffset: 8,
 				VerticalOffset:   9,
 				Player:           Sente,
 			},
 			{
-				FigureType:       Lance,
+				PieceType:        Lance,
 				HorizontalOffset: 9,
 				VerticalOffset:   9,
 				Player:           Sente,
