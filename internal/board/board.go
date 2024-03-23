@@ -1,6 +1,8 @@
 package board
 
-import "github.com/thunderlight-shogi/engine/internal/model"
+import (
+	"github.com/thunderlight-shogi/engine/internal/model"
+)
 
 type board struct {
 	Cells       [][]*Piece // [Horizontal offset][Vertical offset]
@@ -15,46 +17,41 @@ type Piece struct {
 }
 
 type inventory struct {
-	pieces map[string]int
+	pieces []*Piece
 }
 
 type Inventory = *inventory
 
 func NewInventory() Inventory {
-	return &inventory{pieces: make(map[string]int)}
+	return &inventory{pieces: make([]*Piece, 0)}
 }
 
-func (this_inv Inventory) Pieces() map[string]int {
+func (this_inv Inventory) Pieces() []*Piece {
 	if len(this_inv.pieces) == 0 {
 		return nil
 	}
 	return this_inv.pieces
 }
 
-func (this_inv Inventory) PieceNum(name string) int {
-	return this_inv.pieces[name]
+func (this_inv Inventory) AddPiece(piece *Piece) {
+	this_inv.pieces = append(this_inv.pieces, piece)
 }
 
-func (this_inv Inventory) AddPiece(name string) {
-	_, exists := this_inv.pieces[name]
-	if exists {
-		this_inv.pieces[name]++
-	} else {
-		this_inv.pieces[name] = 1
-	}
+// deleting element with index i from array
+func (this_inv Inventory) removePiece(i int) {
+	this_inv.pieces[i] = this_inv.pieces[len(this_inv.pieces)-1]
+	this_inv.pieces = this_inv.pieces[:len(this_inv.pieces)-1]
 }
 
-func (this_inv Inventory) DelPiece(name string) {
-	_, exists := this_inv.pieces[name]
-	if !exists {
-		return
+func (this_inv Inventory) ExtractPiece(piece *Piece) *Piece {
+	for i, elem := range this_inv.pieces {
+		if elem.Type.Name == piece.Type.Name {
+			save := elem
+			this_inv.removePiece(i)
+			return save
+		}
 	}
-
-	if this_inv.pieces[name] == 1 {
-		delete(this_inv.pieces, name)
-	} else {
-		this_inv.pieces[name]--
-	}
+	return nil
 }
 
 func (this_board Board) Clone() (newby Board) {

@@ -891,7 +891,7 @@ func seed() {
 
 	DefaultPosition := StartingPosition{
 		Name: "Default",
-		Pieces: []StartingPositionPiece{
+		Pieces: []StartingPositionPieces{
 			{
 				PieceType:        Pawn,
 				HorizontalOffset: 1,

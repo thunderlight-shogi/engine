@@ -27,7 +27,7 @@ type PieceType struct {
 type StartingPosition struct {
 	Id     uint `gorm:"primarykey"`
 	Name   string
-	Pieces []StartingPositionPiece `gorm:"foreignKey:StartingPositionId"`
+	Pieces []StartingPositionPieces `gorm:"foreignKey:StartingPositionId"`
 }
 
 type Move struct {
@@ -37,7 +37,7 @@ type Move struct {
 	VerticalShift   int
 }
 
-type StartingPositionPiece struct {
+type StartingPositionPieces struct {
 	Id                 uint `gorm:"primarykey"`
 	StartingPositionId uint
 	PieceTypeId        uint
@@ -59,7 +59,7 @@ func init() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&StartingPosition{}, &StartingPositionPiece{}, &PieceType{}, &Move{})
+	db.AutoMigrate(&StartingPosition{}, &StartingPositionPieces{}, &PieceType{}, &Move{})
 
 	result := db.Find(&PieceType{})
 	if result.RowsAffected == 0 {
