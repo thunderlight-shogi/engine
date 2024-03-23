@@ -18,8 +18,8 @@ type PieceType struct {
 	Id             uint `gorm:"primarykey"`
 	Name           string
 	Moves          []Move `gorm:"foreignKey:PieceTypeId"`
-	TurnPieceId    *uint
-	TurnPiece      *PieceType
+	PromotePieceId *uint
+	PromotePiece   *PieceType
 	Kanji          rune
 	ImportantPiece bool
 }

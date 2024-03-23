@@ -536,7 +536,7 @@ func seed() {
 				VerticalShift:   1,
 			},
 		},
-		TurnPiece: &SilverPlus,
+		PromotePiece: &SilverPlus,
 	}
 
 	// Knight
@@ -553,7 +553,7 @@ func seed() {
 				VerticalShift:   -2,
 			},
 		},
-		TurnPiece: &KnightPlus,
+		PromotePiece: &KnightPlus,
 	}
 
 	// Lance
@@ -594,7 +594,7 @@ func seed() {
 				VerticalShift:   -8,
 			},
 		},
-		TurnPiece: &LancePlus,
+		PromotePiece: &LancePlus,
 	}
 
 	// Rook
@@ -734,7 +734,7 @@ func seed() {
 				VerticalShift:   0,
 			},
 		},
-		TurnPiece: &RookPlus,
+		PromotePiece: &RookPlus,
 	}
 
 	// Bishop
@@ -871,7 +871,7 @@ func seed() {
 				VerticalShift:   -8,
 			},
 		},
-		TurnPiece: &BishopPlus,
+		PromotePiece: &BishopPlus,
 	}
 
 	// Pawn
@@ -884,7 +884,7 @@ func seed() {
 				VerticalShift:   -1,
 			},
 		},
-		TurnPiece: &PawnPlus,
+		PromotePiece: &PawnPlus,
 	}
 
 	db.Create([]*PieceType{&King, &Gold, &Silver, &Knight, &Lance, &Rook, &Bishop, &Pawn})
