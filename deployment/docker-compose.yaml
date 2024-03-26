@@ -13,7 +13,7 @@ services:
     networks:
       - app-network
     ports:
-      - 80:80
+      - 5173:80
     depends_on:
       database:
         condition: service_healthy
