@@ -8,6 +8,8 @@ import (
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )
 
+//TODO: Везде поменять vertical и horizontal на file и rank
+
 type GameState struct {
 	Board                     board.Board
 	CurMovePlayer             model.Player
@@ -32,6 +34,14 @@ func (gs *GameState) getNextPlayer() model.Player {
 	}
 }
 
+func (gs *GameState) getPromotionZone() []int {
+	if gs.CurMovePlayer == model.Sente {
+		return board.PromotionZoneForSente
+	} else {
+		return board.PromotionZoneForGote
+	}
+}
+
 func (gs *GameState) canPieceReachCell(vPieceCoord int, hPieceCoord int, vCellCoord int, hCellCoord int) bool {
 	var isReached bool = true
 
@@ -51,8 +61,8 @@ func (gs *GameState) canPieceReachCell(vPieceCoord int, hPieceCoord int, vCellCo
 			return move.HorizontalShift*shiftSign == hShift && move.VerticalShift*shiftSign == vShift
 		})
 		if idx != -1 { // if move between origin and end was found in moves of piece
-			freeCell := curBoard.Cells[vMiddleCoord][hMiddleCoord] == nil
-			if !freeCell {
+			emptyCell := curBoard.Cells[vMiddleCoord][hMiddleCoord] == nil
+			if !emptyCell {
 				isReached = false
 				break
 			}
@@ -74,8 +84,8 @@ func (gs *GameState) getPossibleMoves(verticalCoord int, horizontalCoord int) (m
 
 		var inBoardField bool = vMoveCoord >= 0 && vMoveCoord < len(curBoard.Cells) && hMoveCoord >= 0 && hMoveCoord < len(curBoard.Cells[vMoveCoord])
 		if inBoardField {
-			var freeOrEnemyCell bool = curBoard.Cells[vMoveCoord][hMoveCoord] == nil || curBoard.Cells[vMoveCoord][hMoveCoord].Player != gs.CurMovePlayer
-			if freeOrEnemyCell {
+			var emptyOrEnemyCell bool = curBoard.Cells[vMoveCoord][hMoveCoord] == nil || curBoard.Cells[vMoveCoord][hMoveCoord].Player != gs.CurMovePlayer
+			if emptyOrEnemyCell {
 				if gs.canPieceReachCell(verticalCoord, horizontalCoord, vMoveCoord, hMoveCoord) {
 					movesCoords = append(movesCoords, [2]int{vMoveCoord, hMoveCoord})
 				}
@@ -108,11 +118,29 @@ func (gs *GameState) getPossibleStatesFromBoardPiece(verticalCoord int, horizont
 	var nextPlayer = gs.getNextPlayer()
 	var movesCoords [][2]int = gs.getPossibleMoves(verticalCoord, horizontalCoord)
 	for _, coords := range movesCoords {
-		newBoard := curBoard.Clone()
-		if newBoard.Cells[coords[0]][coords[1]] != nil {
-			//TODO: Если была срублена перевернутая фигура, добавлять неперевернутую
-			newBoard.Inventories[gs.CurMovePlayer].AddPiece(newBoard.Cells[coords[0]][coords[1]])
+		var newBoard = curBoard.Clone()
+		//создавать gamestate прям тут и позже из него вызывать какой-нибудь метод?
+		var cellMoveTo = newBoard.Cells[coords[0]][coords[1]]
+
+		var emptyCell = cellMoveTo == nil
+		if !emptyCell {
+			newBoard.Inventories[gs.CurMovePlayer].AddPiece(cellMoveTo)
 		}
+
+		// creating alternative gamestate for promotion of piece
+		if newBoard.Cells[verticalCoord][horizontalCoord].IsPromotable() {
+			var inPromotionZone = slices.Contains(gs.getPromotionZone(), coords[1])
+			var fromPromotionZone = slices.Contains(gs.getPromotionZone(), horizontalCoord)
+			if inPromotionZone || fromPromotionZone {
+				altNewBoard := newBoard.Clone()
+				altNewBoard.Cells[coords[0]][coords[1]] = &board.Piece{Type: *altNewBoard.Cells[verticalCoord][horizontalCoord].Type.PromotePiece, Player: gs.CurMovePlayer}
+				altNewBoard.Cells[verticalCoord][horizontalCoord] = nil
+
+				newGameState := GameState{Board: altNewBoard, CurMovePlayer: nextPlayer}
+				gss = append(gss, newGameState)
+			}
+		}
+
 		newBoard.Cells[coords[0]][coords[1]] = newBoard.Cells[verticalCoord][horizontalCoord]
 		newBoard.Cells[verticalCoord][horizontalCoord] = nil
 

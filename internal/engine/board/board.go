@@ -23,6 +23,17 @@ type board struct {
 type Inventory = *inventory
 type Board = *board
 
+var PromotionZoneForSente = []int{0, 1, 2}
+var PromotionZoneForGote = []int{6, 7, 8}
+
+func (piece *Piece) IsPromoted() bool {
+	return piece.Type.DemotePiece != nil
+}
+
+func (piece *Piece) IsPromotable() bool {
+	return piece.Type.PromotePiece != nil
+}
+
 func newInventory() Inventory {
 	return &inventory{pieces: make([]*Piece, 0)}
 }
@@ -42,7 +53,13 @@ func (this_inv Inventory) Pieces() []*Piece {
 }
 
 func (this_inv Inventory) AddPiece(piece *Piece) {
-	this_inv.pieces = append(this_inv.pieces, piece)
+	var addedPiece *Piece
+	if piece.IsPromoted() {
+		addedPiece = &Piece{Type: *piece.Type.DemotePiece, Player: piece.Player}
+	} else {
+		addedPiece = piece
+	}
+	this_inv.pieces = append(this_inv.pieces, addedPiece)
 }
 
 // deleting element with index i from array
@@ -88,9 +105,7 @@ func (this_board Board) Clone() (newby Board) {
 	}
 
 	newby.Inventories = make(map[model.Player]Inventory)
-	//fmt.Printf("this_board.Inventories[model.Sente].pieces: %v\n", this_board.Inventories[model.Sente].pieces)
 	newby.Inventories[model.Sente] = this_board.Inventories[model.Sente].clone()
-	//fmt.Printf("newby.Inventories[model.Sente].pieces: %v\n", newby.Inventories[model.Sente].pieces)
 	newby.Inventories[model.Gote] = this_board.Inventories[model.Gote].clone()
 
 	return
@@ -100,13 +115,19 @@ func (this_board Board) Clone() (newby Board) {
 func (this_board Board) Print() {
 	fmt.Println("-------------")
 	for _, piece := range this_board.Inventories[model.Sente].pieces {
-		fmt.Print(string(piece.Type.Name[0]) + " ")
+		if piece.IsPromoted() {
+			fmt.Print(string(piece.Type.Name[0]) + "+ ")
+		} else {
+			fmt.Print(string(piece.Type.Name[0]) + " ")
+		}
 	}
 	fmt.Println()
 	for _, verticalPieces := range this_board.Cells {
 		for _, piece := range verticalPieces {
 			if piece == nil {
 				fmt.Print("-")
+			} else if piece.IsPromoted() {
+				fmt.Print(string(piece.Type.Name[0]) + "+")
 			} else {
 				fmt.Print(string(piece.Type.Name[0]))
 			}
@@ -114,7 +135,11 @@ func (this_board Board) Print() {
 		fmt.Println()
 	}
 	for _, piece := range this_board.Inventories[model.Gote].pieces {
-		fmt.Print(string(piece.Type.Name[0]))
+		if piece.IsPromoted() {
+			fmt.Print(string(piece.Type.Name[0]) + "+ ")
+		} else {
+			fmt.Print(string(piece.Type.Name[0]) + " ")
+		}
 	}
 	fmt.Println("\n-------------")
 }
