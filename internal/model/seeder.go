@@ -2,7 +2,7 @@ package model
 
 func seed() {
 	// Silver+
-	SilverPlus := PieceType{
+	var SilverPlus = PieceType{
 		Name:  "Silver+",
 		Kanji: '全',
 		Moves: []Move{
@@ -15,7 +15,7 @@ func seed() {
 				VerticalShift:   -1,
 			},
 			{
-				HorizontalShift: 1,
+				HorizontalShift: -1,
 				VerticalShift:   -1,
 			},
 			{
@@ -34,7 +34,7 @@ func seed() {
 	}
 
 	// Knight+
-	KnightPlus := PieceType{
+	var KnightPlus = PieceType{
 		Name:  "Knight+",
 		Kanji: '圭',
 		Moves: []Move{
@@ -47,7 +47,7 @@ func seed() {
 				VerticalShift:   -1,
 			},
 			{
-				HorizontalShift: 1,
+				HorizontalShift: -1,
 				VerticalShift:   -1,
 			},
 			{
@@ -66,7 +66,7 @@ func seed() {
 	}
 
 	// Lance+
-	LancePlus := PieceType{
+	var LancePlus = PieceType{
 		Name:  "Lance+",
 		Kanji: '杏',
 		Moves: []Move{
@@ -79,7 +79,7 @@ func seed() {
 				VerticalShift:   -1,
 			},
 			{
-				HorizontalShift: 1,
+				HorizontalShift: -1,
 				VerticalShift:   -1,
 			},
 			{
@@ -98,7 +98,7 @@ func seed() {
 	}
 
 	// Pawn+
-	PawnPlus := PieceType{
+	var PawnPlus = PieceType{
 		Name:  "Pawn+",
 		Kanji: 'と',
 		Moves: []Move{
@@ -111,7 +111,7 @@ func seed() {
 				VerticalShift:   -1,
 			},
 			{
-				HorizontalShift: 1,
+				HorizontalShift: -1,
 				VerticalShift:   -1,
 			},
 			{
@@ -129,7 +129,7 @@ func seed() {
 		},
 	}
 	// Rook+
-	RookPlus := PieceType{
+	var RookPlus = PieceType{
 		Name:  "Rook+",
 		Kanji: '竜',
 		Moves: []Move{
@@ -285,7 +285,7 @@ func seed() {
 	}
 
 	// Bishop+
-	BishopPlus := PieceType{
+	var BishopPlus = PieceType{
 		Name:  "Bishop+",
 		Kanji: '馬',
 		Moves: []Move{
@@ -438,7 +438,7 @@ func seed() {
 	}
 
 	// King
-	King := PieceType{
+	var King = PieceType{
 		Name:           "King",
 		Kanji:          '王',
 		ImportantPiece: true,
@@ -479,7 +479,7 @@ func seed() {
 	}
 
 	// Gold
-	Gold := PieceType{
+	var Gold = PieceType{
 		Name:  "Gold",
 		Kanji: '金',
 		Moves: []Move{
@@ -511,7 +511,7 @@ func seed() {
 	}
 
 	// Silver
-	Silver := PieceType{
+	var Silver = PieceType{
 		Name:  "Silver",
 		Kanji: '銀',
 		Moves: []Move{
@@ -540,7 +540,7 @@ func seed() {
 	}
 
 	// Knight
-	Knight := PieceType{
+	var Knight = PieceType{
 		Name:  "Knight",
 		Kanji: '桂',
 		Moves: []Move{
@@ -557,7 +557,7 @@ func seed() {
 	}
 
 	// Lance
-	Lance := PieceType{
+	var Lance = PieceType{
 		Name:  "Lance",
 		Kanji: '香',
 		Moves: []Move{
@@ -598,7 +598,7 @@ func seed() {
 	}
 
 	// Rook
-	Rook := PieceType{
+	var Rook = PieceType{
 		Name:  "Rook",
 		Kanji: '飛',
 		Moves: []Move{
@@ -738,7 +738,7 @@ func seed() {
 	}
 
 	// Bishop
-	Bishop := PieceType{
+	var Bishop = PieceType{
 		Name:  "Bishop",
 		Kanji: '角',
 		Moves: []Move{
@@ -875,7 +875,7 @@ func seed() {
 	}
 
 	// Pawn
-	Pawn := PieceType{
+	var Pawn = PieceType{
 		Name:  "Pawn",
 		Kanji: '歩',
 		Moves: []Move{
@@ -889,7 +889,7 @@ func seed() {
 
 	db.Create([]*PieceType{&King, &Gold, &Silver, &Knight, &Lance, &Rook, &Bishop, &Pawn})
 
-	DefaultPosition := StartingPosition{
+	var DefaultPosition = StartingPosition{
 		Name: "Default",
 		Pieces: []StartingPositionPiece{
 			{
