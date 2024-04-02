@@ -492,7 +492,7 @@ func seed() {
 				VerticalShift:   -1,
 			},
 			{
-				HorizontalShift: 1,
+				HorizontalShift: -1,
 				VerticalShift:   -1,
 			},
 			{
@@ -524,7 +524,7 @@ func seed() {
 				VerticalShift:   -1,
 			},
 			{
-				HorizontalShift: 1,
+				HorizontalShift: -1,
 				VerticalShift:   -1,
 			},
 			{
@@ -891,7 +891,7 @@ func seed() {
 
 	DefaultPosition := StartingPosition{
 		Name: "Default",
-		Pieces: []StartingPositionPieces{
+		Pieces: []StartingPositionPiece{
 			{
 				PieceType:        Pawn,
 				HorizontalOffset: 1,
