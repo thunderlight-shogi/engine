@@ -1,7 +1,7 @@
 package movepicker
 
 import (
-	"github.com/thunderlight-shogi/engine/internal/board"
+	"github.com/thunderlight-shogi/engine/internal/engine/board"
 	"github.com/thunderlight-shogi/engine/internal/engine/movegen"
 )
 

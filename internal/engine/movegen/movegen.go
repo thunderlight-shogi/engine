@@ -3,7 +3,7 @@ package movegen
 import (
 	"slices"
 
-	"github.com/thunderlight-shogi/engine/internal/board"
+	"github.com/thunderlight-shogi/engine/internal/engine/board"
 	"github.com/thunderlight-shogi/engine/internal/model"
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )

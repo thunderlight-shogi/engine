@@ -15,13 +15,19 @@ type inventory struct {
 	pieces []*Piece
 }
 
-type Inventory = *inventory
+type board struct {
+	Cells       [][]*Piece // [Horizontal offset][Vertical offset]
+	Inventories map[model.Player]Inventory
+}
 
-func NewInventory() Inventory {
+type Inventory = *inventory
+type Board = *board
+
+func newInventory() Inventory {
 	return &inventory{pieces: make([]*Piece, 0)}
 }
 
-func (this_inv Inventory) Clone() (inv Inventory) {
+func (this_inv Inventory) clone() (inv Inventory) {
 	inv = new(inventory)
 	inv.pieces = make([]*Piece, len(this_inv.pieces))
 	copy(inv.pieces, this_inv.pieces)
@@ -57,13 +63,6 @@ func (this_inv Inventory) ExtractPiece(piece *Piece) *Piece {
 	return nil
 }
 
-type board struct {
-	Cells       [][]*Piece // [Horizontal offset][Vertical offset]
-	Inventories map[model.Player]Inventory
-}
-
-type Board = *board
-
 func Construct() (newby Board) {
 	newby = new(board)
 
@@ -73,8 +72,8 @@ func Construct() (newby Board) {
 	}
 
 	newby.Inventories = make(map[model.Player]Inventory)
-	newby.Inventories[model.Sente] = NewInventory()
-	newby.Inventories[model.Gote] = NewInventory()
+	newby.Inventories[model.Sente] = newInventory()
+	newby.Inventories[model.Gote] = newInventory()
 
 	return
 }
@@ -90,9 +89,9 @@ func (this_board Board) Clone() (newby Board) {
 
 	newby.Inventories = make(map[model.Player]Inventory)
 	//fmt.Printf("this_board.Inventories[model.Sente].pieces: %v\n", this_board.Inventories[model.Sente].pieces)
-	newby.Inventories[model.Sente] = this_board.Inventories[model.Sente].Clone()
+	newby.Inventories[model.Sente] = this_board.Inventories[model.Sente].clone()
 	//fmt.Printf("newby.Inventories[model.Sente].pieces: %v\n", newby.Inventories[model.Sente].pieces)
-	newby.Inventories[model.Gote] = this_board.Inventories[model.Gote].Clone()
+	newby.Inventories[model.Gote] = this_board.Inventories[model.Gote].clone()
 
 	return
 }
