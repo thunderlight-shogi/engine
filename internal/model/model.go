@@ -20,8 +20,10 @@ type PieceType struct {
 	Moves          []Move `gorm:"foreignKey:PieceTypeId"`
 	PromotePieceId *uint
 	PromotePiece   *PieceType
+	DemotePiece    *PieceType `gorm:"-:all"`
 	Kanji          rune
 	ImportantPiece bool
+	Cost           uint
 }
 
 type StartingPosition struct {

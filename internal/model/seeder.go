@@ -5,6 +5,7 @@ func seed() {
 	var SilverPlus = PieceType{
 		Name:  "Silver+",
 		Kanji: '全',
+		Cost:  6,
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -37,6 +38,7 @@ func seed() {
 	var KnightPlus = PieceType{
 		Name:  "Knight+",
 		Kanji: '圭',
+		Cost:  6,
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -69,6 +71,7 @@ func seed() {
 	var LancePlus = PieceType{
 		Name:  "Lance+",
 		Kanji: '杏',
+		Cost:  6,
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -101,6 +104,7 @@ func seed() {
 	var PawnPlus = PieceType{
 		Name:  "Pawn+",
 		Kanji: 'と',
+		Cost:  7,
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -132,6 +136,7 @@ func seed() {
 	var RookPlus = PieceType{
 		Name:  "Rook+",
 		Kanji: '竜',
+		Cost:  11,
 		Moves: []Move{
 			{
 				HorizontalShift: 0,
@@ -288,6 +293,7 @@ func seed() {
 	var BishopPlus = PieceType{
 		Name:  "Bishop+",
 		Kanji: '馬',
+		Cost:  10,
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -442,6 +448,7 @@ func seed() {
 		Name:           "King",
 		Kanji:          '王',
 		ImportantPiece: true,
+		Cost:           999999,
 		Moves: []Move{
 			{
 				HorizontalShift: -1,
@@ -482,6 +489,7 @@ func seed() {
 	var Gold = PieceType{
 		Name:  "Gold",
 		Kanji: '金',
+		Cost:  6,
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -514,6 +522,7 @@ func seed() {
 	var Silver = PieceType{
 		Name:  "Silver",
 		Kanji: '銀',
+		Cost:  5,
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -543,6 +552,7 @@ func seed() {
 	var Knight = PieceType{
 		Name:  "Knight",
 		Kanji: '桂',
+		Cost:  4,
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -560,6 +570,7 @@ func seed() {
 	var Lance = PieceType{
 		Name:  "Lance",
 		Kanji: '香',
+		Cost:  3,
 		Moves: []Move{
 			{
 				HorizontalShift: 0,
@@ -601,6 +612,7 @@ func seed() {
 	var Rook = PieceType{
 		Name:  "Rook",
 		Kanji: '飛',
+		Cost:  9,
 		Moves: []Move{
 			{
 				HorizontalShift: 0,
@@ -741,6 +753,7 @@ func seed() {
 	var Bishop = PieceType{
 		Name:  "Bishop",
 		Kanji: '角',
+		Cost:  8,
 		Moves: []Move{
 			{
 				HorizontalShift: 1,
@@ -878,6 +891,7 @@ func seed() {
 	var Pawn = PieceType{
 		Name:  "Pawn",
 		Kanji: '歩',
+		Cost:  1,
 		Moves: []Move{
 			{
 				HorizontalShift: 0,
