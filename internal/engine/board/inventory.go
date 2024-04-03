@@ -6,6 +6,7 @@ import (
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
+// TODO: Слайс заменить на мапу
 type inventory struct {
 	pieces []*model.PieceType
 }
@@ -28,6 +29,10 @@ func (this_inv Inventory) Pieces() []*model.PieceType {
 		return nil
 	}
 	return this_inv.pieces
+}
+
+func (this_inv Inventory) IsEmpty() bool {
+	return len(this_inv.pieces) == 0
 }
 
 func (this_inv Inventory) AddPiece(piece *Piece) {

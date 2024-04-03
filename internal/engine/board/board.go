@@ -78,6 +78,16 @@ func (this_board Board) GetPromotionZone(player model.Player) []int {
 	}
 }
 
+func (this_board Board) IsTherePawn(vertical int) bool {
+	for i := range this_board.Cells[vertical] {
+		cell := this_board.Cells[vertical][i]
+		if cell != nil && cell.Type.Name == "Pawn" {
+			return true
+		}
+	}
+	return false
+}
+
 func (this_board Board) canPieceReachCell(vPieceCoord int, hPieceCoord int, vCellCoord int, hCellCoord int) bool {
 	var isReached bool = true
 
@@ -124,7 +134,7 @@ func (this_board Board) GetInBoardFieldMoves(verticalCoord int, horizontalCoord 
 	return
 }
 
-func (this_board Board) GetPossibleMoves(verticalCoord int, horizontalCoord int) (possibleMovesCoords [][2]int) {
+func (this_board Board) GetPossibleMovesCoords(verticalCoord int, horizontalCoord int) (possibleMovesCoords [][2]int) {
 	possibleMovesCoords = [][2]int{}
 
 	var curPiece = this_board.Cells[verticalCoord][horizontalCoord]
@@ -141,9 +151,7 @@ func (this_board Board) GetPossibleMoves(verticalCoord int, horizontalCoord int)
 	return
 }
 
-// TODO: Добавить PieceType в параметры (У разных фигур могут быть разные клетки сброса)
-// TODO: Учитывать, сможет ли фигура пойти дальше (при ходе тоже)
-func (this_board Board) GetPossibleDrops() (dropsCoords [][2]int) {
+func (this_board Board) GetPossibleDropsCoords() (dropsCoords [][2]int) {
 	dropsCoords = [][2]int{}
 
 	for vDropCoord, verticalCells := range this_board.Cells {
@@ -154,6 +162,49 @@ func (this_board Board) GetPossibleDrops() (dropsCoords [][2]int) {
 		}
 	}
 	return
+}
+
+func (this_board Board) IsImportantPieceAttackedByPiece(attackerVerticalCoord int, attackerHorizontalCoord int) bool {
+	movesCoords := this_board.GetPossibleMovesCoords(attackerVerticalCoord, attackerHorizontalCoord)
+	for _, coords := range movesCoords {
+		if this_board.Cells[coords[0]][coords[1]] != nil && this_board.Cells[coords[0]][coords[1]].Type.ImportantPiece {
+			return true
+		}
+	}
+	return false
+}
+
+func (this_board Board) GetImportantPieceCoordsForPlayer(player model.Player) [2]int {
+	for v := range this_board.Cells {
+		for h, piece := range this_board.Cells[v] {
+			if piece != nil && piece.Type.ImportantPiece && piece.Player == player {
+				return [2]int{v, h}
+			}
+		}
+	}
+	return [2]int{-100, -100} //should be impossible
+}
+
+func (this_board Board) GetCoordsOfAttackersOnCell(vCoordCell int, hCoordCell int) [][2]int {
+	var attackers = [][2]int{}
+	var attackedCell = this_board.Cells[vCoordCell][hCoordCell]
+
+	for v := range this_board.Cells {
+		for h, cell := range this_board.Cells[v] {
+			if cell == nil { // empty cell
+				continue
+			}
+
+			if cell.Player != attackedCell.Player {
+				var movesCoords = this_board.GetPossibleMovesCoords(v, h)
+				idx := slices.Index(movesCoords, [2]int{vCoordCell, hCoordCell})
+				if idx != -1 {
+					attackers = append(attackers, [2]int{v, h})
+				}
+			}
+		}
+	}
+	return attackers
 }
 
 // For test purposes
