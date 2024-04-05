@@ -207,10 +207,34 @@ func (this_board Board) GetCoordsOfAttackersOnCell(vCoordCell int, hCoordCell in
 	return attackers
 }
 
+// TODO: как-то мерджнуть GetMovesCoordsOfAttackersOnCell и GetCoordsOfAttackersOnCell
+func (this_board Board) GetMovesCoordsOfAttackersOnCell(vCoordCell int, hCoordCell int) [][2]int {
+	var attackerMovesCoords = [][2]int{}
+	var attackedCell = this_board.Cells[vCoordCell][hCoordCell]
+
+	for v := range this_board.Cells {
+		for h, attacker := range this_board.Cells[v] {
+			if attacker == nil { // empty cell
+				continue
+			}
+
+			var emptyOrEnemyAttackedCell = attackedCell == nil || attackedCell.Player != attacker.Player
+			if emptyOrEnemyAttackedCell {
+				var movesCoords = this_board.GetPossibleMovesCoords(v, h)
+				idx := slices.Index(movesCoords, [2]int{vCoordCell, hCoordCell})
+				if idx != -1 {
+					attackerMovesCoords = append(attackerMovesCoords, movesCoords...)
+				}
+			}
+		}
+	}
+	return attackerMovesCoords
+}
+
 // For test purposes
 func (this_board Board) Print() {
 	fmt.Println("-------------")
-	for _, pieceType := range this_board.Inventories[model.Sente].pieces {
+	for pieceType := range this_board.Inventories[model.Sente].pieces {
 		piece := Piece{Type: *pieceType, Player: model.Sente}
 		if piece.IsPromoted() {
 			fmt.Print(string(piece.Type.Name[0]) + "+ ")
@@ -231,7 +255,7 @@ func (this_board Board) Print() {
 		}
 		fmt.Println()
 	}
-	for _, pieceType := range this_board.Inventories[model.Gote].pieces {
+	for pieceType := range this_board.Inventories[model.Gote].pieces {
 		piece := Piece{Type: *pieceType, Player: model.Sente}
 		if piece.IsPromoted() {
 			fmt.Print(string(piece.Type.Name[0]) + "+ ")

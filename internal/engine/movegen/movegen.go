@@ -8,8 +8,7 @@ import (
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )
 
-//TODO: Везде поменять vertical и horizontal на file и rank (и добавить структуру Position)
-//TODO: Обработать правило: нельзя ставить мат пешкой с руки
+//TODO: Везде поменять vertical и horizontal на file и rank (и добавить структуру Position (и мб структуру Move))
 
 type GameState struct {
 	Board                     board.Board
@@ -130,6 +129,19 @@ func (gs *GameState) generatePossibleStatesWithDrop(pieceType *model.PieceType, 
 	newBoard := curBoard.Clone()
 	newBoard.Cells[vCoordTo][hCoordTo] = newBoard.Inventories[curPlayer].ExtractPieceToPlayer(pieceType, curPlayer)
 
+	if pieceType.Name == "Pawn" {
+		pawnMovesCoords := newBoard.GetPossibleMovesCoords(vCoordTo, hCoordTo)
+		for _, coords := range pawnMovesCoords {
+			var cell = newBoard.Cells[coords[0]][coords[1]]
+			if cell != nil && cell.Type.ImportantPiece {
+				var runningFromPawnStates = gs.generatePossibleStatesFromImportantPieceRunningAway(coords[0], coords[1])
+				if len(runningFromPawnStates) == 0 { // if king can't run away from dropped pawn
+					return
+				}
+			}
+		}
+	}
+
 	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, nextPlayer, vCoordTo, hCoordTo)
 	if newGameState != nil {
 		gss = append(gss, *newGameState)
@@ -156,6 +168,27 @@ func (gs *GameState) generatePossibleStatesFromInventoryPieces() (gss []GameStat
 	return
 }
 
+func (gs *GameState) generatePossibleStatesFromImportantPieceRunningAway(vIPCoord int, hIPCoord int) (gss []GameState) {
+	gss = []GameState{}
+	var curBoard = gs.Board
+	var potentialSaveCoords = curBoard.GetPossibleMovesCoords(vIPCoord, hIPCoord)
+	for _, coordsTo := range potentialSaveCoords {
+		attackerMoves := curBoard.GetMovesCoordsOfAttackersOnCell(coordsTo[0], coordsTo[1])
+		var isDangerCoords bool = false
+		for i := range attackerMoves {
+			if attackerMoves[i] == coordsTo {
+				isDangerCoords = true
+				break
+			}
+		}
+
+		if !isDangerCoords {
+			gss = append(gss, gs.generatePossibleStatesWithMove(vIPCoord, hIPCoord, coordsTo[0], coordsTo[1])...)
+		}
+	}
+	return
+}
+
 func (gs *GameState) generatePossibleStatesFromDefendingImportantPiece() (gss []GameState) {
 	gss = []GameState{}
 
@@ -164,16 +197,12 @@ func (gs *GameState) generatePossibleStatesFromDefendingImportantPiece() (gss []
 	var ipCoords = curBoard.GetImportantPieceCoordsForPlayer(curPlayer)
 
 	var attackers = curBoard.GetCoordsOfAttackersOnCell(ipCoords[0], ipCoords[1])
-	var attackersMovesCoords [][2]int
-	for i := range attackers {
-		attackersMovesCoords = append(attackersMovesCoords, curBoard.GetPossibleMovesCoords(attackers[i][0], attackers[i][1])...)
-	}
 
 	if len(attackers) == 1 { //can eat attacker or drop(move) piece on his path
 		attacker := attackers[0]
 		attackerPoint := graphics.NewPoint(attacker[0], attacker[1])
 		ipPoint := graphics.NewPoint(ipCoords[0], ipCoords[1])
-		attackPath := graphics.GetLinePoints(attackerPoint, ipPoint)
+		attackPath := graphics.GetLinePoints(attackerPoint, ipPoint) //TODO: будет неправильно работать для коня, исправить
 
 		//eating and closing from
 		for v := range curBoard.Cells {
@@ -219,21 +248,7 @@ func (gs *GameState) generatePossibleStatesFromDefendingImportantPiece() (gss []
 	}
 
 	//important piece is running away
-	var potentialSaveCoords = curBoard.GetPossibleMovesCoords(ipCoords[0], ipCoords[1])
-	for _, coordsTo := range potentialSaveCoords {
-
-		var isDangerCoords bool = false
-		for i := range attackersMovesCoords {
-			if attackersMovesCoords[i] == coordsTo {
-				isDangerCoords = true
-			}
-		}
-
-		if !isDangerCoords {
-			gss = append(gss, gs.generatePossibleStatesWithMove(ipCoords[0], ipCoords[1], coordsTo[0], coordsTo[1])...)
-		}
-	}
-
+	gss = append(gss, gs.generatePossibleStatesFromImportantPieceRunningAway(ipCoords[0], ipCoords[1])...)
 	return
 }
 

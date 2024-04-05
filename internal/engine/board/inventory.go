@@ -1,26 +1,24 @@
 package board
 
 import (
-	"slices"
-
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
-// TODO: Слайс заменить на мапу
 type inventory struct {
-	pieces []*model.PieceType
+	pieces map[*model.PieceType]uint
 }
 
 type Inventory = *inventory
 
 func newInventory() Inventory {
-	return &inventory{pieces: make([]*model.PieceType, 0)}
+	return &inventory{pieces: make(map[*model.PieceType]uint)}
 }
 
 func (this_inv Inventory) clone() (inv Inventory) {
-	inv = new(inventory)
-	inv.pieces = make([]*model.PieceType, len(this_inv.pieces))
-	copy(inv.pieces, this_inv.pieces)
+	inv = newInventory()
+	for k, v := range this_inv.pieces {
+		inv.pieces[k] = v
+	}
 	return
 }
 
@@ -28,11 +26,52 @@ func (this_inv Inventory) Pieces() []*model.PieceType {
 	if len(this_inv.pieces) == 0 {
 		return nil
 	}
-	return this_inv.pieces
+
+	var pieceTypes []*model.PieceType
+	for key := range this_inv.pieces {
+		pieceTypes = append(pieceTypes, key)
+	}
+	return pieceTypes
 }
 
 func (this_inv Inventory) IsEmpty() bool {
 	return len(this_inv.pieces) == 0
+}
+
+func (this_inv Inventory) incrementPieceTypeNum(pt *model.PieceType) {
+	var foundPieceType *model.PieceType = nil
+	for k := range this_inv.pieces {
+		if k.Id == pt.Id {
+			foundPieceType = k
+		}
+	}
+
+	if foundPieceType == nil {
+		this_inv.pieces[pt] = 1
+	} else {
+		this_inv.pieces[foundPieceType]++
+	}
+}
+
+// returns true if piece type is found, and false otherwise
+func (this_inv Inventory) decrementPieceTypeNum(pt *model.PieceType) bool {
+	var foundPieceType *model.PieceType = nil
+	for k := range this_inv.pieces {
+		if k.Id == pt.Id {
+			foundPieceType = k
+		}
+	}
+
+	if foundPieceType != nil {
+		var num = this_inv.pieces[foundPieceType]
+		if num == 1 {
+			delete(this_inv.pieces, foundPieceType)
+		} else {
+			this_inv.pieces[foundPieceType]--
+		}
+		return true
+	}
+	return false
 }
 
 func (this_inv Inventory) AddPiece(piece *Piece) {
@@ -42,21 +81,15 @@ func (this_inv Inventory) AddPiece(piece *Piece) {
 	} else {
 		addedPiece = &piece.Type
 	}
-	this_inv.pieces = append(this_inv.pieces, addedPiece)
-}
-
-// deleting element with index i from array
-func (this_inv Inventory) removePiece(i int) {
-	this_inv.pieces[i] = this_inv.pieces[len(this_inv.pieces)-1]
-	this_inv.pieces = this_inv.pieces[:len(this_inv.pieces)-1]
+	this_inv.incrementPieceTypeNum(addedPiece)
 }
 
 // maybe replace *pieceType with pieceType name
 func (this_inv Inventory) ExtractPieceToPlayer(pieceType *model.PieceType, player model.Player) *Piece {
-	idx := slices.Index(this_inv.pieces, pieceType)
-	if idx != -1 {
-		this_inv.removePiece(idx)
+	var found = this_inv.decrementPieceTypeNum(pieceType)
+	if found {
 		return &Piece{Type: *pieceType, Player: player}
+	} else {
+		return nil
 	}
-	return nil
 }
