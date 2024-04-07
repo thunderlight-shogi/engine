@@ -93,3 +93,12 @@ func (this_inv Inventory) ExtractPieceToPlayer(pieceType *model.PieceType, playe
 		return nil
 	}
 }
+
+func (this_inv Inventory) CountPiece(pieceType *model.PieceType) uint {
+	count, found := this_inv.pieces[pieceType]
+	if found {
+		return count
+	} else {
+		return 0
+	}
+}

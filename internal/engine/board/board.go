@@ -265,3 +265,23 @@ func (this_board Board) Print() {
 	}
 	fmt.Println("\n-------------")
 }
+
+func (this_board Board) GetImportantPieceMovesCoords(vIPCoord int, hIPCoord int) [][2]int {
+	var kingMovesCoords = [][2]int{}
+	var potentialCoords = this_board.GetPossibleMovesCoords(vIPCoord, hIPCoord)
+	for _, coordsTo := range potentialCoords {
+		attackerMoves := this_board.GetMovesCoordsOfAttackersOnCell(coordsTo[0], coordsTo[1])
+		var isDangerCoords bool = false
+		for i := range attackerMoves {
+			if attackerMoves[i] == coordsTo {
+				isDangerCoords = true
+				break
+			}
+		}
+
+		if !isDangerCoords {
+			kingMovesCoords = append(kingMovesCoords, coordsTo)
+		}
+	}
+	return kingMovesCoords
+}
