@@ -25,19 +25,19 @@ var used_metrics = [...]func(*movegen.GameState, model.Player) float32{
 	kingFreeCells,
 }
 
-func evaluate(gameState *movegen.GameState) float32 {
+func Evaluate(gameState *movegen.GameState) float32 {
 	/*
 		Does evaluation of game state by summing up each metric
 	*/
 	var result float32 = 0
 	for _, metric := range used_metrics {
 		result += metric(gameState, model.Sente)
-		result -= metric(gameState, model.Sente)
+		result -= metric(gameState, model.Gote)
 	}
 	return result
 }
 
-func evaluation_report(gameState *movegen.GameState) string {
+func Evaluation_report(gameState *movegen.GameState) string {
 	/*
 		Returns info about each metric for debug purposes
 	*/
