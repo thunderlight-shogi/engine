@@ -27,9 +27,9 @@ type PieceType struct {
 }
 
 type StartingPosition struct {
-	Id     uint `gorm:"primarykey"`
-	Name   string
-	Pieces []StartingPositionPiece `gorm:"foreignKey:StartingPositionId"`
+	Id     uint                    `gorm:"primarykey" json:"id"`
+	Name   string                  `json:"name"`
+	Pieces []StartingPositionPiece `gorm:"foreignKey:StartingPositionId" json:"-"`
 }
 
 type Move struct {
