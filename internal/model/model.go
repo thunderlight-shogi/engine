@@ -43,7 +43,7 @@ type StartingPositionPiece struct {
 	Id                 uint `gorm:"primarykey"`
 	StartingPositionId uint
 	PieceTypeId        uint
-	PieceType          PieceType
+	PieceType          *PieceType `gorm:"not null"`
 	HorizontalOffset   uint
 	VerticalOffset     uint
 	Player             Player
