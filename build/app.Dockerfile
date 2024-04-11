@@ -1,3 +1,8 @@
+FROM node:21-alpine3.19
+COPY website /src/website
+WORKDIR /src/website
+RUN npm install && npm run build
+
 FROM golang:1.22.0-alpine3.19 as build
 WORKDIR /src
 COPY go.mod go.sum /src/
