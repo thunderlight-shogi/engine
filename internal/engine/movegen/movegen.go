@@ -8,20 +8,14 @@ import (
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )
 
+//TODO: Везде поменять vertical и horizontal на file и rank (и добавить структуру Position (и мб структуру Move))
+
 type GameState struct {
 	Board                     board.Board
 	CurMovePlayer             model.Player
-	ImportantPieceUnderAttack bool //TODO
+	ImportantPieceUnderAttack bool
 	NumOfAttackableCells      uint //TODO: Сделать подсчет
 	NumOfDropableCells        uint //TODO: Сделать подсчет
-}
-
-func (gs *GameState) getShiftSign() int {
-	if gs.CurMovePlayer == model.Sente {
-		return 1
-	} else {
-		return -1
-	}
 }
 
 func (gs *GameState) getNextPlayer() model.Player {
@@ -32,97 +26,77 @@ func (gs *GameState) getNextPlayer() model.Player {
 	}
 }
 
-func (gs *GameState) canPieceReachCell(vPieceCoord int, hPieceCoord int, vCellCoord int, hCellCoord int) bool {
-	var isReached bool = true
+func generateGameStateAfterChangeAt(board board.Board, nextPlayer model.Player, vChangeCoord int, hChangeCoord int) *GameState {
+	ipUnderAttack := board.IsImportantPieceAttackedByPiece(vChangeCoord, hChangeCoord)
 
-	var curBoard = gs.Board
-	var piece = curBoard.Cells[vPieceCoord][hPieceCoord]
-	var moves = piece.Type.Moves
-	var shiftSign = gs.getShiftSign()
-
-	origin := graphics.NewPoint(vPieceCoord, hPieceCoord)
-	end := graphics.NewPoint(vCellCoord, hCellCoord)
-	coordsBetween := graphics.GetLinePoints(origin, end)
-	for i := 1; i < len(coordsBetween)-1; i++ { // skipping origin and end
-		vMiddleCoord, hMiddleCoord := coordsBetween[i].Coordinates()
-		hShift, vShift := vMiddleCoord-vPieceCoord, hMiddleCoord-hPieceCoord
-		// maybe better to replace with simple loop
-		idx := slices.IndexFunc(moves, func(move model.Move) bool {
-			return move.HorizontalShift*shiftSign == hShift && move.VerticalShift*shiftSign == vShift
-		})
-		if idx != -1 { // if move between origin and end was found in moves of piece
-			freeCell := curBoard.Cells[vMiddleCoord][hMiddleCoord] == nil
-			if !freeCell {
-				isReached = false
-				break
-			}
-		}
-	}
-	return isReached
+	return &GameState{Board: board, CurMovePlayer: nextPlayer, ImportantPieceUnderAttack: ipUnderAttack}
 }
 
-func (gs *GameState) getPossibleMoves(verticalCoord int, horizontalCoord int) (movesCoords [][2]int) {
-	movesCoords = [][2]int{}
+func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(board board.Board, nextPlayer model.Player, vChangeCoord int, hChangeCoord int) *GameState {
+	// e. g., pawn cannot move to last row because it will have no moves to board field (so this is not possible game state)
+	if len(board.GetInBoardFieldMoves(vChangeCoord, hChangeCoord)) != 0 {
+		return generateGameStateAfterChangeAt(board, nextPlayer, vChangeCoord, hChangeCoord)
+	}
+	return nil
+}
 
-	var curBoard = gs.Board
-	var shiftSign = gs.getShiftSign()
-	var piece = curBoard.Cells[verticalCoord][horizontalCoord]
-	var moves = piece.Type.Moves
-	for _, move := range moves {
-		var vMoveCoord = verticalCoord + move.HorizontalShift*shiftSign
-		var hMoveCoord = horizontalCoord + move.VerticalShift*shiftSign
+func tryGeneratePromotionGameStateWithMove(someBoard board.Board, nextPlayer model.Player, vCoordFrom int, hCoordFrom int, vCoordTo int, hCoordTo int) *GameState {
+	var boardPiece = someBoard.Cells[vCoordFrom][hCoordFrom]
+	if boardPiece.IsPromotable() {
+		var toPromotionZone = slices.Contains(someBoard.GetPromotionZone(boardPiece.Player), hCoordTo)
+		var fromPromotionZone = slices.Contains(someBoard.GetPromotionZone(boardPiece.Player), hCoordFrom)
+		if toPromotionZone || fromPromotionZone {
+			altNewBoard := someBoard.Clone()
+			altNewBoard.Cells[vCoordTo][hCoordTo] = &board.Piece{Type: *boardPiece.Type.PromotePiece, Player: boardPiece.Player}
+			altNewBoard.Cells[vCoordFrom][hCoordFrom] = nil
 
-		var inBoardField bool = vMoveCoord >= 0 && vMoveCoord < len(curBoard.Cells) && hMoveCoord >= 0 && hMoveCoord < len(curBoard.Cells[vMoveCoord])
-		if inBoardField {
-			var freeOrEnemyCell bool = curBoard.Cells[vMoveCoord][hMoveCoord] == nil || curBoard.Cells[vMoveCoord][hMoveCoord].Player != gs.CurMovePlayer
-			if freeOrEnemyCell {
-				if gs.canPieceReachCell(verticalCoord, horizontalCoord, vMoveCoord, hMoveCoord) {
-					movesCoords = append(movesCoords, [2]int{vMoveCoord, hMoveCoord})
-				}
-			}
+			return generateGameStateAfterChangeAt(altNewBoard, nextPlayer, vCoordTo, hCoordTo)
 		}
 	}
+	return nil
+}
+
+func (gs *GameState) generatePossibleStatesWithMove(vCoordFrom int, hCoordFrom int, vCoordTo int, hCoordTo int) (gss []GameState) {
+	gss = []GameState{}
+
+	var newBoard = gs.Board.Clone()
+	var nextPlayer = gs.getNextPlayer()
+
+	var cellMoveTo = newBoard.Cells[vCoordTo][hCoordTo]
+	var emptyCell = cellMoveTo == nil
+	if !emptyCell {
+		newBoard.Inventories[gs.CurMovePlayer].AddPiece(cellMoveTo)
+	}
+
+	// creating alternative gamestate for promotion of piece
+	promotionGameState := tryGeneratePromotionGameStateWithMove(newBoard, nextPlayer, vCoordFrom, hCoordFrom, vCoordTo, hCoordTo)
+	if promotionGameState != nil {
+		gss = append(gss, *promotionGameState)
+	}
+
+	newBoard.Cells[vCoordTo][hCoordTo] = newBoard.Cells[vCoordFrom][hCoordFrom]
+	newBoard.Cells[vCoordFrom][hCoordFrom] = nil
+
+	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, nextPlayer, vCoordTo, hCoordTo)
+	if newGameState != nil {
+		gss = append(gss, *newGameState)
+	}
+
 	return
 }
 
-// TODO: Добавить PieceType в параметры (У разных фигур могут быть разные клетки сброса)
-// TODO: Учитывать, сможет ли фигура пойти дальше (при ходе тоже)
-func (gs *GameState) getPossibleDrops() (dropsCoords [][2]int) {
-	dropsCoords = [][2]int{}
-
-	var curBoard = gs.Board
-	for vDropCoord, verticalCells := range curBoard.Cells {
-		for hDropCoord, cell := range verticalCells {
-			if cell == nil { // empty cell
-				dropsCoords = append(dropsCoords, [2]int{vDropCoord, hDropCoord})
-			}
-		}
-	}
-	return
-}
-
-func (gs *GameState) getPossibleStatesFromBoardPiece(verticalCoord int, horizontalCoord int) (gss []GameState) {
+func (gs *GameState) generatePossibleStatesFromBoardPiece(verticalCoord int, horizontalCoord int) (gss []GameState) {
 	gss = []GameState{}
 
 	var curBoard = gs.Board
-	var nextPlayer = gs.getNextPlayer()
-	var movesCoords [][2]int = gs.getPossibleMoves(verticalCoord, horizontalCoord)
+	var movesCoords [][2]int = curBoard.GetPossibleMovesCoords(verticalCoord, horizontalCoord)
 	for _, coords := range movesCoords {
-		newBoard := curBoard.Clone()
-		if newBoard.Cells[coords[0]][coords[1]] != nil {
-			//TODO: Если была срублена перевернутая фигура, добавлять неперевернутую
-			newBoard.Inventories[gs.CurMovePlayer].AddPiece(newBoard.Cells[coords[0]][coords[1]])
-		}
-		newBoard.Cells[coords[0]][coords[1]] = newBoard.Cells[verticalCoord][horizontalCoord]
-		newBoard.Cells[verticalCoord][horizontalCoord] = nil
-
-		newGameState := GameState{Board: newBoard, CurMovePlayer: nextPlayer}
-		gss = append(gss, newGameState)
+		gss = append(gss, gs.generatePossibleStatesWithMove(verticalCoord, horizontalCoord, coords[0], coords[1])...)
 	}
 	return
 }
 
-func (gs *GameState) getPossibleStatesFromBoardPieces() (gss []GameState) {
+func (gs *GameState) generatePossibleStatesFromBoardPieces() (gss []GameState) {
 	gss = []GameState{}
 
 	var curBoard = gs.Board
@@ -133,36 +107,160 @@ func (gs *GameState) getPossibleStatesFromBoardPieces() (gss []GameState) {
 			}
 
 			if cell.Player == gs.CurMovePlayer {
-				gss = append(gss, gs.getPossibleStatesFromBoardPiece(v, h)...)
+				gss = append(gss, gs.generatePossibleStatesFromBoardPiece(v, h)...)
 			}
 		}
 	}
 	return
 }
 
-func (gs *GameState) getPossibleStatesFromInventoryPieces() (gss []GameState) {
+func (gs *GameState) generatePossibleStatesWithDrop(pieceType *model.PieceType, vCoordTo int, hCoordTo int) (gss []GameState) {
 	gss = []GameState{}
 
 	var curBoard = gs.Board
+	var curPlayer = gs.CurMovePlayer
 	var nextPlayer = gs.getNextPlayer()
-	for _, piece := range curBoard.Inventories[gs.CurMovePlayer].Pieces() {
-		dropsCoords := gs.getPossibleDrops()
-		for _, coords := range dropsCoords {
-			newBoard := curBoard.Clone()
-			newBoard.Cells[coords[0]][coords[1]] = newBoard.Inventories[gs.CurMovePlayer].ExtractPiece(piece)
 
-			newGameState := GameState{Board: newBoard, CurMovePlayer: nextPlayer}
-			gss = append(gss, newGameState)
+	// check for two pawns in a column
+	if pieceType.Name == "Pawn" && curBoard.IsTherePawn(vCoordTo) {
+		return
+	}
+
+	newBoard := curBoard.Clone()
+	newBoard.Cells[vCoordTo][hCoordTo] = newBoard.Inventories[curPlayer].ExtractPieceToPlayer(pieceType, curPlayer)
+
+	if pieceType.Name == "Pawn" {
+		pawnMovesCoords := newBoard.GetPossibleMovesCoords(vCoordTo, hCoordTo)
+		for _, coords := range pawnMovesCoords {
+			var cell = newBoard.Cells[coords[0]][coords[1]]
+			if cell != nil && cell.Type.ImportantPiece {
+				var runningFromPawnStates = gs.generatePossibleStatesFromImportantPieceRunningAway(coords[0], coords[1])
+				if len(runningFromPawnStates) == 0 { // if king can't run away from dropped pawn
+					return
+				}
+			}
+		}
+	}
+
+	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, nextPlayer, vCoordTo, hCoordTo)
+	if newGameState != nil {
+		gss = append(gss, *newGameState)
+	}
+	return
+}
+
+func (gs *GameState) generatePossibleStatesFromInventoryPieces() (gss []GameState) {
+	gss = []GameState{}
+
+	var curBoard = gs.Board
+	var curPlayer = gs.CurMovePlayer
+
+	if curBoard.Inventories[curPlayer].IsEmpty() {
+		return
+	}
+
+	var dropsCoords = curBoard.GetPossibleDropsCoords()
+	for _, coords := range dropsCoords {
+		for _, pieceType := range curBoard.Inventories[gs.CurMovePlayer].Pieces() {
+			gss = append(gss, gs.generatePossibleStatesWithDrop(pieceType, coords[0], coords[1])...)
 		}
 	}
 	return
 }
 
-func (gs *GameState) GetPossibleStates() (gss []GameState) {
-	gss = make([]GameState, 0)
+func (gs *GameState) generatePossibleStatesFromImportantPieceRunningAway(vIPCoord int, hIPCoord int) (gss []GameState) {
+	gss = []GameState{}
+	var curBoard = gs.Board
+	var potentialSaveCoords = curBoard.GetPossibleMovesCoords(vIPCoord, hIPCoord)
+	for _, coordsTo := range potentialSaveCoords {
+		attackerMoves := curBoard.GetMovesCoordsOfAttackersOnCell(coordsTo[0], coordsTo[1])
+		var isDangerCoords bool = false
+		for i := range attackerMoves {
+			if attackerMoves[i] == coordsTo {
+				isDangerCoords = true
+				break
+			}
+		}
 
-	gss = append(gss, gs.getPossibleStatesFromBoardPieces()...)
-	gss = append(gss, gs.getPossibleStatesFromInventoryPieces()...)
+		if !isDangerCoords {
+			gss = append(gss, gs.generatePossibleStatesWithMove(vIPCoord, hIPCoord, coordsTo[0], coordsTo[1])...)
+		}
+	}
+	return
+}
+
+func (gs *GameState) generatePossibleStatesFromDefendingImportantPiece() (gss []GameState) {
+	gss = []GameState{}
+
+	var curBoard = gs.Board
+	var curPlayer = gs.CurMovePlayer
+	var ipCoords = curBoard.GetImportantPieceCoordsForPlayer(curPlayer)
+
+	var attackers = curBoard.GetCoordsOfAttackersOnCell(ipCoords[0], ipCoords[1])
+
+	if len(attackers) == 1 { //can eat attacker or drop(move) piece on his path
+		attacker := attackers[0]
+		attackerPoint := graphics.NewPoint(attacker[0], attacker[1])
+		ipPoint := graphics.NewPoint(ipCoords[0], ipCoords[1])
+		attackPath := graphics.GetLinePoints(attackerPoint, ipPoint) //TODO: будет неправильно работать для коня, исправить
+
+		//eating and closing from
+		for v := range curBoard.Cells {
+			for h, cell := range curBoard.Cells[v] {
+				if cell == nil { // empty cell
+					continue
+				}
+
+				//second condition need to not creating two same game states
+				//(because important piece will eat attacker when it starts to run away (see below))
+				if cell.Player == curPlayer && !cell.Type.ImportantPiece {
+					var movesCoords = curBoard.GetPossibleMovesCoords(v, h)
+
+					//eating
+					idx := slices.Index(movesCoords, [2]int{attacker[0], attacker[1]})
+					if idx != -1 {
+						gss = append(gss, gs.generatePossibleStatesWithMove(v, h, attacker[0], attacker[1])...)
+					}
+
+					//closing from
+					for i := range movesCoords {
+						for j := 1; j < len(attackPath)-1; j++ {
+							vCloseCoord, hCloseCoord := attackPath[j].Coordinates()
+							if [2]int{vCloseCoord, hCloseCoord} == movesCoords[i] {
+								gss = append(gss, gs.generatePossibleStatesWithMove(v, h, vCloseCoord, hCloseCoord)...)
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+
+		//droping
+		if !curBoard.Inventories[curPlayer].IsEmpty() {
+			for i := 1; i < len(attackPath)-1; i++ {
+				for _, pieceType := range curBoard.Inventories[curPlayer].Pieces() {
+					vCoordDropTo, hCoordDropTo := attackPath[i].Coordinates()
+					gss = append(gss, gs.generatePossibleStatesWithDrop(pieceType, vCoordDropTo, hCoordDropTo)...)
+				}
+			}
+		}
+	}
+
+	//important piece is running away
+	gss = append(gss, gs.generatePossibleStatesFromImportantPieceRunningAway(ipCoords[0], ipCoords[1])...)
+	return
+}
+
+func (gs *GameState) GetPossibleStates() (gss []GameState) {
+	gss = []GameState{}
+
+	if !gs.ImportantPieceUnderAttack {
+		gss = append(gss, gs.generatePossibleStatesFromBoardPieces()...)
+		gss = append(gss, gs.generatePossibleStatesFromInventoryPieces()...)
+	} else {
+		gss = append(gss, gs.generatePossibleStatesFromDefendingImportantPiece()...)
+	}
 
 	return
 }
