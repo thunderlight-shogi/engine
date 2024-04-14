@@ -2,65 +2,11 @@ package evaluator
 
 import (
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
-	"github.com/thunderlight-shogi/engine/internal/engine/movegen"
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
-func iterateInventory(
-	gameState *movegen.GameState,
-	player model.Player,
-	callback func(piece *model.PieceType),
-) {
-	/*
-		Iterates over player's inventory in current game state
-		and for each figure calls callback function
-	*/
-	playerInventory := gameState.Board.Inventories[player]
-	for _, pieceType := range playerInventory.Pieces() {
-		count := playerInventory.CountPiece(pieceType)
-		for range count {
-			callback(pieceType)
-		}
-	}
-}
-
-func iterateBoardPieces(
-	gameState *movegen.GameState,
-	player model.Player,
-	callback func(piece *board.Piece, x int, y int),
-) {
-	/*
-		Iterates over player's pieces on board in current game state
-		and for each figure calls callback function
-	*/
-	for x, column := range gameState.Board.Cells {
-		for y, cell := range column {
-			if cell != nil && cell.Player == player { // If player's cell
-				callback(cell, x, y)
-			}
-		}
-	}
-}
-
-func iterateEmptyCells(
-	gameState *movegen.GameState,
-	callback func(x int, y int),
-) {
-	/*
-		Iterates over all empty cells on board
-		and for each calls callback function
-	*/
-	for x, column := range gameState.Board.Cells {
-		for y, cell := range column {
-			if cell == nil {
-				callback(x, y)
-			}
-		}
-	}
-}
-
 func createAttackMatrix(
-	gameState *movegen.GameState,
+	boardVar board.Board,
 	player model.Player,
 ) [][]uint {
 	/*
@@ -72,10 +18,10 @@ func createAttackMatrix(
 		attackCounts[i] = make([]uint, 9)
 	}
 
-	iterateBoardPieces(gameState, player, func(piece *board.Piece, x, y int) {
-		movesCoords := gameState.Board.GetPossibleMovesCoords(x, y)
+	boardVar.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
+		movesCoords := boardVar.GetPiecePossibleMoves(pos)
 		for _, move := range movesCoords {
-			moveX, moveY := move[0], move[1]
+			moveX, moveY := move.Get()
 			attackCounts[moveX][moveY] += 1
 		}
 	})
@@ -84,7 +30,7 @@ func createAttackMatrix(
 }
 
 func createDefendMatrix(
-	gameState *movegen.GameState,
+	boardVar board.Board,
 	player model.Player,
 ) [][]uint {
 	/*

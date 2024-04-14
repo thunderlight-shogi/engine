@@ -33,12 +33,13 @@ func material(
 		Sum of piece values
 		Pieces in inventory counted separately with its own weight
 	*/
+	var curBoard = gameState.Board
 	var result float32 = 0
 
-	iterateInventory(gameState, player, func(piece *model.PieceType) {
+	curBoard.IterateInventory(player, func(piece *model.PieceType) {
 		result += float32(piece.Cost) * INVENTORY_MULTIPLIER
 	})
-	iterateBoardPieces(gameState, player, func(piece *board.Piece, x int, y int) {
+	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
 		result += float32(piece.Type.Cost)
 	})
 
@@ -52,7 +53,7 @@ func attackCount(
 	/*
 		Count of all cells that are attacked by player
 	*/
-	attackMatrix := createAttackMatrix(gameState, player)
+	attackMatrix := createAttackMatrix(gameState.Board, player)
 	var result float32 = float32(sumOf2DMatrix(attackMatrix))
 
 	return result * ATTACK_COUNT_WEIGHT
@@ -65,9 +66,11 @@ func pieceAdvancement(
 	/*
 		How close pieces moved towards enemy's zone
 	*/
+	var curBoard = gameState.Board
 	var result float32 = 0
 
-	iterateBoardPieces(gameState, player, func(piece *board.Piece, x, y int) {
+	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
+		var y = pos.GetRank()
 		// Calculating y-offset from player's base
 		var baseYOffset int
 		if player == model.Sente { // First player. Base starts at 8 and goes to 0
@@ -90,7 +93,7 @@ func defendedPieces(
 	/*
 		Count of defended pieces
 	*/
-	defendMatrix := createAttackMatrix(gameState, player)
+	defendMatrix := createAttackMatrix(gameState.Board, player)
 	var result float32 = float32(sumOf2DMatrix(defendMatrix))
 
 	return result * DEFENDED_PIECES_WEIGHT
@@ -119,7 +122,7 @@ func checkCheckmate(
 	/*
 		Is there checkmate on the board
 	*/
-	isCheckmate := len(gameState.GetPossibleStates()) == 0
+	isCheckmate := len(gameState.GeneratePossibleStates()) == 0
 	var result float32
 	if isCheckmate {
 		result = 1
@@ -140,12 +143,14 @@ func kingGuardsCount(
 	/*
 		How many friendly pieces around king
 	*/
+	var curBoard = gameState.Board
 	var result float32 = 0
 
-	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
-	kingX, kingY := kingCoords[0], kingCoords[1]
+	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingX, kingY := kingCoords.Get()
 
-	iterateBoardPieces(gameState, player, func(piece *board.Piece, x, y int) {
+	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
+		x, y := pos.Get()
 		distance := chebyshevDistance(kingX, kingY, x, y)
 		if distance <= MAX_KING_GUARDS_DISTANCE {
 			result += 1
@@ -163,13 +168,15 @@ func kingDefenceRadius1(
 		How much friendly pieces are defended around king in radius 1
 		Counting all defended cells around king
 	*/
+	var curBoard = gameState.Board
 	var result float32 = 0
 
-	defendMatrix := createDefendMatrix(gameState, player)
-	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
-	kingX, kingY := kingCoords[0], kingCoords[1]
+	defendMatrix := createDefendMatrix(curBoard, player)
+	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingX, kingY := kingCoords.Get()
 
-	iterateBoardPieces(gameState, player, func(piece *board.Piece, x, y int) {
+	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
+		x, y := pos.Get()
 		distance := chebyshevDistance(kingX, kingY, x, y)
 		if distance == 1 {
 			result += float32(defendMatrix[x][y])
@@ -187,13 +194,15 @@ func kingDefenceRadius2(
 		How many friendly pieces are defended around king in radius 2
 		Counting all defended cells around king
 	*/
+	var curBoard = gameState.Board
 	var result float32 = 0
 
-	defendMatrix := createDefendMatrix(gameState, player)
-	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
-	kingX, kingY := kingCoords[0], kingCoords[1]
+	defendMatrix := createDefendMatrix(curBoard, player)
+	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingX, kingY := kingCoords.Get()
 
-	iterateBoardPieces(gameState, player, func(piece *board.Piece, x, y int) {
+	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
+		x, y := pos.Get()
 		distance := chebyshevDistance(kingX, kingY, x, y)
 		if distance == 2 {
 			result += float32(defendMatrix[x][y])
@@ -210,13 +219,15 @@ func kingAttackRadius1(
 	/*
 		How many cells are attacked by enemy around king in radius 1
 	*/
+	var curBoard = gameState.Board
 	var result float32 = 0
 
-	attackMatrix := createAttackMatrix(gameState, player)
-	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
-	kingX, kingY := kingCoords[0], kingCoords[1]
+	attackMatrix := createAttackMatrix(curBoard, player)
+	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingX, kingY := kingCoords.Get()
 
-	iterateEmptyCells(gameState, func(x, y int) {
+	curBoard.IterateEmptyCells(func(pos board.Position) {
+		x, y := pos.Get()
 		distance := chebyshevDistance(kingX, kingY, x, y)
 		if distance == 1 {
 			result += float32(attackMatrix[x][y])
@@ -233,13 +244,15 @@ func kingAttackRadius2(
 	/*
 		How many cells are attacked by enemy around king in radius 2
 	*/
+	var curBoard = gameState.Board
 	var result float32 = 0
 
-	attackMatrix := createAttackMatrix(gameState, player)
-	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
-	kingX, kingY := kingCoords[0], kingCoords[1]
+	attackMatrix := createAttackMatrix(curBoard, player)
+	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingX, kingY := kingCoords.Get()
 
-	iterateEmptyCells(gameState, func(x, y int) {
+	curBoard.IterateEmptyCells(func(pos board.Position) {
+		x, y := pos.Get()
 		distance := chebyshevDistance(kingX, kingY, x, y)
 		if distance == 2 {
 			result += float32(attackMatrix[x][y])
@@ -256,10 +269,9 @@ func kingFreeCells(
 	/*
 		How many free cells can king go to
 	*/
-	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
-	kingX, kingY := kingCoords[0], kingCoords[1]
+	kingPos := gameState.Board.GetKingPositionForPlayer(player)
 
-	var result float32 = float32(len(gameState.Board.GetKingMovesCoords(kingX, kingY)))
+	var result float32 = float32(len(gameState.Board.GetKingMoves(kingPos)))
 
 	return result * KING_FREE_CELLS_WEIGHT
 }

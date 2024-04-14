@@ -8,8 +8,29 @@ import (
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )
 
+type Position struct {
+	file int
+	rank int
+}
+
+func NewPos(file, rank int) Position {
+	return Position{file: file, rank: rank}
+}
+
+func (pos Position) Get() (int, int) {
+	return pos.file, pos.rank
+}
+
+func (pos Position) GetFile() int {
+	return pos.file
+}
+
+func (pos Position) GetRank() int {
+	return pos.rank
+}
+
 type Piece struct {
-	Type   model.PieceType
+	Type   *model.PieceType
 	Player model.Player
 }
 
@@ -37,6 +58,19 @@ func (this_piece *Piece) getShiftSign() int {
 	} else {
 		return -1
 	}
+}
+
+func (this_piece *Piece) GetPromotedPiece() *Piece {
+	return &Piece{Type: this_piece.Type.PromotePiece, Player: this_piece.Player}
+}
+
+func (this_piece *Piece) GetAttackerPlayer() (attackerPlayer model.Player) {
+	if this_piece.Player == model.Sente {
+		attackerPlayer = model.Gote
+	} else {
+		attackerPlayer = model.Sente
+	}
+	return
 }
 
 func Construct() (newby Board) {
@@ -78,9 +112,59 @@ func (this_board Board) GetPromotionZone(player model.Player) []int {
 	}
 }
 
-func (this_board Board) IsTherePawn(vertical int) bool {
-	for i := range this_board.Cells[vertical] {
-		cell := this_board.Cells[vertical][i]
+func (this_board Board) IterateInventory(
+	player model.Player,
+	callback func(piece *model.PieceType),
+) {
+	/*
+		Iterates over player's inventory in current game state
+		and for each figure calls callback function
+	*/
+	playerInventory := this_board.Inventories[player]
+	for _, pieceType := range playerInventory.Pieces() {
+		count := playerInventory.CountPiece(pieceType)
+		for range count {
+			callback(pieceType)
+		}
+	}
+}
+
+func (this_board Board) IterateBoardPieces(
+	player model.Player,
+	callback func(piece *Piece, pos Position),
+) {
+	/*
+		Iterates over player's pieces on board in current game state
+		and for each figure calls callback function
+	*/
+	for x, column := range this_board.Cells {
+		for y, cell := range column {
+			if cell != nil && cell.Player == player { // If player's cell
+				callback(cell, NewPos(x, y))
+			}
+		}
+	}
+}
+
+func (this_board Board) IterateEmptyCells(
+	callback func(pos Position),
+) {
+	/*
+		Iterates over all empty cells on board
+		and for each calls callback function
+	*/
+	for x, column := range this_board.Cells {
+		for y, cell := range column {
+			if cell == nil {
+				callback(NewPos(x, y))
+			}
+		}
+	}
+}
+
+func (this_board Board) IsTherePawn(file int) bool {
+	for i := range this_board.Cells[file] {
+		cell := this_board.Cells[file][i]
 		if cell != nil && cell.Type.Name == "Pawn" {
 			return true
 		}
@@ -88,19 +172,22 @@ func (this_board Board) IsTherePawn(vertical int) bool {
 	return false
 }
 
-func (this_board Board) canPieceReachCell(vPieceCoord int, hPieceCoord int, vCellCoord int, hCellCoord int) bool {
+func (this_board Board) canPieceReachCell(piecePos, cellPos Position) bool {
 	var isReached bool = true
 
-	var piece = this_board.Cells[vPieceCoord][hPieceCoord]
+	pieceFile, pieceRank := piecePos.Get()
+	cellFile, cellRank := cellPos.Get()
+
+	var piece = this_board.Cells[pieceFile][pieceRank]
 	var moves = piece.Type.Moves
 	var shiftSign = piece.getShiftSign()
 
-	origin := graphics.NewPoint(vPieceCoord, hPieceCoord)
-	end := graphics.NewPoint(vCellCoord, hCellCoord)
+	origin := graphics.NewPoint(pieceFile, pieceRank)
+	end := graphics.NewPoint(cellFile, cellRank)
 	coordsBetween := graphics.GetLinePoints(origin, end)
 	for i := 1; i < len(coordsBetween)-1; i++ { // skipping origin and end
 		vMiddleCoord, hMiddleCoord := coordsBetween[i].Coordinates()
-		hShift, vShift := vMiddleCoord-vPieceCoord, hMiddleCoord-hPieceCoord
+		hShift, vShift := vMiddleCoord-pieceFile, hMiddleCoord-pieceRank
 		// maybe better to replace with simple loop
 		idx := slices.IndexFunc(moves, func(move model.Move) bool {
 			return move.RankShift*shiftSign == hShift && move.FileShift*shiftSign == vShift
@@ -116,172 +203,170 @@ func (this_board Board) canPieceReachCell(vPieceCoord int, hPieceCoord int, vCel
 	return isReached
 }
 
-func (this_board Board) GetInBoardFieldMoves(verticalCoord int, horizontalCoord int) (movesCoords [][2]int) {
-	movesCoords = [][2]int{}
+func (this_board Board) GetPieceMovesToBoardField(piecePos Position) (movesPositions []Position) {
+	//fmt.Printf("piecePos: %v\n", piecePos)
+	movesPositions = []Position{}
+	pieceFile, pieceRank := piecePos.Get()
 
-	var piece = this_board.Cells[verticalCoord][horizontalCoord]
+	var piece = this_board.Cells[pieceFile][pieceRank]
+	//fmt.Printf("piece: %v\n", piece.Type)
 	var shiftSign = piece.getShiftSign()
 	var moves = piece.Type.Moves
 	for _, move := range moves {
-		var vMoveCoord = verticalCoord + move.RankShift*shiftSign
-		var hMoveCoord = horizontalCoord + move.FileShift*shiftSign
+		var moveFile = pieceFile + move.RankShift*shiftSign
+		var moveRank = pieceRank + move.FileShift*shiftSign
 
-		var inBoardField bool = vMoveCoord >= 0 && vMoveCoord < len(this_board.Cells) && hMoveCoord >= 0 && hMoveCoord < len(this_board.Cells[vMoveCoord])
+		var inBoardField bool = moveFile >= 0 && moveFile < len(this_board.Cells) && moveRank >= 0 && moveRank < len(this_board.Cells[moveFile])
 		if inBoardField {
-			movesCoords = append(movesCoords, [2]int{vMoveCoord, hMoveCoord})
+			movesPositions = append(movesPositions, NewPos(moveFile, moveRank))
 		}
 	}
 	return
 }
 
-func (this_board Board) GetPossibleMovesCoords(verticalCoord int, horizontalCoord int) (possibleMovesCoords [][2]int) {
-	possibleMovesCoords = [][2]int{}
+func (this_board Board) GetPieceReachableMoves(piecePos Position) (possibleMovesPositions []Position) {
+	possibleMovesPositions = []Position{}
 
-	var curPiece = this_board.Cells[verticalCoord][horizontalCoord]
-	var inFieldMovesCoords = this_board.GetInBoardFieldMoves(verticalCoord, horizontalCoord)
-	for _, coords := range inFieldMovesCoords {
-		var emptyOrEnemyCell bool = this_board.Cells[coords[0]][coords[1]] == nil || this_board.Cells[coords[0]][coords[1]].Player != curPiece.Player
+	var inFieldMovesPositions = this_board.GetPieceMovesToBoardField(piecePos)
+	for _, movePos := range inFieldMovesPositions {
+		if this_board.canPieceReachCell(piecePos, movePos) {
+			possibleMovesPositions = append(possibleMovesPositions, movePos)
+		}
+	}
+	return
+}
+
+func (this_board Board) GetPiecePossibleMoves(piecePos Position) (possibleMovesPositions []Position) {
+	possibleMovesPositions = []Position{}
+	pieceFile, pieceRank := piecePos.Get()
+
+	var curPiece = this_board.Cells[pieceFile][pieceRank]
+	var reachableMovesPositions = this_board.GetPieceReachableMoves(piecePos)
+	for _, movePos := range reachableMovesPositions {
+		var moveCell = this_board.Cells[movePos.file][movePos.rank]
+		var emptyOrEnemyCell bool = moveCell == nil || moveCell.Player != curPiece.Player
 		if emptyOrEnemyCell {
-			if this_board.canPieceReachCell(verticalCoord, horizontalCoord, coords[0], coords[1]) {
-				possibleMovesCoords = append(possibleMovesCoords, [2]int{coords[0], coords[1]})
-			}
-		}
-	}
-
-	return
-}
-
-func (this_board Board) GetPossibleDropsCoords() (dropsCoords [][2]int) {
-	dropsCoords = [][2]int{}
-
-	for vDropCoord, verticalCells := range this_board.Cells {
-		for hDropCoord, cell := range verticalCells {
-			if cell == nil { // empty cell
-				dropsCoords = append(dropsCoords, [2]int{vDropCoord, hDropCoord})
-			}
+			possibleMovesPositions = append(possibleMovesPositions, movePos)
 		}
 	}
 	return
 }
 
-func (this_board Board) IsKingAttackedByPiece(attackerVerticalCoord int, attackerHorizontalCoord int) bool {
-	movesCoords := this_board.GetPossibleMovesCoords(attackerVerticalCoord, attackerHorizontalCoord)
-	for _, coords := range movesCoords {
-		if this_board.Cells[coords[0]][coords[1]] != nil && this_board.Cells[coords[0]][coords[1]].Type.ImportantPiece {
+func (this_board Board) GetPossibleDropsCoords() (dropsCoords []Position) {
+	dropsCoords = []Position{}
+
+	this_board.IterateEmptyCells(func(pos Position) {
+		dropsCoords = append(dropsCoords, pos)
+	})
+	return
+}
+
+func (this_board Board) IsKingAttackedByPiece(attackerPos Position) bool {
+	attackerMovesPositions := this_board.GetPiecePossibleMoves(attackerPos)
+	for _, movePos := range attackerMovesPositions {
+		moveFile, moveRank := movePos.Get()
+		var isImportantPiece bool = this_board.Cells[moveFile][moveRank] != nil && this_board.Cells[moveFile][moveRank].Type.ImportantPiece
+		if isImportantPiece {
 			return true
 		}
 	}
 	return false
 }
 
-func (this_board Board) GetKingCoordsForPlayer(player model.Player) [2]int {
-	for v := range this_board.Cells {
-		for h, piece := range this_board.Cells[v] {
+// TODO: Все-таки possible... Короля могут съесть, если он сделает ход на опасную клетку. Исправить
+func (this_board Board) GetKingPositionForPlayer(player model.Player) Position {
+	for x := range this_board.Cells {
+		for y, piece := range this_board.Cells[x] {
 			if piece != nil && piece.Type.ImportantPiece && piece.Player == player {
-				return [2]int{v, h}
+				return NewPos(x, y)
 			}
 		}
 	}
-	return [2]int{-100, -100} //should be impossible
+	return NewPos(-100, -100) //should be impossible
 }
 
-func (this_board Board) GetCoordsOfAttackersOnCell(vCoordCell int, hCoordCell int) [][2]int {
-	var attackers = [][2]int{}
-	var attackedCell = this_board.Cells[vCoordCell][hCoordCell]
+func (this_board Board) GetPositionsOfAttackersOnCell(attackerPlayer model.Player, cellPos Position) []Position {
+	var attackers = []Position{}
 
-	for v := range this_board.Cells {
-		for h, cell := range this_board.Cells[v] {
-			if cell == nil { // empty cell
-				continue
-			}
-
-			if cell.Player != attackedCell.Player {
-				var movesCoords = this_board.GetPossibleMovesCoords(v, h)
-				idx := slices.Index(movesCoords, [2]int{vCoordCell, hCoordCell})
-				if idx != -1 {
-					attackers = append(attackers, [2]int{v, h})
-				}
-			}
+	this_board.IterateBoardPieces(attackerPlayer, func(piece *Piece, pos Position) {
+		var movesPositions = this_board.GetPieceReachableMoves(pos)
+		idx := slices.Index(movesPositions, cellPos)
+		if idx != -1 {
+			attackers = append(attackers, pos)
 		}
-	}
+	})
 	return attackers
 }
 
-// TODO: как-то мерджнуть GetMovesCoordsOfAttackersOnCell и GetCoordsOfAttackersOnCell
-func (this_board Board) GetMovesCoordsOfAttackersOnCell(vCoordCell int, hCoordCell int) [][2]int {
-	var attackerMovesCoords = [][2]int{}
-	var attackedCell = this_board.Cells[vCoordCell][hCoordCell]
+func (this_board Board) GetKingMoves(kingPos Position) []Position {
+	var kingMovesPositions = []Position{}
+	var king = this_board.Cells[kingPos.GetFile()][kingPos.GetRank()]
+	var attackerPlayer = king.GetAttackerPlayer()
 
-	for v := range this_board.Cells {
-		for h, attacker := range this_board.Cells[v] {
-			if attacker == nil { // empty cell
-				continue
-			}
-
-			var emptyOrEnemyAttackedCell = attackedCell == nil || attackedCell.Player != attacker.Player
-			if emptyOrEnemyAttackedCell {
-				var movesCoords = this_board.GetPossibleMovesCoords(v, h)
-				idx := slices.Index(movesCoords, [2]int{vCoordCell, hCoordCell})
-				if idx != -1 {
-					attackerMovesCoords = append(attackerMovesCoords, movesCoords...)
-				}
-			}
+	var potentialMovesPositions = this_board.GetPiecePossibleMoves(kingPos)
+	for _, pos := range potentialMovesPositions {
+		if len(this_board.GetPositionsOfAttackersOnCell(attackerPlayer, pos)) == 0 {
+			kingMovesPositions = append(kingMovesPositions, pos)
 		}
 	}
-	return attackerMovesCoords
+	return kingMovesPositions
 }
 
 // For test purposes
 func (this_board Board) Print() {
 	fmt.Println("-------------")
-	for pieceType := range this_board.Inventories[model.Sente].pieces {
-		piece := Piece{Type: *pieceType, Player: model.Sente}
-		if piece.IsPromoted() {
-			fmt.Print(string(piece.Type.Name[0]) + "+ ")
-		} else {
-			fmt.Print(string(piece.Type.Name[0]) + " ")
+	for pieceType, count := range this_board.Inventories[model.Sente].pieces {
+		piece := Piece{Type: pieceType, Player: model.Sente}
+		for i := uint(0); i < count; i++ {
+			if piece.IsPromoted() {
+				fmt.Print(string(piece.Type.Name[0]) + "+ ")
+			} else {
+				fmt.Print(string(piece.Type.Name[0]) + " ")
+			}
 		}
 	}
 	fmt.Println()
+
 	for _, verticalPieces := range this_board.Cells {
 		for _, piece := range verticalPieces {
 			if piece == nil {
-				fmt.Print("-")
-			} else if piece.IsPromoted() {
-				fmt.Print(string(piece.Type.Name[0]) + "+")
+				fmt.Print(" - ")
 			} else {
-				fmt.Print(string(piece.Type.Name[0]))
+				player := piece.Player
+				var str string = ""
+				if player == model.Sente {
+					str += "/"
+					str += string(piece.Type.Name[0])
+					if piece.IsPromoted() {
+						str += "+"
+					} else {
+						str += " "
+					}
+				}
+				if player == model.Gote {
+					if piece.IsPromoted() {
+						str += "+"
+					} else {
+						str += " "
+					}
+					str += string(piece.Type.Name[0])
+					str += "\\"
+				}
+				fmt.Print(str)
 			}
 		}
 		fmt.Println()
 	}
-	for pieceType := range this_board.Inventories[model.Gote].pieces {
-		piece := Piece{Type: *pieceType, Player: model.Sente}
-		if piece.IsPromoted() {
-			fmt.Print(string(piece.Type.Name[0]) + "+ ")
-		} else {
-			fmt.Print(string(piece.Type.Name[0]) + " ")
+
+	for pieceType, count := range this_board.Inventories[model.Gote].pieces {
+		piece := Piece{Type: pieceType, Player: model.Sente}
+		for i := uint(0); i < count; i++ {
+			if piece.IsPromoted() {
+				fmt.Print(string(piece.Type.Name[0]) + "+ ")
+			} else {
+				fmt.Print(string(piece.Type.Name[0]) + " ")
+			}
 		}
 	}
 	fmt.Println("\n-------------")
-}
-
-func (this_board Board) GetKingMovesCoords(vIPCoord int, hIPCoord int) [][2]int {
-	var kingMovesCoords = [][2]int{}
-	var potentialCoords = this_board.GetPossibleMovesCoords(vIPCoord, hIPCoord)
-	for _, coordsTo := range potentialCoords {
-		attackerMoves := this_board.GetMovesCoordsOfAttackersOnCell(coordsTo[0], coordsTo[1])
-		var isDangerCoords bool = false
-		for i := range attackerMoves {
-			if attackerMoves[i] == coordsTo {
-				isDangerCoords = true
-				break
-			}
-		}
-
-		if !isDangerCoords {
-			kingMovesCoords = append(kingMovesCoords, coordsTo)
-		}
-	}
-	return kingMovesCoords
 }

@@ -38,36 +38,26 @@ func (this_inv Inventory) IsEmpty() bool {
 	return len(this_inv.pieces) == 0
 }
 
-func (this_inv Inventory) incrementPieceTypeNum(pt *model.PieceType) {
-	var foundPieceType *model.PieceType = nil
-	for k := range this_inv.pieces {
-		if k.Id == pt.Id {
-			foundPieceType = k
-		}
-	}
+func (this_inv Inventory) incrementPieceTypeCount(pt *model.PieceType) {
+	_, found := this_inv.pieces[pt]
 
-	if foundPieceType == nil {
+	if !found {
 		this_inv.pieces[pt] = 1
 	} else {
-		this_inv.pieces[foundPieceType]++
+		this_inv.pieces[pt]++
 	}
 }
 
 // returns true if piece type is found, and false otherwise
-func (this_inv Inventory) decrementPieceTypeNum(pt *model.PieceType) bool {
-	var foundPieceType *model.PieceType = nil
-	for k := range this_inv.pieces {
-		if k.Id == pt.Id {
-			foundPieceType = k
-		}
-	}
+func (this_inv Inventory) decrementPieceTypeCount(pt *model.PieceType) bool {
+	_, found := this_inv.pieces[pt]
 
-	if foundPieceType != nil {
-		var num = this_inv.pieces[foundPieceType]
+	if found {
+		var num = this_inv.pieces[pt]
 		if num == 1 {
-			delete(this_inv.pieces, foundPieceType)
+			delete(this_inv.pieces, pt)
 		} else {
-			this_inv.pieces[foundPieceType]--
+			this_inv.pieces[pt]--
 		}
 		return true
 	}
@@ -79,16 +69,15 @@ func (this_inv Inventory) AddPiece(piece *Piece) {
 	if piece.IsPromoted() {
 		addedPiece = piece.Type.DemotePiece
 	} else {
-		addedPiece = &piece.Type
+		addedPiece = piece.Type
 	}
-	this_inv.incrementPieceTypeNum(addedPiece)
+	this_inv.incrementPieceTypeCount(addedPiece)
 }
 
-// maybe replace *pieceType with pieceType name
 func (this_inv Inventory) ExtractPieceToPlayer(pieceType *model.PieceType, player model.Player) *Piece {
-	var found = this_inv.decrementPieceTypeNum(pieceType)
+	var found = this_inv.decrementPieceTypeCount(pieceType)
 	if found {
-		return &Piece{Type: *pieceType, Player: player}
+		return &Piece{Type: pieceType, Player: player}
 	} else {
 		return nil
 	}

@@ -31,7 +31,7 @@ func Start(id uint) error {
 
 		global_state.Board.Cells[piece.File-1][piece.Rank-1] =
 			&board.Piece{
-				Type:   *pt,
+				Type:   pt,
 				Player: piece.Player,
 			}
 	}

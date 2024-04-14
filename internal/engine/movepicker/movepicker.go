@@ -38,14 +38,14 @@ func minimax(gs *movegen.GameState, depth int, maximizingPlayer bool) float32 {
 	}
 	if maximizingPlayer {
 		var value float32 = -math.MaxFloat32
-		var allBoards = gs.GetPossibleStates()
+		var allBoards = gs.GeneratePossibleStates()
 		for idx := range allBoards {
 			value = max(value, minimax(&allBoards[idx], depth-1, false))
 		}
 		return value
 	} else {
 		var value float32 = math.MaxFloat32
-		var allBoards = gs.GetPossibleStates()
+		var allBoards = gs.GeneratePossibleStates()
 		for idx := range allBoards {
 			value = min(value, minimax(&allBoards[idx], depth-1, true))
 		}
@@ -59,7 +59,7 @@ func alphabeta(gs *movegen.GameState, depth int, a *float32, b *float32, maximiz
 	}
 	if maximizingPlayer {
 		var value float32 = -math.MaxFloat32
-		var allBoards = gs.GetPossibleStates()
+		var allBoards = gs.GeneratePossibleStates()
 		for idx := range allBoards {
 			value = max(value, alphabeta(&allBoards[idx], depth-1, a, b, false))
 			if value > *b {
@@ -70,7 +70,7 @@ func alphabeta(gs *movegen.GameState, depth int, a *float32, b *float32, maximiz
 		return value
 	} else {
 		var value float32 = math.MaxFloat32
-		var allBoards = gs.GetPossibleStates()
+		var allBoards = gs.GeneratePossibleStates()
 		for idx := range allBoards {
 			value = min(value, alphabeta(&allBoards[idx], depth-1, a, b, true))
 			if value < *a {
@@ -111,7 +111,7 @@ func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameSt
 			if newInventory.CountPiece(pieceType) != baseInventory.CountPiece(pieceType) {
 				var piece *board.Piece = new(board.Piece)
 				piece.Player = baseGs.CurMovePlayer
-				piece.Type = *pieceType
+				piece.Type = pieceType
 				pickedMove.Piece = piece
 				break
 			}
@@ -140,7 +140,7 @@ func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameSt
 }
 
 func Search(currentGameState *movegen.GameState) PickedMove {
-	var allGs = currentGameState.GetPossibleStates()
+	var allGs = currentGameState.GeneratePossibleStates()
 	var bestValue float32 = -math.MaxFloat32
 	var maximizingPlayer = false
 	if currentGameState.CurMovePlayer == model.Gote {
