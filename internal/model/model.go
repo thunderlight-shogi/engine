@@ -26,10 +26,10 @@ type PieceType struct {
 	Cost           uint
 }
 
-type StartingPosition struct {
-	Id     uint                    `gorm:"primarykey" json:"id"`
-	Name   string                  `json:"name"`
-	Pieces []StartingPositionPiece `gorm:"foreignKey:StartingPositionId" json:"-"`
+type Preset struct {
+	Id     uint          `gorm:"primarykey" json:"id"`
+	Name   string        `json:"name"`
+	Pieces []PresetPiece `gorm:"foreignKey:PresetId" json:"-"`
 }
 
 type Move struct {
@@ -39,14 +39,14 @@ type Move struct {
 	VerticalShift   int
 }
 
-type StartingPositionPiece struct {
-	Id                 uint `gorm:"primarykey"`
-	StartingPositionId uint
-	PieceTypeId        uint
-	PieceType          *PieceType `gorm:"not null"`
-	HorizontalOffset   uint
-	VerticalOffset     uint
-	Player             Player
+type PresetPiece struct {
+	Id               uint `gorm:"primarykey"`
+	PresetId         uint
+	PieceTypeId      uint
+	PieceType        *PieceType `gorm:"not null"`
+	HorizontalOffset uint
+	VerticalOffset   uint
+	Player           Player
 }
 
 type EvaluatorWeights struct {
@@ -85,7 +85,7 @@ func init() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&StartingPosition{}, &StartingPositionPiece{}, &PieceType{}, &Move{}, &EvaluatorWeights{})
+	db.AutoMigrate(&Preset{}, &PresetPiece{}, &PieceType{}, &Move{}, &EvaluatorWeights{})
 
 	result := db.Find(&PieceType{})
 	if result.RowsAffected == 0 {

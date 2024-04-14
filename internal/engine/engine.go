@@ -10,7 +10,7 @@ var global_state movegen.GameState
 
 func Start(id uint) error {
 	db := model.GetDB()
-	var pos model.StartingPosition
+	var pos model.Preset
 
 	result := db.Preload("Pieces").
 		Preload("Pieces.PieceType").

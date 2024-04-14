@@ -915,10 +915,10 @@ func seed() {
 		},
 	}
 
-	var DefaultPosition = StartingPosition{
+	var DefaultPreset = Preset{
 		Id:   1,
 		Name: "Default",
-		Pieces: []StartingPositionPiece{
+		Pieces: []PresetPiece{
 			{
 				PieceType:        &Pawn,
 				HorizontalOffset: 1,
@@ -1167,7 +1167,7 @@ func seed() {
 		},
 	}
 
-	db.Create(&DefaultPosition)
+	db.Create(&DefaultPreset)
 
 	weights := EvaluatorWeights{
 		Id:   1,
