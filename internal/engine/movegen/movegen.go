@@ -8,14 +8,14 @@ import (
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )
 
-//TODO: Везде поменять vertical и horizontal на file и rank (и добавить структуру Position (и мб структуру Move))
+// TODO: Везде поменять vertical и horizontal на file и rank (и добавить структуру Position (и мб структуру Move))
+// TODO: Короля могут съесть, если он сделает ход на опасную клетку. Исправить
+// TODO: Удаляется вертикаль??? Исправить
 
 type GameState struct {
-	Board                     board.Board
-	CurMovePlayer             model.Player
-	ImportantPieceUnderAttack bool
-	NumOfAttackableCells      uint //TODO: Сделать подсчет
-	NumOfDropableCells        uint //TODO: Сделать подсчет
+	Board           board.Board
+	CurMovePlayer   model.Player
+	KingUnderAttack bool
 }
 
 func (gs *GameState) getNextPlayer() model.Player {
@@ -27,13 +27,13 @@ func (gs *GameState) getNextPlayer() model.Player {
 }
 
 func generateGameStateAfterChangeAt(board board.Board, nextPlayer model.Player, vChangeCoord int, hChangeCoord int) *GameState {
-	ipUnderAttack := board.IsImportantPieceAttackedByPiece(vChangeCoord, hChangeCoord)
+	ipUnderAttack := board.IsKingAttackedByPiece(vChangeCoord, hChangeCoord)
 
-	return &GameState{Board: board, CurMovePlayer: nextPlayer, ImportantPieceUnderAttack: ipUnderAttack}
+	return &GameState{Board: board, CurMovePlayer: nextPlayer, KingUnderAttack: ipUnderAttack}
 }
 
 func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(board board.Board, nextPlayer model.Player, vChangeCoord int, hChangeCoord int) *GameState {
-	// e. g., pawn cannot move to last row because it will have no moves to board field (so this is not possible game state)
+	// e.g., pawn cannot move to last row because it will have no moves to board field (so this is not possible game state)
 	if len(board.GetInBoardFieldMoves(vChangeCoord, hChangeCoord)) != 0 {
 		return generateGameStateAfterChangeAt(board, nextPlayer, vChangeCoord, hChangeCoord)
 	}
@@ -134,7 +134,7 @@ func (gs *GameState) generatePossibleStatesWithDrop(pieceType *model.PieceType, 
 		for _, coords := range pawnMovesCoords {
 			var cell = newBoard.Cells[coords[0]][coords[1]]
 			if cell != nil && cell.Type.ImportantPiece {
-				var runningFromPawnStates = gs.generatePossibleStatesFromImportantPieceRunningAway(coords[0], coords[1])
+				var runningFromPawnStates = gs.generatePossibleStatesFromKingRunningAway(coords[0], coords[1])
 				if len(runningFromPawnStates) == 0 { // if king can't run away from dropped pawn
 					return
 				}
@@ -168,7 +168,7 @@ func (gs *GameState) generatePossibleStatesFromInventoryPieces() (gss []GameStat
 	return
 }
 
-func (gs *GameState) generatePossibleStatesFromImportantPieceRunningAway(vIPCoord int, hIPCoord int) (gss []GameState) {
+func (gs *GameState) generatePossibleStatesFromKingRunningAway(vIPCoord int, hIPCoord int) (gss []GameState) {
 	gss = []GameState{}
 	var curBoard = gs.Board
 	var potentialSaveCoords = curBoard.GetPossibleMovesCoords(vIPCoord, hIPCoord)
@@ -189,40 +189,40 @@ func (gs *GameState) generatePossibleStatesFromImportantPieceRunningAway(vIPCoor
 	return
 }
 
-func (gs *GameState) generatePossibleStatesFromDefendingImportantPiece() (gss []GameState) {
+func (gs *GameState) generatePossibleStatesFromDefendingKing() (gss []GameState) {
 	gss = []GameState{}
 
 	var curBoard = gs.Board
 	var curPlayer = gs.CurMovePlayer
-	var ipCoords = curBoard.GetImportantPieceCoordsForPlayer(curPlayer)
+	var ipCoords = curBoard.GetKingCoordsForPlayer(curPlayer)
 
 	var attackers = curBoard.GetCoordsOfAttackersOnCell(ipCoords[0], ipCoords[1])
 
-	if len(attackers) == 1 { //can eat attacker or drop(move) piece on his path
+	if len(attackers) == 1 { // can eat attacker or drop(move) piece on his path
 		attacker := attackers[0]
 		attackerPoint := graphics.NewPoint(attacker[0], attacker[1])
 		ipPoint := graphics.NewPoint(ipCoords[0], ipCoords[1])
-		attackPath := graphics.GetLinePoints(attackerPoint, ipPoint) //TODO: будет неправильно работать для коня, исправить
+		attackPath := graphics.GetLinePoints(attackerPoint, ipPoint) // TODO: будет неправильно работать для коня, исправить
 
-		//eating and closing from
+		// eating and closing from
 		for v := range curBoard.Cells {
 			for h, cell := range curBoard.Cells[v] {
 				if cell == nil { // empty cell
 					continue
 				}
 
-				//second condition need to not creating two same game states
-				//(because important piece will eat attacker when it starts to run away (see below))
+				// second condition need to not creating two same game states
+				// (because important piece will eat attacker when it starts to run away (see below))
 				if cell.Player == curPlayer && !cell.Type.ImportantPiece {
 					var movesCoords = curBoard.GetPossibleMovesCoords(v, h)
 
-					//eating
+					// eating
 					idx := slices.Index(movesCoords, [2]int{attacker[0], attacker[1]})
 					if idx != -1 {
 						gss = append(gss, gs.generatePossibleStatesWithMove(v, h, attacker[0], attacker[1])...)
 					}
 
-					//closing from
+					// closing from
 					for i := range movesCoords {
 						for j := 1; j < len(attackPath)-1; j++ {
 							vCloseCoord, hCloseCoord := attackPath[j].Coordinates()
@@ -236,7 +236,7 @@ func (gs *GameState) generatePossibleStatesFromDefendingImportantPiece() (gss []
 			}
 		}
 
-		//droping
+		// droping
 		if !curBoard.Inventories[curPlayer].IsEmpty() {
 			for i := 1; i < len(attackPath)-1; i++ {
 				for _, pieceType := range curBoard.Inventories[curPlayer].Pieces() {
@@ -247,19 +247,19 @@ func (gs *GameState) generatePossibleStatesFromDefendingImportantPiece() (gss []
 		}
 	}
 
-	//important piece is running away
-	gss = append(gss, gs.generatePossibleStatesFromImportantPieceRunningAway(ipCoords[0], ipCoords[1])...)
+	// important piece is running away
+	gss = append(gss, gs.generatePossibleStatesFromKingRunningAway(ipCoords[0], ipCoords[1])...)
 	return
 }
 
 func (gs *GameState) GetPossibleStates() (gss []GameState) {
 	gss = []GameState{}
 
-	if !gs.ImportantPieceUnderAttack {
+	if !gs.KingUnderAttack {
 		gss = append(gss, gs.generatePossibleStatesFromBoardPieces()...)
 		gss = append(gss, gs.generatePossibleStatesFromInventoryPieces()...)
 	} else {
-		gss = append(gss, gs.generatePossibleStatesFromDefendingImportantPiece()...)
+		gss = append(gss, gs.generatePossibleStatesFromDefendingKing()...)
 	}
 
 	return

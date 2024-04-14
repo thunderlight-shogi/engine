@@ -104,7 +104,7 @@ func checkCheck(
 		Is there check on the board
 	*/
 	var result float32
-	if gameState.ImportantPieceUnderAttack {
+	if gameState.KingUnderAttack {
 		result = 1
 	} else {
 		result = 0
@@ -142,7 +142,7 @@ func kingGuardsCount(
 	*/
 	var result float32 = 0
 
-	kingCoords := gameState.Board.GetImportantPieceCoordsForPlayer(player)
+	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
 	kingX, kingY := kingCoords[0], kingCoords[1]
 
 	iterateBoardPieces(gameState, player, func(piece *board.Piece, x, y int) {
@@ -166,7 +166,7 @@ func kingDefenceRadius1(
 	var result float32 = 0
 
 	defendMatrix := createDefendMatrix(gameState, player)
-	kingCoords := gameState.Board.GetImportantPieceCoordsForPlayer(player)
+	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
 	kingX, kingY := kingCoords[0], kingCoords[1]
 
 	iterateBoardPieces(gameState, player, func(piece *board.Piece, x, y int) {
@@ -190,7 +190,7 @@ func kingDefenceRadius2(
 	var result float32 = 0
 
 	defendMatrix := createDefendMatrix(gameState, player)
-	kingCoords := gameState.Board.GetImportantPieceCoordsForPlayer(player)
+	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
 	kingX, kingY := kingCoords[0], kingCoords[1]
 
 	iterateBoardPieces(gameState, player, func(piece *board.Piece, x, y int) {
@@ -213,7 +213,7 @@ func kingAttackRadius1(
 	var result float32 = 0
 
 	attackMatrix := createAttackMatrix(gameState, player)
-	kingCoords := gameState.Board.GetImportantPieceCoordsForPlayer(player)
+	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
 	kingX, kingY := kingCoords[0], kingCoords[1]
 
 	iterateEmptyCells(gameState, func(x, y int) {
@@ -236,7 +236,7 @@ func kingAttackRadius2(
 	var result float32 = 0
 
 	attackMatrix := createAttackMatrix(gameState, player)
-	kingCoords := gameState.Board.GetImportantPieceCoordsForPlayer(player)
+	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
 	kingX, kingY := kingCoords[0], kingCoords[1]
 
 	iterateEmptyCells(gameState, func(x, y int) {
@@ -256,10 +256,10 @@ func kingFreeCells(
 	/*
 		How many free cells can king go to
 	*/
-	kingCoords := gameState.Board.GetImportantPieceCoordsForPlayer(player)
+	kingCoords := gameState.Board.GetKingCoordsForPlayer(player)
 	kingX, kingY := kingCoords[0], kingCoords[1]
 
-	var result float32 = float32(len(gameState.Board.GetImportantPieceMovesCoords(kingX, kingY)))
+	var result float32 = float32(len(gameState.Board.GetKingMovesCoords(kingX, kingY)))
 
 	return result * KING_FREE_CELLS_WEIGHT
 }

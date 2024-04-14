@@ -164,7 +164,7 @@ func (this_board Board) GetPossibleDropsCoords() (dropsCoords [][2]int) {
 	return
 }
 
-func (this_board Board) IsImportantPieceAttackedByPiece(attackerVerticalCoord int, attackerHorizontalCoord int) bool {
+func (this_board Board) IsKingAttackedByPiece(attackerVerticalCoord int, attackerHorizontalCoord int) bool {
 	movesCoords := this_board.GetPossibleMovesCoords(attackerVerticalCoord, attackerHorizontalCoord)
 	for _, coords := range movesCoords {
 		if this_board.Cells[coords[0]][coords[1]] != nil && this_board.Cells[coords[0]][coords[1]].Type.ImportantPiece {
@@ -174,7 +174,7 @@ func (this_board Board) IsImportantPieceAttackedByPiece(attackerVerticalCoord in
 	return false
 }
 
-func (this_board Board) GetImportantPieceCoordsForPlayer(player model.Player) [2]int {
+func (this_board Board) GetKingCoordsForPlayer(player model.Player) [2]int {
 	for v := range this_board.Cells {
 		for h, piece := range this_board.Cells[v] {
 			if piece != nil && piece.Type.ImportantPiece && piece.Player == player {
@@ -266,7 +266,7 @@ func (this_board Board) Print() {
 	fmt.Println("\n-------------")
 }
 
-func (this_board Board) GetImportantPieceMovesCoords(vIPCoord int, hIPCoord int) [][2]int {
+func (this_board Board) GetKingMovesCoords(vIPCoord int, hIPCoord int) [][2]int {
 	var kingMovesCoords = [][2]int{}
 	var potentialCoords = this_board.GetPossibleMovesCoords(vIPCoord, hIPCoord)
 	for _, coordsTo := range potentialCoords {
