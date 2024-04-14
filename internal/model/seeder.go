@@ -1168,4 +1168,29 @@ func seed() {
 	}
 
 	db.Create(&DefaultPosition)
+
+	weights := EvaluatorWeights{
+		Id:   1,
+		Name: "Default",
+
+		// Metrics weights
+		MATERIAL_WEIGHT:          1.0,
+		ATTACK_COUNT_WEIGHT:      1.0,
+		PIECE_ADVANCEMENT_WEIGHT: 1.0,
+		DEFENDED_PIECES_WEIGHT:   1.0,
+		CHECK_WEIGHT:             10.0,
+		CHECKMATE_WEIGHT:         99999.0,
+
+		KING_GUARDS_COUNT_WEIGHT:    1.0,
+		KING_DEFENCE_RADIUS1_WEIGHT: 2.0,
+		KING_DEFENCE_RADIUS2_WEIGHT: 1.0,
+		KING_ATTACK_RADIUS1_WEIGHT:  -2.0,
+		KING_ATTACK_RADIUS2_WEIGHT:  -1.0,
+		KING_FREE_CELLS_WEIGHT:      3.0,
+
+		INVENTORY_MULTIPLIER:     1.5,
+		MAX_KING_GUARDS_DISTANCE: 2,
+	}
+
+	db.Create(&weights)
 }

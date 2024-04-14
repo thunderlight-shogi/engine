@@ -49,6 +49,30 @@ type StartingPositionPiece struct {
 	Player             Player
 }
 
+type EvaluatorWeights struct {
+	Id   uint `gorm:"primarykey"`
+	Name string
+
+	// Metrics weights
+	MATERIAL_WEIGHT          float32
+	ATTACK_COUNT_WEIGHT      float32
+	PIECE_ADVANCEMENT_WEIGHT float32
+	DEFENDED_PIECES_WEIGHT   float32
+	CHECK_WEIGHT             float32
+	CHECKMATE_WEIGHT         float32
+
+	KING_GUARDS_COUNT_WEIGHT    float32
+	KING_DEFENCE_RADIUS1_WEIGHT float32
+	KING_DEFENCE_RADIUS2_WEIGHT float32
+	KING_ATTACK_RADIUS1_WEIGHT  float32
+	KING_ATTACK_RADIUS2_WEIGHT  float32
+	KING_FREE_CELLS_WEIGHT      float32
+
+	// Extra constants
+	INVENTORY_MULTIPLIER     float32
+	MAX_KING_GUARDS_DISTANCE uint
+}
+
 var db *gorm.DB
 
 func init() {
@@ -61,7 +85,7 @@ func init() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&StartingPosition{}, &StartingPositionPiece{}, &PieceType{}, &Move{})
+	db.AutoMigrate(&StartingPosition{}, &StartingPositionPiece{}, &PieceType{}, &Move{}, &EvaluatorWeights{})
 
 	result := db.Find(&PieceType{})
 	if result.RowsAffected == 0 {
