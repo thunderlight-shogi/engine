@@ -22,3 +22,5 @@ go.work
 
 *.env
 temp
+
+/website/node_modules/
