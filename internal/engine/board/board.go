@@ -13,6 +13,23 @@ type Position struct {
 	rank int
 }
 
+type MoveType uint
+
+const (
+	Moving MoveType = iota
+	Attacking
+	Dropping
+	PromotionMoving
+	PromotionAttacking
+)
+
+type Move struct {
+	OldCoords Position
+	NewCoords Position
+	PieceType model.PieceType
+	MoveType  MoveType
+}
+
 func NewPos(file, rank int) Position {
 	return Position{file: file, rank: rank}
 }

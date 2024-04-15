@@ -11,23 +11,6 @@ import (
 
 const DEPTH = 2
 
-type MoveType uint
-
-const (
-	Moving MoveType = iota
-	Attacking
-	Dropping
-	PromotionMoving
-	PromotionAttacking
-)
-
-type PickedMove struct {
-	OldCoords board.Position
-	NewCoords board.Position
-	PieceType model.PieceType
-	MoveType  MoveType
-}
-
 func minimax(gs *movegen.GameState, depth int, maximizingPlayer bool) float32 {
 	if depth == 0 {
 		return evaluator.Evaluate(gs)
@@ -79,7 +62,7 @@ func alphabeta(gs *movegen.GameState, depth int, a *float32, b *float32, maximiz
 	}
 }
 
-func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameState) (pickedMove PickedMove) {
+func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameState) (pickedMove board.Move) {
 	var baseBoard = baseGs.Board
 	var newBoard = newGs.Board
 	pickedMove.OldCoords = board.NewPos(-1, -1)
@@ -100,7 +83,7 @@ func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameSt
 	//check what piece player have dropped
 
 	if pickedMove.OldCoords.GetFile() == -1 {
-		pickedMove.MoveType = Dropping
+		pickedMove.MoveType = board.Dropping
 		var baseInventory = baseBoard.Inventories[baseGs.CurMovePlayer]
 		var newInventory = newBoard.Inventories[baseGs.CurMovePlayer]
 		for _, pieceType := range newInventory.Pieces() {
@@ -118,22 +101,22 @@ func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameSt
 		pickedMove.PieceType = oldType
 		if baseBoard.Cells[file][rank] != nil {
 			if oldType.Name != newType.Name {
-				pickedMove.MoveType = PromotionAttacking
+				pickedMove.MoveType = board.PromotionAttacking
 			} else {
-				pickedMove.MoveType = Attacking
+				pickedMove.MoveType = board.Attacking
 			}
 		} else {
 			if oldType.Name != newType.Name {
-				pickedMove.MoveType = PromotionMoving
+				pickedMove.MoveType = board.PromotionMoving
 			} else {
-				pickedMove.MoveType = Moving
+				pickedMove.MoveType = board.Moving
 			}
 		}
 	}
 	return pickedMove
 }
 
-func Search(currentGameState *movegen.GameState) PickedMove {
+func Search(currentGameState *movegen.GameState) board.Move {
 	var allGs = currentGameState.GeneratePossibleStates()
 	var bestValue float32 = -math.MaxFloat32
 	var maximizingPlayer = false
@@ -163,7 +146,7 @@ func Search(currentGameState *movegen.GameState) PickedMove {
 
 type TestStruct struct {
 	NgS movegen.GameState
-	Pm  PickedMove
+	Pm  board.Move
 }
 
 func TestSearch(currentGameState *movegen.GameState) (Ts TestStruct) {
