@@ -79,18 +79,13 @@ func Move(move board.Move) error {
 		return ErrUnknownMoveType
 	}
 
-	switch global_state.CurMovePlayer {
-	case model.Sente:
-		global_state.CurMovePlayer = model.Gote
-	case model.Gote:
-		global_state.CurMovePlayer = model.Sente
-	}
+	global_state.CurMovePlayer = global_state.GetNextPlayer()
 
 	return nil
 }
 
-func GetMove() (move board.Move) {
-	Move(move)
+func GetMove() (move board.Move, err error) {
 	move = movepicker.Search(&global_state)
+	err = Move(move)
 	return
 }

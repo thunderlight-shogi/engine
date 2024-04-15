@@ -62,7 +62,12 @@ func movePlayerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func moveEngineHandler(w http.ResponseWriter, r *http.Request) {
-	move := engine.GetMove()
+	move, err := engine.GetMove()
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
 	body, err := json.Marshal(move)
 	if err != nil {
 		writeError(w, err)

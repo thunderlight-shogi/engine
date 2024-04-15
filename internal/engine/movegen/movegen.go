@@ -17,7 +17,7 @@ type GameState struct {
 	KingUnderAttack bool
 }
 
-func (gs *GameState) getNextPlayer() model.Player {
+func (gs *GameState) GetNextPlayer() model.Player {
 	if gs.CurMovePlayer == model.Sente {
 		return model.Gote
 	} else {
@@ -63,7 +63,7 @@ func (gs *GameState) generatePossibleStatesWithMove(fromPos, toPos board.Positio
 	toFile, toRank := toPos.Get()
 
 	var newBoard = gs.Board.Clone()
-	var nextPlayer = gs.getNextPlayer()
+	var nextPlayer = gs.GetNextPlayer()
 
 	var cellMoveTo = newBoard.Cells[toFile][toRank]
 	var emptyCell = cellMoveTo == nil
@@ -122,7 +122,7 @@ func (gs *GameState) generatePossibleStatesWithDrop(pieceType *model.PieceType, 
 
 	var curBoard = gs.Board
 	var curPlayer = gs.CurMovePlayer
-	var nextPlayer = gs.getNextPlayer()
+	var nextPlayer = gs.GetNextPlayer()
 
 	// check for two pawns in a column
 	if pieceType.Name == "Pawn" && curBoard.IsTherePawn(dropFile) {
