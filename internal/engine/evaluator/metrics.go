@@ -79,7 +79,7 @@ func pieceAdvancement(
 			baseYOffset = y
 		}
 		advancementScore := min(baseYOffset, 6) // Assume that last 3 rows have same value
-		advancementScore *= int(piece.Type.Cost)
+		advancementScore *= int(piece.Type.Cost / 3)
 		result += float32(advancementScore)
 	})
 
@@ -104,10 +104,11 @@ func checkCheck(
 	player model.Player,
 ) float32 {
 	/*
-		Is there check on the board
+		Has player checked his opponent?
 	*/
+	isOpponentChecked := gameState.KingUnderAttack && gameState.CurMovePlayer != player
 	var result float32
-	if gameState.KingUnderAttack {
+	if isOpponentChecked {
 		result = 1
 	} else {
 		result = 0
@@ -120,11 +121,11 @@ func checkCheckmate(
 	player model.Player,
 ) float32 {
 	/*
-		Is there checkmate on the board
+		Has player checkmated his opponent?
 	*/
-	isCheckmate := len(gameState.GeneratePossibleStates()) == 0
+	isOpponentCheckmated := len(gameState.GeneratePossibleStates()) == 0 && gameState.CurMovePlayer != player
 	var result float32
-	if isCheckmate {
+	if isOpponentCheckmated {
 		result = 1
 	} else {
 		result = 0
