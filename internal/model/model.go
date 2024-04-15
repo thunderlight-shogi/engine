@@ -14,35 +14,63 @@ const (
 	Gote
 )
 
-type FigureType struct {
-	Id           uint `gorm:"primarykey"`
-	Name         string
-	Moves        []Move `gorm:"foreignKey:FigureTypeId"`
-	TurnFigureId *uint
-	TurnFigure   *FigureType
+type PieceType struct {
+	Id             uint       `gorm:"primarykey" json:"id"`
+	Name           string     `json:"name"`
+	Moves          []Move     `gorm:"foreignKey:PieceTypeId" json:"moves"`
+	PromotePieceId *uint      `json:"-"`
+	PromotePiece   *PieceType `json:"promote_piece"`
+	DemotePiece    *PieceType `gorm:"-:all" json:"-"`
+	Kanji          rune       `json:"kanji"`
+	ImportantPiece bool       `json:"important_piece"`
+	Cost           uint       `json:"cost"`
 }
 
-type StartingPosition struct {
-	Id      uint `gorm:"primarykey"`
-	Name    string
-	Figures []StartingPositionFigure `gorm:"foreignKey:StartingPositionId"`
+type Preset struct {
+	Id     uint          `gorm:"primarykey" json:"id"`
+	Name   string        `json:"name"`
+	Pieces []PresetPiece `gorm:"foreignKey:PresetId" json:"pieces"`
 }
 
 type Move struct {
-	Id              uint `gorm:"primarykey"`
-	FigureTypeId    uint
-	HorizontalShift int
-	VerticalShift   int
+	Id          uint `gorm:"primarykey" json:"id"`
+	PieceTypeId uint `json:"-"`
+	FileShift   int  `json:"file_shift"`
+	RankShift   int  `json:"rank_shift"`
 }
 
-type StartingPositionFigure struct {
-	Id                 uint `gorm:"primarykey"`
-	StartingPositionId uint
-	FigureTypeId       uint
-	FigureType         FigureType
-	HorizontalOffset   uint
-	VerticalOffset     uint
-	Player             Player
+type PresetPiece struct {
+	Id          uint       `gorm:"primarykey" json:"id"`
+	PresetId    uint       `json:"-"`
+	PieceTypeId uint       `json:"-"`
+	PieceType   *PieceType `gorm:"not null" json:"piece_type"`
+	File        uint       `json:"file"`
+	Rank        uint       `json:"rank"`
+	Player      Player     `json:"player"`
+}
+
+type EvaluatorWeights struct {
+	Id   uint `gorm:"primarykey"`
+	Name string
+
+	// Metrics weights
+	MATERIAL_WEIGHT          float32
+	ATTACK_COUNT_WEIGHT      float32
+	PIECE_ADVANCEMENT_WEIGHT float32
+	DEFENDED_PIECES_WEIGHT   float32
+	CHECK_WEIGHT             float32
+	CHECKMATE_WEIGHT         float32
+
+	KING_GUARDS_COUNT_WEIGHT    float32
+	KING_DEFENCE_RADIUS1_WEIGHT float32
+	KING_DEFENCE_RADIUS2_WEIGHT float32
+	KING_ATTACK_RADIUS1_WEIGHT  float32
+	KING_ATTACK_RADIUS2_WEIGHT  float32
+	KING_FREE_CELLS_WEIGHT      float32
+
+	// Extra constants
+	INVENTORY_MULTIPLIER     float32
+	MAX_KING_GUARDS_DISTANCE uint
 }
 
 var db *gorm.DB
@@ -57,9 +85,9 @@ func init() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&StartingPosition{}, &StartingPositionFigure{}, &FigureType{}, &Move{})
+	db.AutoMigrate(&Preset{}, &PresetPiece{}, &PieceType{}, &Move{}, &EvaluatorWeights{})
 
-	result := db.Find(&FigureType{})
+	result := db.Find(&PieceType{})
 	if result.RowsAffected == 0 {
 		seed()
 	}

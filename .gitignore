@@ -22,3 +22,5 @@ go.work
 
 *.env
 temp
+.vscode
+.idea
