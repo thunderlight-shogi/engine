@@ -20,6 +20,8 @@ func Start(id uint) error {
 	result := db.Preload("Pieces").
 		Preload("Pieces.PieceType").
 		Preload("Pieces.PieceType.PromotePiece").
+		Preload("Pieces.PieceType.Moves").
+		Preload("Pieces.PieceType.PromotePiece.Moves").
 		First(&pos, id)
 	if result.Error != nil {
 		return result.Error
