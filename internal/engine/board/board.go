@@ -273,7 +273,6 @@ func (this_board Board) IsKingAttackedByPiece(attackerPos Position) bool {
 	return false
 }
 
-// TODO: Все-таки possible... Короля могут съесть, если он сделает ход на опасную клетку. Исправить
 func (this_board Board) GetKingPositionForPlayer(player model.Player) Position {
 	for x := range this_board.Cells {
 		for y, piece := range this_board.Cells[x] {
@@ -282,7 +281,7 @@ func (this_board Board) GetKingPositionForPlayer(player model.Player) Position {
 			}
 		}
 	}
-	return NewPos(-100, -100) //should be impossible
+	panic("The king is not on the board")
 }
 
 func (this_board Board) GetPositionsOfAttackersOnCell(attackerPlayer model.Player, cellPos Position) []Position {
@@ -298,7 +297,7 @@ func (this_board Board) GetPositionsOfAttackersOnCell(attackerPlayer model.Playe
 	return attackers
 }
 
-func (this_board Board) GetKingMoves(kingPos Position) []Position {
+func (this_board Board) GetKingPossibleMoves(kingPos Position) []Position {
 	var kingMovesPositions = []Position{}
 	var king = this_board.Cells[kingPos.GetFile()][kingPos.GetRank()]
 	var attackerPlayer = king.GetAttackerPlayer()

@@ -92,7 +92,14 @@ func (gs *GameState) generatePossibleStatesFromBoardPiece(piecePos board.Positio
 	gss = []GameState{}
 
 	var curBoard = gs.Board
-	var movesPositions = curBoard.GetPiecePossibleMoves(piecePos)
+
+	var movesPositions []board.Position
+	if curBoard.Cells[piecePos.GetFile()][piecePos.GetRank()].Type.ImportantPiece {
+		movesPositions = curBoard.GetKingPossibleMoves(piecePos)
+	} else {
+		movesPositions = curBoard.GetPiecePossibleMoves(piecePos)
+	}
+
 	for _, movePos := range movesPositions {
 		gss = append(gss, gs.generatePossibleStatesWithMove(piecePos, movePos)...)
 	}
@@ -106,16 +113,6 @@ func (gs *GameState) generatePossibleStatesFromBoardPieces() (gss []GameState) {
 	curBoard.IterateBoardPieces(gs.CurMovePlayer, func(piece *board.Piece, pos board.Position) {
 		gss = append(gss, gs.generatePossibleStatesFromBoardPiece(pos)...)
 	})
-	return
-}
-
-func (gs *GameState) generatePossibleStatesFromKingRunningAway(kingPos board.Position) (gss []GameState) {
-	gss = []GameState{}
-	var curBoard = gs.Board
-	var movesPositions = curBoard.GetKingMoves(kingPos)
-	for _, movePos := range movesPositions {
-		gss = append(gss, gs.generatePossibleStatesWithMove(kingPos, movePos)...)
-	}
 	return
 }
 
@@ -141,7 +138,7 @@ func (gs *GameState) generatePossibleStatesWithDrop(pieceType *model.PieceType, 
 			moveFile, moveRank := movePos.Get()
 			var cell = newBoard.Cells[moveFile][moveRank]
 			if cell != nil && cell.Type.ImportantPiece {
-				var runningFromPawnStates = gs.generatePossibleStatesFromKingRunningAway(movePos)
+				var runningFromPawnStates = gs.generatePossibleStatesFromBoardPiece(movePos)
 				if len(runningFromPawnStates) == 0 { // if king can't run away from dropped pawn
 					return
 				}
@@ -234,7 +231,7 @@ func (gs *GameState) generatePossibleStatesFromDefendingKing() (gss []GameState)
 	}
 
 	// important piece is running away
-	gss = append(gss, gs.generatePossibleStatesFromKingRunningAway(kingPosition)...)
+	gss = append(gss, gs.generatePossibleStatesFromBoardPiece(kingPosition)...)
 	return
 }
 
