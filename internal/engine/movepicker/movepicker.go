@@ -88,7 +88,7 @@ func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameSt
 		var newInventory = newBoard.Inventories[baseGs.CurMovePlayer]
 		for _, pieceType := range newInventory.Pieces() {
 			if newInventory.CountPiece(pieceType) != baseInventory.CountPiece(pieceType) {
-				pickedMove.PieceType = *pieceType
+				pickedMove.PieceType = pieceType
 				break
 			}
 		}
@@ -96,7 +96,7 @@ func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameSt
 		//check for move type
 		var file = pickedMove.NewCoords.GetFile()
 		var rank = pickedMove.NewCoords.GetRank()
-		var oldType = *baseBoard.Cells[pickedMove.OldCoords.GetFile()][pickedMove.OldCoords.GetRank()].Type
+		var oldType = baseBoard.Cells[pickedMove.OldCoords.GetFile()][pickedMove.OldCoords.GetRank()].Type
 		var newType = newBoard.Cells[file][rank].Type
 		pickedMove.PieceType = oldType
 		if baseBoard.Cells[file][rank] != nil {

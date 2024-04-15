@@ -6,17 +6,6 @@ import (
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
-type pos struct {
-	File uint `json:"file"`
-	Rank uint `json:"rank"`
-}
-
-type move struct {
-	From pos  `json:"from"`
-	To   pos  `json:"to"`
-	Type uint `json:"type"`
-}
-
 func setContentType(w http.ResponseWriter, con_type string) {
 	w.Header().Add("Content-Type", con_type)
 }

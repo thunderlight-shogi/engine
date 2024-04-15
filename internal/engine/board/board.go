@@ -9,8 +9,8 @@ import (
 )
 
 type Position struct {
-	file int
-	rank int
+	File int `json:"file"`
+	Rank int `json:"rank"`
 }
 
 type MoveType uint
@@ -24,26 +24,26 @@ const (
 )
 
 type Move struct {
-	OldCoords Position
-	NewCoords Position
-	PieceType model.PieceType
-	MoveType  MoveType
+	OldCoords Position `json:"old_pos"`
+	NewCoords Position `json:"new_pos"`
+	PieceType *model.PieceType
+	MoveType  MoveType `json:"move_type"`
 }
 
 func NewPos(file, rank int) Position {
-	return Position{file: file, rank: rank}
+	return Position{File: file, Rank: rank}
 }
 
 func (pos Position) Get() (int, int) {
-	return pos.file, pos.rank
+	return pos.File, pos.Rank
 }
 
 func (pos Position) GetFile() int {
-	return pos.file
+	return pos.File
 }
 
 func (pos Position) GetRank() int {
-	return pos.rank
+	return pos.Rank
 }
 
 type Piece struct {
@@ -119,6 +119,14 @@ func (this_board Board) Clone() (newby Board) {
 	newby.Inventories[model.Gote] = this_board.Inventories[model.Gote].clone()
 
 	return
+}
+
+func (this_board Board) At(pos Position) *Piece {
+	return this_board.Cells[pos.File][pos.Rank]
+}
+
+func (this_board Board) Set(pos Position, piece *Piece) {
+	this_board.Cells[pos.File][pos.Rank] = piece
 }
 
 func (this_board Board) GetPromotionZone(player model.Player) []int {
@@ -260,7 +268,7 @@ func (this_board Board) GetPiecePossibleMoves(piecePos Position) (possibleMovesP
 	var curPiece = this_board.Cells[pieceFile][pieceRank]
 	var reachableMovesPositions = this_board.GetPieceReachableMoves(piecePos)
 	for _, movePos := range reachableMovesPositions {
-		var moveCell = this_board.Cells[movePos.file][movePos.rank]
+		var moveCell = this_board.Cells[movePos.File][movePos.Rank]
 		var emptyOrEnemyCell bool = moveCell == nil || moveCell.Player != curPiece.Player
 		if emptyOrEnemyCell {
 			possibleMovesPositions = append(possibleMovesPositions, movePos)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/thunderlight-shogi/engine/internal/engine"
+	"github.com/thunderlight-shogi/engine/internal/engine/board"
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
@@ -17,6 +18,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func startEngineHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
 
 	if err != nil {
 		writeError(w, err)
@@ -41,18 +43,35 @@ func startEngineHandler(w http.ResponseWriter, r *http.Request) {
 
 func movePlayerHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
+	defer r.Body.Close()
 
 	if err != nil {
 		writeError(w, err)
 		return
 	}
 
-	var move move
+	var move board.Move
 	json.Unmarshal(body, &move)
-}
-func moveEngineHandler(w http.ResponseWriter, r *http.Request) {
 
+	err = engine.Move(move)
+
+	if err != nil {
+		writeError(w, err)
+		return
+	}
 }
+
+func moveEngineHandler(w http.ResponseWriter, r *http.Request) {
+	move := engine.GetMove()
+	body, err := json.Marshal(move)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	w.Write(body)
+}
+
 func moveHelpHandler(w http.ResponseWriter, r *http.Request) {
 
 }
