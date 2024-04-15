@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -143,14 +142,4 @@ func Run() {
 	http.HandleFunc("POST /piece/del", pieceDelHandler)  // Delete piece
 
 	http.ListenAndServe(":80", nil)
-
-	db := model.GetDB()
-	_cool := model.PieceType{}
-	db.Preload("Moves").Preload("PromotePiece").Preload("PromotePiece.Moves").First(&_cool, 13)
-
-	str, _ := json.Marshal(_cool)
-	fmt.Println(string(str))
-	var _new model.PieceType
-	json.Unmarshal(str, &_new)
-	fmt.Println(_new)
 }
