@@ -61,7 +61,7 @@ func movePlayerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func moveEngineHandler(w http.ResponseWriter, r *http.Request) {
-	move, err := engine.GetMove()
+	move, err := engine.EngineMove()
 	if err != nil {
 		writeError(w, err)
 		return
@@ -77,7 +77,15 @@ func moveEngineHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func moveHelpHandler(w http.ResponseWriter, r *http.Request) {
+	move := engine.GetHelp()
 
+	body, err := json.Marshal(move)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	w.Write(body)
 }
 
 func presetListHandler(w http.ResponseWriter, r *http.Request) {

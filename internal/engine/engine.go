@@ -86,8 +86,12 @@ func Move(move board.Move) error {
 	return nil
 }
 
-func GetMove() (move board.Move, err error) {
+func EngineMove() (move board.Move, err error) {
 	move = movepicker.Search(&global_state)
 	err = Move(move)
 	return
+}
+
+func GetHelp() board.Move {
+	return movepicker.Search(&global_state)
 }
