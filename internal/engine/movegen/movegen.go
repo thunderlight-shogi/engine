@@ -31,10 +31,22 @@ func generateGameStateAfterChangeAt(board board.Board, nextPlayer model.Player, 
 	return &GameState{Board: board, CurMovePlayer: nextPlayer, KingUnderAttack: ipUnderAttack}
 }
 
-func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(board board.Board, nextPlayer model.Player, changePos board.Position) *GameState {
+func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(someBoard board.Board, nextPlayer model.Player, changePos board.Position) *GameState {
 	// e.g., pawn cannot move to last row because it will have no moves to board field (so this is not possible game state)
-	if len(board.GetPieceMovesToBoardField(changePos)) != 0 {
-		return generateGameStateAfterChangeAt(board, nextPlayer, changePos)
+	if len(someBoard.GetPieceMovesToBoardField(changePos)) != 0 {
+		// TODO: сильно замедляет, исправить
+		var isKingAttackedByPiece bool = false
+		someBoard.IterateBoardPieces(nextPlayer, func(piece *board.Piece, pos board.Position) {
+			if someBoard.IsKingAttackedByPiece(pos) {
+				isKingAttackedByPiece = true
+			}
+		})
+
+		if isKingAttackedByPiece {
+			return nil
+		} else {
+			return generateGameStateAfterChangeAt(someBoard, nextPlayer, changePos)
+		}
 	}
 	return nil
 }
@@ -51,7 +63,19 @@ func tryGeneratePromotionGameStateWithMove(someBoard board.Board, nextPlayer mod
 			altNewBoard.Cells[toFile][toRank] = boardPiece.GetPromotedPiece()
 			altNewBoard.Cells[fromFile][fromRank] = nil
 
-			return generateGameStateAfterChangeAt(altNewBoard, nextPlayer, toPos)
+			// TODO: сильно замедляет, исправить
+			var isKingAttackedByPiece bool = false
+			altNewBoard.IterateBoardPieces(nextPlayer, func(piece *board.Piece, pos board.Position) {
+				if altNewBoard.IsKingAttackedByPiece(pos) {
+					isKingAttackedByPiece = true
+				}
+			})
+
+			if isKingAttackedByPiece {
+				return nil
+			} else {
+				return generateGameStateAfterChangeAt(altNewBoard, nextPlayer, toPos)
+			}
 		}
 	}
 	return nil

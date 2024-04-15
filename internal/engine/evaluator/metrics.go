@@ -123,6 +123,9 @@ func checkCheckmate(
 	/*
 		Has player checkmated his opponent?
 	*/
+
+	// TODO: Вызывать GeneratePossibleStates довольно затратно только для того, чтобы проверить мат. Оптимизировать
+	// 		 (можно проверять, находится ли король под шахом и только тогда генерить возможные геймстейты)
 	isOpponentCheckmated := len(gameState.GeneratePossibleStates()) == 0 && gameState.CurMovePlayer != player
 	var result float32
 	if isOpponentCheckmated {
@@ -147,7 +150,7 @@ func kingGuardsCount(
 	var curBoard = gameState.Board
 	var result float32 = 0
 
-	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingCoords := curBoard.GetKingPositionForPlayer(player)
 	kingX, kingY := kingCoords.Get()
 
 	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {

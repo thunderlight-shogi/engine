@@ -1,7 +1,6 @@
 package movepicker
 
 import (
-	"fmt"
 	"math"
 
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
@@ -143,40 +142,4 @@ func Search(currentGameState *movegen.GameState) board.Move {
 	}
 	var bestGs = allGs[bestIndex]
 	return getMoveFromBoardDifference(currentGameState, &bestGs)
-}
-
-type TestStruct struct {
-	NgS movegen.GameState
-	Pm  board.Move
-}
-
-func TestSearch(currentGameState *movegen.GameState) (Ts TestStruct) {
-	var allGs = currentGameState.GeneratePossibleStates()
-	var bestValue float32 = -math.MaxFloat32
-	var maximizingPlayer = false
-	if currentGameState.CurMovePlayer == model.Gote {
-		bestValue = math.MaxFloat32
-		maximizingPlayer = true
-	}
-	var bestIndex = 0
-	var a float32 = -math.MaxFloat32
-	var b float32 = math.MaxFloat32
-	for index := range allGs {
-		var tempValue = alphabeta(&allGs[index], DEPTH, &a, &b, maximizingPlayer)
-		if maximizingPlayer {
-			if tempValue < bestValue {
-				bestValue = tempValue
-				bestIndex = index
-			}
-
-		} else if tempValue > bestValue {
-			bestValue = tempValue
-			bestIndex = index
-		}
-	}
-	fmt.Printf("evaluator.Evaluation_report(&allGs[bestIndex]): %v\n", evaluator.Evaluation_report(&allGs[bestIndex]))
-	var bestGs = allGs[bestIndex]
-	Ts.NgS = bestGs
-	Ts.Pm = getMoveFromBoardDifference(currentGameState, &bestGs)
-	return Ts
 }
