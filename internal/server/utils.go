@@ -6,8 +6,37 @@ import (
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
+type pos struct {
+	File uint `json:"file"`
+	Rank uint `json:"rank"`
+}
+
+type move struct {
+	From pos  `json:"from"`
+	To   pos  `json:"to"`
+	Type uint `json:"type"`
+}
+
 func setContentType(w http.ResponseWriter, con_type string) {
 	w.Header().Add("Content-Type", con_type)
+}
+
+func jsonType(w http.ResponseWriter) {
+	setContentType(w, "application/json")
+}
+
+func plainType(w http.ResponseWriter) {
+	setContentType(w, "text/plain")
+}
+
+func htmlType(w http.ResponseWriter) {
+	setContentType(w, "text/html")
+}
+
+func writeError(w http.ResponseWriter, err error) {
+	plainType(w)
+	w.WriteHeader(500)
+	w.Write([]byte(err.Error()))
 }
 
 func getPositionList() (pos_list []model.Preset, err error) {

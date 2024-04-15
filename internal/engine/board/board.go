@@ -103,7 +103,7 @@ func (this_board Board) canPieceReachCell(vPieceCoord int, hPieceCoord int, vCel
 		hShift, vShift := vMiddleCoord-vPieceCoord, hMiddleCoord-hPieceCoord
 		// maybe better to replace with simple loop
 		idx := slices.IndexFunc(moves, func(move model.Move) bool {
-			return move.HorizontalShift*shiftSign == hShift && move.VerticalShift*shiftSign == vShift
+			return move.RankShift*shiftSign == hShift && move.FileShift*shiftSign == vShift
 		})
 		if idx != -1 { // if move between origin and end was found in moves of piece
 			emptyCell := this_board.Cells[vMiddleCoord][hMiddleCoord] == nil
@@ -123,8 +123,8 @@ func (this_board Board) GetInBoardFieldMoves(verticalCoord int, horizontalCoord 
 	var shiftSign = piece.getShiftSign()
 	var moves = piece.Type.Moves
 	for _, move := range moves {
-		var vMoveCoord = verticalCoord + move.HorizontalShift*shiftSign
-		var hMoveCoord = horizontalCoord + move.VerticalShift*shiftSign
+		var vMoveCoord = verticalCoord + move.RankShift*shiftSign
+		var hMoveCoord = horizontalCoord + move.FileShift*shiftSign
 
 		var inBoardField bool = vMoveCoord >= 0 && vMoveCoord < len(this_board.Cells) && hMoveCoord >= 0 && hMoveCoord < len(this_board.Cells[vMoveCoord])
 		if inBoardField {

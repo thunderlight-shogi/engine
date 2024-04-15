@@ -15,38 +15,38 @@ const (
 )
 
 type PieceType struct {
-	Id             uint `gorm:"primarykey"`
-	Name           string
-	Moves          []Move `gorm:"foreignKey:PieceTypeId"`
-	PromotePieceId *uint
-	PromotePiece   *PieceType
-	DemotePiece    *PieceType `gorm:"-:all"`
-	Kanji          rune
-	ImportantPiece bool
-	Cost           uint
+	Id             uint       `gorm:"primarykey" json:"id"`
+	Name           string     `json:"name"`
+	Moves          []Move     `gorm:"foreignKey:PieceTypeId"`
+	PromotePieceId *uint      `json:"-"`
+	PromotePiece   *PieceType `json:"promote_piece"`
+	DemotePiece    *PieceType `gorm:"-:all" json:"-"`
+	Kanji          rune       `json:"kanji"`
+	ImportantPiece bool       `json:"important_piece"`
+	Cost           uint       `json:"cost"`
 }
 
 type Preset struct {
 	Id     uint          `gorm:"primarykey" json:"id"`
 	Name   string        `json:"name"`
-	Pieces []PresetPiece `gorm:"foreignKey:PresetId" json:"-"`
+	Pieces []PresetPiece `gorm:"foreignKey:PresetId" json:"pieces"`
 }
 
 type Move struct {
-	Id              uint `gorm:"primarykey"`
-	PieceTypeId     uint
-	HorizontalShift int
-	VerticalShift   int
+	Id          uint `gorm:"primarykey" json:"id"`
+	PieceTypeId uint `json:"-"`
+	FileShift   int  `json:"file_shift"`
+	RankShift   int  `json:"rank_shift"`
 }
 
 type PresetPiece struct {
-	Id               uint `gorm:"primarykey"`
-	PresetId         uint
-	PieceTypeId      uint
-	PieceType        *PieceType `gorm:"not null"`
-	HorizontalOffset uint
-	VerticalOffset   uint
-	Player           Player
+	Id          uint       `gorm:"primarykey" json:"id"`
+	PresetId    uint       `json:"-"`
+	PieceTypeId uint       `json:"-"`
+	PieceType   *PieceType `gorm:"not null" json:"piece_type"`
+	File        uint       `json:"file"`
+	Rank        uint       `json:"rank"`
+	Player      Player     `json:"player"`
 }
 
 type EvaluatorWeights struct {
