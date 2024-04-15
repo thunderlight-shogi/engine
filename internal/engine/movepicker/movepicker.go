@@ -1,6 +1,7 @@
 package movepicker
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
@@ -9,7 +10,7 @@ import (
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
-const DEPTH = 2
+const DEPTH = 3
 
 func minimax(gs *movegen.GameState, depth int, maximizingPlayer bool) float32 {
 	if depth == 0 {
@@ -173,6 +174,7 @@ func TestSearch(currentGameState *movegen.GameState) (Ts TestStruct) {
 			bestIndex = index
 		}
 	}
+	fmt.Printf("evaluator.Evaluation_report(&allGs[bestIndex]): %v\n", evaluator.Evaluation_report(&allGs[bestIndex]))
 	var bestGs = allGs[bestIndex]
 	Ts.NgS = bestGs
 	Ts.Pm = getMoveFromBoardDifference(currentGameState, &bestGs)
