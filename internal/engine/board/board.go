@@ -215,7 +215,7 @@ func (this_board Board) canPieceReachCell(piecePos, cellPos Position) bool {
 		hShift, vShift := vMiddleCoord-pieceFile, hMiddleCoord-pieceRank
 		// maybe better to replace with simple loop
 		idx := slices.IndexFunc(moves, func(move model.Move) bool {
-			return move.RankShift*shiftSign == hShift && move.FileShift*shiftSign == vShift
+			return move.FileShift*shiftSign == hShift && move.RankShift*shiftSign == vShift
 		})
 		if idx != -1 { // if move between origin and end was found in moves of piece
 			emptyCell := this_board.Cells[vMiddleCoord][hMiddleCoord] == nil
@@ -238,8 +238,8 @@ func (this_board Board) GetPieceMovesToBoardField(piecePos Position) (movesPosit
 	var shiftSign = piece.getShiftSign()
 	var moves = piece.Type.Moves
 	for _, move := range moves {
-		var moveFile = pieceFile + move.RankShift*shiftSign
-		var moveRank = pieceRank + move.FileShift*shiftSign
+		var moveFile = pieceFile + move.FileShift*shiftSign
+		var moveRank = pieceRank + move.RankShift*shiftSign
 
 		var inBoardField bool = moveFile >= 0 && moveFile < len(this_board.Cells) && moveRank >= 0 && moveRank < len(this_board.Cells[moveFile])
 		if inBoardField {
