@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue';
 import { shake } from '../utils/numbers';
-import { PieceState } from '../thunderlight/piece-type';
+import { PieceState, PieceType } from '../thunderlight/piece-type';
 
 const emit = defineEmits([
     'grab',
@@ -9,38 +9,26 @@ const emit = defineEmits([
 ]);
 
 const props = defineProps<{ 
-    kanji: string,
+    type: PieceType,
     grabbable: boolean,
     enemy: boolean,
-    promoted: boolean,
     state: PieceState
 }>();
 
 const piece: Ref<HTMLElement | null> = ref(null);
 
-function onPieceGrab(event: MouseEvent): void {
-    // if (!props.grabbable) {
-    //     return;
-    // }
-
+function onPieceGrab(_: MouseEvent): void {
     if (!piece.value) {
         return;
     }
 
-    // const element: HTMLElement = event.currentTarget as HTMLElement;
     piece.value.style.transition = '';
     piece.value.style.zIndex = '99';
 
-    emit("grab", piece.value);
+    emit("grab", piece.value, props.type);
 }
 
-function onPieceDrop(event: MouseEvent) {
-    // if (!props.grabbable) {
-    //     return;
-    // }
-
-    // const element: HTMLElement = event.currentTarget as HTMLElement;
-
+function onPieceDrop(_: MouseEvent) {
     if (!piece.value) {
         return;
     }
@@ -49,7 +37,7 @@ function onPieceDrop(event: MouseEvent) {
     piece.value.style.transition = '200ms ease-in-out';
     piece.value.style.transform = `rotate(${shake(0, 15) + (props.enemy ? 180 : 0)}deg)`;
 
-    emit("drop", piece.value);
+    emit("drop", piece.value, props.type);
 }
 </script>
 
@@ -57,8 +45,8 @@ function onPieceDrop(event: MouseEvent) {
 <div 
     class="piece" 
     ref="piece"
-    :class="{grabbable, promoted, enemy, [state]: true }"
-    :title="grabbable ? `😈⚔️ Grab this ${kanji} to move!` : `⛔🤚 This is not your ${kanji}!`"
+    :class="{grabbable, promoted: type.promoted, enemy, [state]: true }"
+    :title="enemy ? `That's not this player's turn!` : `Grab this piece to make a move.`"
     @mousedown="onPieceGrab"
     @mouseup="onPieceDrop"
 >
@@ -66,7 +54,7 @@ function onPieceDrop(event: MouseEvent) {
         <polygon class="piece-body" points="54.67 14.25 29.99 0 29.99 0 29.99 0 5.3 14.25 0 62.8 29.99 62.8 59.97 62.8 54.67 14.25"/>
     </svg>
 
-    <span class="piece-kanji">{{ kanji }}</span>
+    <span class="piece-kanji">{{ type.kanji }}</span>
 </div>
 
 </template>
@@ -108,7 +96,7 @@ function onPieceDrop(event: MouseEvent) {
     cursor: not-allowed
     transform-style: preserve-3d
     transition: 75ms
-    filter: hue-rotate(0deg)
+    opacity: 0.3
     
     &.drop
         animation: piece-drop 200ms ease-in
@@ -119,15 +107,12 @@ function onPieceDrop(event: MouseEvent) {
     &.grabbable
         opacity: 1
         cursor: grab
-        filter: hue-rotate(0)
+        filter: hue-rotate(0deg)
 
         &:active
             scale: 1.5
             cursor: grabbing
             filter: drop-shadow(10px 10px 5px transparentize($background, 0.60))
-
-    &:not(.grabbable)
-        opacity: 0.3
 
     & > *
         grid-row: 1
