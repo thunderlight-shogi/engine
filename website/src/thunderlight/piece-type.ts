@@ -5,10 +5,30 @@ export type PieceState = "idle" | "drop";
 
 export class PieceType {
     constructor(public readonly kanji: string, 
-                public readonly source: PieceType | undefined = undefined) {}
+                public readonly _demotion: PieceType | undefined = undefined) {}
+
+    get demotion(): PieceType {
+        return this._demotion ?? this;
+    }
+
+    get promotions(): PieceType[] {
+        return TYPES.filter(type => this.equals(type._demotion));
+    }
+
+    get promotable(): boolean {
+        return this.promotions.length === 1;
+    }
+
+    get promotion(): PieceType {
+        if (!this.promotable) {
+            throw Error(`To promote a piece, there should be exactly one promotion type, not ${this.promotions.length}.`)
+        }
+
+        return this.promotions[0];
+    }
 
     get promoted(): boolean {
-        return this.source !== undefined;
+        return this._demotion !== undefined;
     }
 
     public equals(other: PieceType | undefined): boolean {
@@ -28,13 +48,7 @@ export class Piece {
             throw Error(`The ${this.type.kanji} is unpromotable.`);
         }
 
-        const promotionTypes = TYPES.filter(type => this.type.equals(type.source)); 
-
-        if (promotionTypes.length !== 1) {
-            throw Error(`To promote a piece, there should be exactly one promotion type, not ${promotionTypes.length}.`)
-        }
-
-        this.type = promotionTypes[0];
+        this.type = this.type.promotion;
     }
 }
 

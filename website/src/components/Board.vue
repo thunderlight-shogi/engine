@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { generateUUIDv4 } from '../crypto/uuids';
 import { byClass, closest, indexOfChild, locate, locateMouse, measure, move } from '../dom/dom';
 import { firecracker } from '../particles/particles';
-import { MoveType, useBoard } from '../stores/board-store';
+import { useBoard } from '../stores/board-store';
 import { Coordinate } from '../thunderlight/coordinate';
 import { EngineMode } from '../thunderlight/engine-mode';
 import { jukebox } from '../utils/jukebox';
@@ -13,7 +13,7 @@ import Inventory from './Inventory.vue';
 import ModeSwitch from './ModeSwitch.vue';
 
 
-let hand: HTMLElement | undefined = undefined;
+const hand = ref<HTMLElement | undefined>(undefined);
 const board = useBoard();
 const mode = ref<EngineMode>('board');
 
@@ -22,11 +22,11 @@ function getCells(): HTMLElement[] {
 }
 
 function locateHand(): Coordinate {
-    if (hand === undefined) {
+    if (hand.value === undefined) {
         throw new Error("Cannot locate an empty hand");
     }
 
-    const cell = hand.parentElement;
+    const cell = hand.value.parentElement;
 
     if (cell === null) {
         throw new Error("Cannot locate a hand with no parent")
@@ -55,33 +55,37 @@ function highlight(cell: HTMLElement) {
 
 function onPieceGrab(element: HTMLElement) {
     jukebox.play("piece.grab", 0.2);
-    hand = element;
-    hand.style.position = 'absolute';
+    hand.value = element;
+    hand.value.style.position = 'absolute';
+
+    console.info("piece.grab")
 }
 
-async function onPieceDrop(piece: HTMLElement) {
-    if (hand === undefined) {
+async function onPieceDrop(_: HTMLElement) {
+    if (hand.value === undefined) {
         return;
     }
 
+    console.info("piece.drop")
+
     const cells = getCells();
-    const underlyingCell = closest(cells, hand);
+    const underlyingCell = closest(cells, hand.value);
     const source = locateHand();
     const destination = locateCell(underlyingCell);
 
-    hand.style.position = '';
-    hand.style.top = '';
-    hand.style.left = '';
+    hand.value.style.position = '';
+    hand.value.style.top = '';
+    hand.value.style.left = '';
 
     const move = board.move(source, destination);
 
     switch (move) {
-        case MoveType.TRAVEL:
+        case 'travel':
             jukebox.play("piece.drop", 0.3);
             break;
 
-        case MoveType.ATTACK:
-            hand = undefined;
+        case 'attack':
+            hand.value = undefined;
             
             await sleep(100);
             jukebox.play("piece.attack", 0.8, 0.3);
@@ -90,35 +94,33 @@ async function onPieceDrop(piece: HTMLElement) {
             firecracker.splash("piece.shred", locate(underlyingCell), 30, 25);
             break;
 
-        case MoveType.BACK:
+        case 'back':
             jukebox.play("piece.back", 0.8, 0.3);
             break;
 
-        case MoveType.PROHIBITED:
+        case 'prohibited':
             jukebox.play("piece.prohibited");
             break;
     }
     
     fadeCells();
-    hand = undefined;
+    hand.value = undefined;
 }
 
 function onPieceMove(event: MouseEvent): void {
-    if(hand === undefined) {
+    if(hand.value === undefined) {
         return;
     }
 
-    const mouse = locateMouse(event).shift(measure(hand).shorten(3));
+    const mouse = locateMouse(event).shift(measure(hand.value).shorten(3));
     const cells = getCells();
-    const underlyingCell = closest(cells, hand);
-
-    console.info(`${mouse}`, hand);
+    const underlyingCell = closest(cells, hand.value);
 
     if(!underlyingCell.classList.contains('highlighted')) {
         fadeCells();
     }
 
-    move(hand, mouse);
+    move(hand.value, mouse);
     highlight(underlyingCell);
 }
 
@@ -129,16 +131,15 @@ function onPieceMove(event: MouseEvent): void {
         <ModeSwitch v-model="mode"></ModeSwitch>
 
         <div id="board">
-            <Inventory player="gote"></Inventory>
+            <Inventory player="gote" v-model="hand"></Inventory>
 
             <div id="cells" @mousemove="onPieceMove">
                 <div class="cell" v-for="piece of board.cells">
                     <DraggablePiece 
                         v-if="piece !== undefined"
                         :key="piece?.id ?? generateUUIDv4()"
-                        :kanji="piece.type.kanji"
-                        :promoted="piece?.type.promoted" 
-                        :grabbable="piece?.player === board.player"
+                        :type="piece.type"
+                        :grabbable="piece?.player === board.turn"
                         :enemy="piece?.player === 'gote'"
                         :state="piece?.state"
                         ref="pieces"
@@ -148,7 +149,7 @@ function onPieceMove(event: MouseEvent): void {
                 </div>
             </div>
 
-            <Inventory player="sente"></Inventory>
+            <Inventory player="sente" v-model="hand"></Inventory>
         </div>
     </div>
     
