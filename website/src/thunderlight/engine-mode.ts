@@ -1,0 +1,1 @@
+export type EngineMode = 'board' | 'analysis' | 'play';  

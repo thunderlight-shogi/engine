@@ -22,5 +22,7 @@ go.work
 
 *.env
 temp
+.vscode
+.idea
 
 /website/node_modules/

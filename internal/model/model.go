@@ -14,32 +14,34 @@ const (
 	Gote
 )
 
-type FigureType struct {
-	Id           uint `gorm:"primarykey"`
-	Name         string
-	Moves        []Move `gorm:"foreignKey:FigureTypeId"`
-	TurnFigureId *uint
-	TurnFigure   *FigureType
+type PieceType struct {
+	Id             uint `gorm:"primarykey"`
+	Name           string
+	Moves          []Move `gorm:"foreignKey:PieceTypeId"`
+	PromotePieceId *uint
+	PromotePiece   *PieceType
+	Kanji          rune
+	ImportantPiece bool
 }
 
 type StartingPosition struct {
-	Id      uint `gorm:"primarykey"`
-	Name    string
-	Figures []StartingPositionFigure `gorm:"foreignKey:StartingPositionId"`
+	Id     uint `gorm:"primarykey"`
+	Name   string
+	Pieces []StartingPositionPiece `gorm:"foreignKey:StartingPositionId"`
 }
 
 type Move struct {
 	Id              uint `gorm:"primarykey"`
-	FigureTypeId    uint
+	PieceTypeId     uint
 	HorizontalShift int
 	VerticalShift   int
 }
 
-type StartingPositionFigure struct {
+type StartingPositionPiece struct {
 	Id                 uint `gorm:"primarykey"`
 	StartingPositionId uint
-	FigureTypeId       uint
-	FigureType         FigureType
+	PieceTypeId        uint
+	PieceType          PieceType
 	HorizontalOffset   uint
 	VerticalOffset     uint
 	Player             Player
@@ -57,9 +59,9 @@ func init() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&StartingPosition{}, &StartingPositionFigure{}, &FigureType{}, &Move{})
+	db.AutoMigrate(&StartingPosition{}, &StartingPositionPiece{}, &PieceType{}, &Move{})
 
-	result := db.Find(&FigureType{})
+	result := db.Find(&PieceType{})
 	if result.RowsAffected == 0 {
 		seed()
 	}
