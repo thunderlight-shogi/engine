@@ -327,8 +327,9 @@ func (this_board Board) Print() {
 	}
 	fmt.Println()
 
-	for _, verticalPieces := range this_board.Cells {
-		for _, piece := range verticalPieces {
+	for i := range 9 {
+		for j := range 9 {
+			var piece = this_board.Cells[8-j][i]
 			if piece == nil {
 				fmt.Print(" - ")
 			} else {

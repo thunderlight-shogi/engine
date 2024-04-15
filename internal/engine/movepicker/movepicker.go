@@ -9,7 +9,7 @@ import (
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
-const DEPTH = 3
+const DEPTH = 2
 
 type MoveType uint
 
@@ -21,14 +21,10 @@ const (
 	PromotionAttacking
 )
 
-type Coordinates struct {
-	horizontal int
-	vertical   int
-}
-
 type PickedMove struct {
-	Piece     *board.Piece
-	NewCoords Coordinates
+	OldCoords board.Position
+	NewCoords board.Position
+	PieceType model.PieceType
 	MoveType  MoveType
 }
 
@@ -86,15 +82,15 @@ func alphabeta(gs *movegen.GameState, depth int, a *float32, b *float32, maximiz
 func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameState) (pickedMove PickedMove) {
 	var baseBoard = baseGs.Board
 	var newBoard = newGs.Board
-	pickedMove.Piece = nil
+	pickedMove.OldCoords = board.NewPos(-1, -1)
 
 	for horizontal := 0; horizontal < 9; horizontal++ {
 		for vertical := 0; vertical < 9; vertical++ {
 			if newBoard.Cells[horizontal][vertical] != baseBoard.Cells[horizontal][vertical] {
 				if newBoard.Cells[horizontal][vertical] != nil {
-					pickedMove.NewCoords = Coordinates{horizontal: horizontal, vertical: vertical}
+					pickedMove.NewCoords = board.NewPos(horizontal, vertical)
 				} else {
-					pickedMove.Piece = baseBoard.Cells[horizontal][vertical]
+					pickedMove.OldCoords = board.NewPos(horizontal, vertical)
 				}
 
 			}
@@ -103,33 +99,31 @@ func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameSt
 	//if there was NO cell that WAS EMPTY before move we
 	//check what piece player have dropped
 
-	if pickedMove.Piece == nil {
+	if pickedMove.OldCoords.GetFile() == -1 {
 		pickedMove.MoveType = Dropping
 		var baseInventory = baseBoard.Inventories[baseGs.CurMovePlayer]
 		var newInventory = newBoard.Inventories[baseGs.CurMovePlayer]
 		for _, pieceType := range newInventory.Pieces() {
 			if newInventory.CountPiece(pieceType) != baseInventory.CountPiece(pieceType) {
-				var piece *board.Piece = new(board.Piece)
-				piece.Player = baseGs.CurMovePlayer
-				piece.Type = pieceType
-				pickedMove.Piece = piece
+				pickedMove.PieceType = *pieceType
 				break
 			}
 		}
 	} else {
 		//check for move type
-		if baseBoard.Cells[pickedMove.NewCoords.horizontal][pickedMove.NewCoords.vertical] != nil {
-			var oldType = pickedMove.Piece.Type
-			var newType = newBoard.Cells[pickedMove.NewCoords.horizontal][pickedMove.NewCoords.vertical].Type
-			if oldType.Id == newType.Id {
+		var file = pickedMove.NewCoords.GetFile()
+		var rank = pickedMove.NewCoords.GetRank()
+		var oldType = *baseBoard.Cells[pickedMove.OldCoords.GetFile()][pickedMove.OldCoords.GetRank()].Type
+		var newType = newBoard.Cells[file][rank].Type
+		pickedMove.PieceType = oldType
+		if baseBoard.Cells[file][rank] != nil {
+			if oldType.Name != newType.Name {
 				pickedMove.MoveType = PromotionAttacking
 			} else {
 				pickedMove.MoveType = Attacking
 			}
 		} else {
-			var oldType = pickedMove.Piece.Type
-			var newType = newBoard.Cells[pickedMove.NewCoords.horizontal][pickedMove.NewCoords.vertical].Type
-			if oldType.Id != newType.Id {
+			if oldType.Name != newType.Name {
 				pickedMove.MoveType = PromotionMoving
 			} else {
 				pickedMove.MoveType = Moving
@@ -165,4 +159,39 @@ func Search(currentGameState *movegen.GameState) PickedMove {
 	}
 	var bestGs = allGs[bestIndex]
 	return getMoveFromBoardDifference(currentGameState, &bestGs)
+}
+
+type TestStruct struct {
+	NgS movegen.GameState
+	Pm  PickedMove
+}
+
+func TestSearch(currentGameState *movegen.GameState) (Ts TestStruct) {
+	var allGs = currentGameState.GeneratePossibleStates()
+	var bestValue float32 = -math.MaxFloat32
+	var maximizingPlayer = false
+	if currentGameState.CurMovePlayer == model.Gote {
+		bestValue = math.MaxFloat32
+		maximizingPlayer = true
+	}
+	var bestIndex = 0
+	var a float32 = -math.MaxFloat32
+	var b float32 = math.MaxFloat32
+	for index := range allGs {
+		var tempValue = alphabeta(&allGs[index], DEPTH, &a, &b, maximizingPlayer)
+		if maximizingPlayer {
+			if tempValue < bestValue {
+				bestValue = tempValue
+				bestIndex = index
+			}
+
+		} else if tempValue > bestValue {
+			bestValue = tempValue
+			bestIndex = index
+		}
+	}
+	var bestGs = allGs[bestIndex]
+	Ts.NgS = bestGs
+	Ts.Pm = getMoveFromBoardDifference(currentGameState, &bestGs)
+	return Ts
 }
