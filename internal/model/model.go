@@ -17,7 +17,7 @@ const (
 type PieceType struct {
 	Id             uint       `gorm:"primarykey" json:"id"`
 	Name           string     `json:"name"`
-	Moves          []Move     `gorm:"foreignKey:PieceTypeId"`
+	Moves          []Move     `gorm:"foreignKey:PieceTypeId" json:"moves"`
 	PromotePieceId *uint      `json:"-"`
 	PromotePiece   *PieceType `json:"promote_piece"`
 	DemotePiece    *PieceType `gorm:"-:all" json:"-"`

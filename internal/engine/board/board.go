@@ -24,10 +24,10 @@ const (
 )
 
 type Move struct {
-	OldCoords Position `json:"old_pos"`
-	NewCoords Position `json:"new_pos"`
-	PieceType *model.PieceType
-	MoveType  MoveType `json:"move_type"`
+	OldCoords Position         `json:"old_pos"`
+	NewCoords Position         `json:"new_pos"`
+	PieceType *model.PieceType `json:"piece_type"`
+	MoveType  MoveType         `json:"move_type"`
 }
 
 func NewPos(file, rank int) Position {
