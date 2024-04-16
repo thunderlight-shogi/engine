@@ -10,11 +10,6 @@ import (
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	setContentType(w, "text/html")
-	w.Write([]byte("Hello, world!"))
-}
-
 func startEngineHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -339,7 +334,6 @@ func pieceDelHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Run() {
-	http.HandleFunc("GET /", indexHandler)             // Get main page
 	http.HandleFunc("POST /start", startEngineHandler) // Start engine
 
 	http.HandleFunc("POST /move/player", movePlayerHandler) // Player made a move
@@ -358,5 +352,5 @@ func Run() {
 	http.HandleFunc("POST /piece/upd", pieceUpdHandler)  // Update existing piece
 	http.HandleFunc("POST /piece/del", pieceDelHandler)  // Delete piece
 
-	http.ListenAndServe(":80", nil)
+	http.ListenAndServe(":88", nil)
 }

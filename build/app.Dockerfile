@@ -11,5 +11,5 @@ FROM alpine:3.19
 WORKDIR /app
 COPY --from=build /app/app /app/app
 COPY website /app/website
-EXPOSE 80
+EXPOSE 88
 CMD ["/app/app"]
