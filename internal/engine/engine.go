@@ -65,11 +65,8 @@ func Move(move board.Move) error {
 		global_state.Board.Set(move.NewCoords, piece_from.GetPromotedPiece())
 
 	case board.Dropping:
-		piece_to := global_state.Board.At(move.NewCoords)
-		global_state.Board.Inventories[global_state.CurMovePlayer].AddPiece(piece_to)
 		new_piece := global_state.Board.Inventories[global_state.CurMovePlayer].
 			ExtractPieceToPlayer(move.PieceType, global_state.CurMovePlayer)
-
 		global_state.Board.Set(move.NewCoords, new_piece)
 
 	case board.Moving:
