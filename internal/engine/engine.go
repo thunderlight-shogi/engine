@@ -2,6 +2,7 @@ package engine
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
 	"github.com/thunderlight-shogi/engine/internal/engine/movegen"
@@ -48,6 +49,23 @@ func Start(id uint) error {
 	return nil
 }
 
+func isCellAttacked(this_board board.Board, attackerPlayer model.Player, cellPos board.Position) bool {
+	for x, file := range this_board.Cells {
+		for y, piece := range file {
+			if piece != nil && piece.Player == attackerPlayer { // If player's cell
+				pos := board.NewPos(x, y)
+
+				var movesPositions = this_board.GetPieceReachableMoves(pos)
+				idx := slices.Index(movesPositions, cellPos)
+				if idx != -1 {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
 func Move(move board.Move) error {
 	switch move.MoveType {
 	case board.Attacking:
@@ -81,6 +99,9 @@ func Move(move board.Move) error {
 	default:
 		return ErrUnknownMoveType
 	}
+
+	enemyKingPos := global_state.Board.GetKingPositionForPlayer(global_state.GetNextPlayer())
+	global_state.KingUnderAttack = isCellAttacked(global_state.Board, global_state.CurMovePlayer, enemyKingPos)
 
 	global_state.CurMovePlayer = global_state.GetNextPlayer()
 
