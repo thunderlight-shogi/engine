@@ -5,14 +5,14 @@ import (
 	"slices"
 
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
-	"github.com/thunderlight-shogi/engine/internal/engine/movegen"
+	"github.com/thunderlight-shogi/engine/internal/engine/gamestate"
 	"github.com/thunderlight-shogi/engine/internal/engine/movepicker"
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
 var ErrUnknownMoveType error = errors.New("unknown move type")
 
-var global_state movegen.GameState
+var global_state gamestate.GameState
 
 func Start(id uint) error {
 	db := model.GetDB()

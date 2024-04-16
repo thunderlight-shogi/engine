@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
+	"github.com/thunderlight-shogi/engine/internal/engine/gamestate"
 	"github.com/thunderlight-shogi/engine/internal/engine/movegen"
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
@@ -26,7 +27,7 @@ const INVENTORY_MULTIPLIER = 1.5
 const MAX_KING_GUARDS_DISTANCE = 2
 
 func material(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -47,7 +48,7 @@ func material(
 }
 
 func attackCount(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -60,7 +61,7 @@ func attackCount(
 }
 
 func pieceAdvancement(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -87,7 +88,7 @@ func pieceAdvancement(
 }
 
 func defendedPieces(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -100,7 +101,7 @@ func defendedPieces(
 }
 
 func checkCheck(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -117,7 +118,7 @@ func checkCheck(
 }
 
 func checkCheckmate(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -125,7 +126,7 @@ func checkCheckmate(
 	*/
 
 	isOpponentChecked := gameState.KingUnderAttack && gameState.CurMovePlayer != player
-	isOpponentCheckmated := isOpponentChecked && len(gameState.GeneratePossibleStates()) == 0 && gameState.CurMovePlayer != player
+	isOpponentCheckmated := isOpponentChecked && len(movegen.GeneratePossibleStates(gameState)) == 0 && gameState.CurMovePlayer != player
 	var result float32
 	if isOpponentCheckmated {
 		result = 1
@@ -140,7 +141,7 @@ func checkCheckmate(
 // TODO: Как-то объединить метрики. У них почти идентичный код
 
 func kingGuardsCount(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -164,7 +165,7 @@ func kingGuardsCount(
 }
 
 func kingDefenceRadius1(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -190,7 +191,7 @@ func kingDefenceRadius1(
 }
 
 func kingDefenceRadius2(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -216,7 +217,7 @@ func kingDefenceRadius2(
 }
 
 func kingAttackRadius1(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -241,7 +242,7 @@ func kingAttackRadius1(
 }
 
 func kingAttackRadius2(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -266,7 +267,7 @@ func kingAttackRadius2(
 }
 
 func kingFreeCells(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
