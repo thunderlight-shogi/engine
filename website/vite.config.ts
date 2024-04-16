@@ -16,5 +16,8 @@ export default defineConfig({
                 additionalData: `@import "@/assets/global.sass"`
             }
         }
+    },
+    optimizeDeps: {
+        exclude: ['js-big-decimal']
     }
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { generateUUIDv4 } from '../crypto/uuids';
 import { byClass, closest, indexOfChild, locate, locateMouse, measure, move } from '../dom/dom';
 import { firecracker } from '../particles/particles';
@@ -11,11 +11,22 @@ import { sleep } from '../utils/sleep';
 import DraggablePiece from './DraggablePiece.vue';
 import Inventory from './Inventory.vue';
 import ModeSwitch from './ModeSwitch.vue';
-
+import { useFetch } from '@vueuse/core';
+import { BestMove } from '../thunderlight/best-move';
+import BestMoveDisplay from './BestMoveDisplay.vue';
+import { BISHOP, GOLD, KING, KNIGHT, LANCE, PAWN, Piece, ROOK, SILVER } from "../thunderlight/piece-type";
 
 const hand = ref<HTMLElement | undefined>(undefined);
 const board = useBoard();
+const bestMove = ref<BestMove>(new BestMove(true, new Coordinate(0, 0), new Coordinate(0, 0), "travel", PAWN));
 const mode = ref<EngineMode>('board');
+const { isFetching, error, data } = useFetch("http://localhost:5173/start/").get({
+    id: 1,
+});
+
+onMounted(async () => {
+    console.log(data.value);
+})
 
 function getCells(): HTMLElement[] {
     return byClass("cell");
@@ -102,6 +113,39 @@ async function onPieceDrop(_: HTMLElement) {
             jukebox.play("piece.prohibited");
             break;
     }
+
+    if (move != 'prohibited') {
+        console.log("The move is allowed, sending move/player request")
+
+        const { isFetching, error, data } = await useFetch("http://localhost:5173/move/player").post({
+            old_pos: {
+                file: source.x,
+                rank: source.y,
+            },
+
+            new_pos: {
+                file: destination.x,
+                rank: destination.y,
+            },
+        });
+
+        console.log(`Answer is received (= ${JSON.stringify(isFetching)}, ${JSON.stringify(error)}, ${JSON.stringify(data)})`);
+
+        await sleep(2000);
+
+        console.log("Requesting to move/help...")
+
+        const resp = await useFetch("http://localhost:5173/move/help").json().post();
+
+        await sleep(500);
+        
+        while(true) {
+            console.log("Wait for it...")
+
+            console.log(resp, resp.value);
+            await sleep(250);
+        }
+    } 
     
     fadeCells();
     hand.value = undefined;
@@ -151,6 +195,8 @@ function onPieceMove(event: MouseEvent): void {
 
             <Inventory player="sente" v-model="hand"></Inventory>
         </div>
+
+        <BestMoveDisplay v-model="bestMove"></BestMoveDisplay>
     </div>
     
 </template> 
