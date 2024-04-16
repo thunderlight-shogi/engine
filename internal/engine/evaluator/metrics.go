@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
+	"github.com/thunderlight-shogi/engine/internal/engine/gamestate"
 	"github.com/thunderlight-shogi/engine/internal/engine/movegen"
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
@@ -9,7 +10,7 @@ import (
 // Metrics weights
 const MATERIAL_WEIGHT = 1.0
 const ATTACK_COUNT_WEIGHT = 1.0
-const PIECE_ADVANCEMENT_WEIGHT = 1.0
+const PIECE_ADVANCEMENT_WEIGHT = 2.0
 const DEFENDED_PIECES_WEIGHT = 1.0
 const CHECK_WEIGHT = 10.0
 const CHECKMATE_WEIGHT = 99999.0
@@ -26,7 +27,7 @@ const INVENTORY_MULTIPLIER = 1.5
 const MAX_KING_GUARDS_DISTANCE = 2
 
 func material(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -47,7 +48,7 @@ func material(
 }
 
 func attackCount(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -60,7 +61,7 @@ func attackCount(
 }
 
 func pieceAdvancement(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -87,20 +88,20 @@ func pieceAdvancement(
 }
 
 func defendedPieces(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
 		Count of defended pieces
 	*/
-	defendMatrix := createAttackMatrix(gameState.Board, player)
+	defendMatrix := createDefendMatrix(gameState.Board, player)
 	var result float32 = float32(sumOf2DMatrix(defendMatrix))
 
 	return result * DEFENDED_PIECES_WEIGHT
 }
 
 func checkCheck(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -117,16 +118,15 @@ func checkCheck(
 }
 
 func checkCheckmate(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
 		Has player checkmated his opponent?
 	*/
 
-	// TODO: Вызывать GeneratePossibleStates довольно затратно только для того, чтобы проверить мат. Оптимизировать
-	// 		 (можно проверять, находится ли король под шахом и только тогда генерить возможные геймстейты)
-	isOpponentCheckmated := len(gameState.GeneratePossibleStates()) == 0 && gameState.CurMovePlayer != player
+	isOpponentChecked := gameState.KingUnderAttack && gameState.CurMovePlayer != player
+	isOpponentCheckmated := isOpponentChecked && len(movegen.GeneratePossibleStates(gameState)) == 0 && gameState.CurMovePlayer != player
 	var result float32
 	if isOpponentCheckmated {
 		result = 1
@@ -141,7 +141,7 @@ func checkCheckmate(
 // TODO: Как-то объединить метрики. У них почти идентичный код
 
 func kingGuardsCount(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -165,7 +165,7 @@ func kingGuardsCount(
 }
 
 func kingDefenceRadius1(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -191,7 +191,7 @@ func kingDefenceRadius1(
 }
 
 func kingDefenceRadius2(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -217,7 +217,7 @@ func kingDefenceRadius2(
 }
 
 func kingAttackRadius1(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -226,7 +226,7 @@ func kingAttackRadius1(
 	var curBoard = gameState.Board
 	var result float32 = 0
 
-	attackMatrix := createAttackMatrix(curBoard, player)
+	attackMatrix := createAttackMatrix(curBoard, getOppositePlayer(player))
 	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
 	kingX, kingY := kingCoords.Get()
 
@@ -242,7 +242,7 @@ func kingAttackRadius1(
 }
 
 func kingAttackRadius2(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*
@@ -251,7 +251,7 @@ func kingAttackRadius2(
 	var curBoard = gameState.Board
 	var result float32 = 0
 
-	attackMatrix := createAttackMatrix(curBoard, player)
+	attackMatrix := createAttackMatrix(curBoard, getOppositePlayer(player))
 	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
 	kingX, kingY := kingCoords.Get()
 
@@ -267,7 +267,7 @@ func kingAttackRadius2(
 }
 
 func kingFreeCells(
-	gameState *movegen.GameState,
+	gameState *gamestate.GameState,
 	player model.Player,
 ) float32 {
 	/*

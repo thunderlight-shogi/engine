@@ -39,11 +39,25 @@ func createDefendMatrix(
 		which has player's figure in it
 	*/
 
-	// TODO: Сделать метод. Хер знает как, щас лень придумывать
 	defendCounts := make([][]uint, 9)
 	for i := range defendCounts {
 		defendCounts[i] = make([]uint, 9)
 	}
+
+	boardVar.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
+		movesCoords := boardVar.GetPieceReachableMoves(pos)
+		for _, move := range movesCoords {
+			moveX, moveY := move.Get()
+			var moveCell = boardVar.Cells[moveX][moveY]
+			if moveCell == nil {
+				continue
+			}
+			var friendlyPiece bool = moveCell.Player == player
+			if friendlyPiece {
+				defendCounts[moveX][moveY] += 1
+			}
+		}
+	})
 	return defendCounts
 }
 
@@ -66,4 +80,12 @@ func abs(num int) int {
 
 func chebyshevDistance(x1, y1, x2, y2 int) int {
 	return max(abs(x1-x2), abs(y1-y2))
+}
+
+func getOppositePlayer(player model.Player) model.Player {
+	if player == model.Sente {
+		return model.Gote
+	} else {
+		return model.Sente
+	}
 }
