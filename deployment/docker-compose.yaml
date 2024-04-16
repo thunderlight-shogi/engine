@@ -8,8 +8,6 @@ services:
       dockerfile: build/client.Dockerfile
     image: thunderlight-client:latest
     container_name: client
-    environment:
-      - MYSQL_LINK=${MYSQL_USER}:${MYSQL_PASSWORD}@tcp(database:3306)/${MYSQL_DATABASE}?charset=utf8&parseTime=True&loc=Local
     networks:
       - app-network
     ports:
@@ -29,7 +27,7 @@ services:
     networks:
       - app-network
     ports:
-      - 5174:80
+      - 5174:88
     depends_on:
       database:
         condition: service_healthy
