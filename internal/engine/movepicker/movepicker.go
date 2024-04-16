@@ -5,26 +5,27 @@ import (
 
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
 	"github.com/thunderlight-shogi/engine/internal/engine/evaluator"
+	"github.com/thunderlight-shogi/engine/internal/engine/gamestate"
 	"github.com/thunderlight-shogi/engine/internal/engine/movegen"
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
 const DEPTH = 3
 
-func minimax(gs *movegen.GameState, depth int, maximizingPlayer bool) float32 {
+func minimax(gs *gamestate.GameState, depth int, maximizingPlayer bool) float32 {
 	if depth == 0 {
 		return evaluator.Evaluate(gs)
 	}
 	if maximizingPlayer {
 		var value float32 = -math.MaxFloat32
-		var allBoards = gs.GeneratePossibleStates()
+		var allBoards = movegen.GeneratePossibleStates(gs)
 		for idx := range allBoards {
 			value = max(value, minimax(&allBoards[idx], depth-1, false))
 		}
 		return value
 	} else {
 		var value float32 = math.MaxFloat32
-		var allBoards = gs.GeneratePossibleStates()
+		var allBoards = movegen.GeneratePossibleStates(gs)
 		for idx := range allBoards {
 			value = min(value, minimax(&allBoards[idx], depth-1, true))
 		}
@@ -32,13 +33,13 @@ func minimax(gs *movegen.GameState, depth int, maximizingPlayer bool) float32 {
 	}
 }
 
-func alphabeta(gs *movegen.GameState, depth int, a *float32, b *float32, maximizingPlayer bool) float32 {
+func alphabeta(gs *gamestate.GameState, depth int, a *float32, b *float32, maximizingPlayer bool) float32 {
 	if depth == 0 {
 		return evaluator.Evaluate(gs)
 	}
 	if maximizingPlayer {
 		var value float32 = -math.MaxFloat32
-		var allBoards = gs.GeneratePossibleStates()
+		var allBoards = movegen.GeneratePossibleStates(gs)
 		for idx := range allBoards {
 			value = max(value, alphabeta(&allBoards[idx], depth-1, a, b, false))
 			if value > *b {
@@ -49,7 +50,7 @@ func alphabeta(gs *movegen.GameState, depth int, a *float32, b *float32, maximiz
 		return value
 	} else {
 		var value float32 = math.MaxFloat32
-		var allBoards = gs.GeneratePossibleStates()
+		var allBoards = movegen.GeneratePossibleStates(gs)
 		for idx := range allBoards {
 			value = min(value, alphabeta(&allBoards[idx], depth-1, a, b, true))
 			if value < *a {
@@ -62,7 +63,7 @@ func alphabeta(gs *movegen.GameState, depth int, a *float32, b *float32, maximiz
 	}
 }
 
-func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameState) (pickedMove board.Move) {
+func getMoveFromBoardDifference(baseGs *gamestate.GameState, newGs *gamestate.GameState) (pickedMove board.Move) {
 	var baseBoard = baseGs.Board
 	var newBoard = newGs.Board
 	pickedMove.OldCoords = board.NewPos(-1, -1)
@@ -116,8 +117,8 @@ func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameSt
 	return pickedMove
 }
 
-func Search(currentGameState *movegen.GameState) board.Move {
-	var allGs = currentGameState.GeneratePossibleStates()
+func Search(currentGameState *gamestate.GameState) board.Move {
+	var allGs = movegen.GeneratePossibleStates(currentGameState)
 	var bestValue float32 = -math.MaxFloat32
 	var maximizingPlayer = false
 	if currentGameState.CurMovePlayer == model.Gote {
