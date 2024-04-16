@@ -340,13 +340,8 @@ func (this_board Board) GetKingPossibleMoves(kingPos Position) []Position {
 func (this_board Board) Print() {
 	fmt.Println("-------------")
 	for pieceType, count := range this_board.Inventories[model.Gote].pieces {
-		piece := Piece{Type: pieceType, Player: model.Sente}
-		for i := uint(0); i < count; i++ {
-			if piece.IsPromoted() {
-				fmt.Print(string(piece.Type.Name[0]) + "+ ")
-			} else {
-				fmt.Print(string(piece.Type.Name[0]) + " ")
-			}
+		for range count {
+			fmt.Print(string(pieceType.Kanji))
 		}
 	}
 	fmt.Println()
@@ -373,13 +368,8 @@ func (this_board Board) Print() {
 	}
 
 	for pieceType, count := range this_board.Inventories[model.Sente].pieces {
-		piece := Piece{Type: pieceType, Player: model.Sente}
-		for i := uint(0); i < count; i++ {
-			if piece.IsPromoted() {
-				fmt.Print(string(piece.Type.Name[0]) + "+ ")
-			} else {
-				fmt.Print(string(piece.Type.Name[0]) + " ")
-			}
+		for range count {
+			fmt.Print(string(pieceType.Kanji))
 		}
 	}
 	fmt.Println("\n-------------")
