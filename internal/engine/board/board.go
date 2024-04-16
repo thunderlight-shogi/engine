@@ -357,26 +357,15 @@ func (this_board Board) Print() {
 			if piece == nil {
 				fmt.Print(" - ")
 			} else {
-				player := piece.Player
-				var str string = ""
-				if player == model.Sente {
-					str += "/"
-					str += string(piece.Type.Name[0])
-					if piece.IsPromoted() {
-						str += "+"
-					} else {
-						str += " "
-					}
+				str := ""
+				switch piece.Player {
+				case model.Sente:
+					str += "☖"
+				case model.Gote:
+					str += "☗"
 				}
-				if player == model.Gote {
-					if piece.IsPromoted() {
-						str += "+"
-					} else {
-						str += " "
-					}
-					str += string(piece.Type.Name[0])
-					str += "\\"
-				}
+				str += string(piece.Type.Kanji)
+
 				fmt.Print(str)
 			}
 		}
