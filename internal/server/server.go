@@ -47,6 +47,12 @@ func movePlayerHandler(w http.ResponseWriter, r *http.Request) {
 	var move board.Move
 	json.Unmarshal(body, &move)
 
+	move.PieceType, err = engine.FindPiece(move.PieceType.Id)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
 	err = engine.Move(move)
 
 	if err != nil {

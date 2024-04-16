@@ -10,8 +10,11 @@ import (
 )
 
 var ErrUnknownMoveType error = errors.New("unknown move type")
+var ErrUnknownPieceType error = errors.New("unknown piece type")
 
 var global_state movegen.GameState
+
+var global_type_map map[uint]*model.PieceType
 
 func Start(id uint) error {
 	db := model.GetDB()
@@ -31,6 +34,8 @@ func Start(id uint) error {
 
 	for _, piece := range pos.Pieces {
 		pt := piece.PieceType
+
+		global_type_map[pt.Id] = pt
 
 		if pt.PromotePiece != nil {
 			pt.PromotePiece.DemotePiece = pt
@@ -84,6 +89,16 @@ func Move(move board.Move) error {
 	global_state.CurMovePlayer = global_state.GetNextPlayer()
 
 	return nil
+}
+
+func FindPiece(id uint) (*model.PieceType, error) {
+	t, found := global_type_map[id]
+
+	if found {
+		return t, nil
+	} else {
+		return nil, ErrUnknownPieceType
+	}
 }
 
 func EngineMove() (move board.Move, err error) {
