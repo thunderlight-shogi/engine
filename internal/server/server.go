@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"fmt"
 
 	"github.com/thunderlight-shogi/engine/internal/engine"
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
@@ -72,7 +73,11 @@ func moveEngineHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func moveHelpHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("move/help is requested. Waiting for the engine to response...")
+
 	move := engine.GetHelp()
+
+	fmt.Println("move/help is finished.")
 
 	body, err := json.Marshal(move)
 	if err != nil {

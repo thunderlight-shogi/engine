@@ -20,7 +20,7 @@ const hand = ref<HTMLElement | undefined>(undefined);
 const board = useBoard();
 const bestMove = ref<BestMove>(new BestMove(true, new Coordinate(0, 0), new Coordinate(0, 0), "travel", PAWN));
 const mode = ref<EngineMode>('board');
-const { data } = useFetch("http://localhost:5173/start/").post({
+const { data } = useFetch("http://localhost:5174/start/").post({
     id: 1,
 });
 
@@ -117,34 +117,23 @@ async function onPieceDrop(_: HTMLElement) {
     if (move != 'prohibited') {
         console.log("The move is allowed, sending move/player request")
 
-        const { isFetching, error, data } = await useFetch("http://localhost:5173/move/player").post({
-            old_pos: {
-                file: source.x,
-                rank: source.y,
-            },
+        const movePlayerResponse = await fetch("http://localhost:5174/move/player", {
+            method: "POST",
+            body: JSON.stringify({
+                old_pos: {
+                    file: source.x,
+                    rank: source.y,
+                },
 
-            new_pos: {
-                file: destination.x,
-                rank: destination.y,
-            },
+                new_pos: {
+                    file: destination.x,
+                    rank: destination.y,
+                },
+            })
         });
 
-        console.log(`Answer is received (= ${JSON.stringify(isFetching)}, ${JSON.stringify(error)}, ${JSON.stringify(data)})`);
-
-        await sleep(2000);
-
-        console.log("Requesting to move/help...")
-
-        const resp = await useFetch("http://localhost:5173/move/help").json().post();
-
-        await sleep(500);
-        
-        while(true) {
-            console.log("Wait for it...")
-
-            console.log(resp);
-            await sleep(250);
-        }
+        const movePlayerObject = await movePlayerResponse.json();
+        console.log(movePlayerObject);
     } 
     
     fadeCells();
