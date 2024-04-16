@@ -12,9 +12,6 @@ import (
 
 const DEPTH = 3
 
-var nextGameStates [][]movegen.GameState
-var cachedIndex int32 = 0
-
 func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameState) (pickedMove board.Move) {
 	var baseBoard = baseGs.Board
 	var newBoard = newGs.Board
@@ -109,10 +106,6 @@ func alphabeta(gs *movegen.GameState, depth int, a *float32, b *float32, maximiz
 	}
 	var allBoards = gs.GeneratePossibleStates()
 	SortGameStates(allBoards, gs)
-	if depth == DEPTH {
-		nextGameStates[cachedIndex] = allBoards
-		cachedIndex++
-	}
 	if maximizingPlayer {
 		var value float32 = -math.MaxFloat32
 		for idx := range allBoards {
@@ -139,13 +132,8 @@ func alphabeta(gs *movegen.GameState, depth int, a *float32, b *float32, maximiz
 
 func Search(currentGameState *movegen.GameState) board.Move {
 	var allGs []movegen.GameState
-	if len(nextGameStates) != 0 {
-		allGs = nextGameStates[cachedIndex]
-		cachedIndex = 0
-	} else {
-		allGs = currentGameState.GeneratePossibleStates()
-	}
-	nextGameStates = make([][]movegen.GameState, len(allGs))
+	allGs = currentGameState.GeneratePossibleStates()
+
 	var bestValue float32 = -math.MaxFloat32
 	var maximizingPlayer = true
 	var a float32 = -math.MaxFloat32
@@ -172,6 +160,5 @@ func Search(currentGameState *movegen.GameState) board.Move {
 		}
 	}
 	var bestGs = allGs[bestIndex]
-	cachedIndex = int32(bestIndex)
 	return getMoveFromBoardDifference(currentGameState, &bestGs)
 }
