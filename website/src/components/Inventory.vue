@@ -19,23 +19,6 @@ function getCells(): HTMLElement[] {
     return byClass("cell");
 }
 
-function locateHand(): Coordinate {
-    return new Coordinate(4, 4);
-
-    // if (hand.value === undefined) {
-    //     throw new Error("Cannot locate an empty hand");
-    // }
-
-    // const cell = hand.value.parentElement;
-
-    // if (cell === null) {
-    //     console.error("The hand is ", hand.value, hand.value.parentElement)
-    //     throw new Error("Cannot locate a hand with no parent")
-    // }
-
-    // return locateCell(cell);
-}
-
 function locateCell(cell: HTMLElement): Coordinate {
     const childIndex = indexOfChild(cell);
     const x = childIndex % 9;
@@ -48,10 +31,6 @@ function fadeCells() {
     getCells().forEach(cell => {
         cell.classList.remove('highlighted')
     });
-}
-
-function highlight(cell: HTMLElement) {
-    cell.classList.add('highlighted');
 }
 
 function onPieceGrab(element: HTMLElement) {

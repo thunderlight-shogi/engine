@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { BestMove } from '../thunderlight/best-move';
-import { Coordinate } from '../thunderlight/coordinate';
 
 const bestMove = defineModel<BestMove>();
 </script>

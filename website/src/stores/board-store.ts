@@ -107,11 +107,6 @@ export const useBoard = defineStore('board', () => {
         return at(coordinate) === undefined;
     }
 
-    function isFriend(coordinate: Coordinate): boolean {
-        ensureOccupied(coordinate);
-        return at(coordinate)?.player === turn.value;
-    }
-
     function isEnemy(coordinate: Coordinate): boolean {
         ensureOccupied(coordinate);
         return at(coordinate)?.player !== turn.value;

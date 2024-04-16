@@ -14,13 +14,13 @@ import ModeSwitch from './ModeSwitch.vue';
 import { useFetch } from '@vueuse/core';
 import { BestMove } from '../thunderlight/best-move';
 import BestMoveDisplay from './BestMoveDisplay.vue';
-import { BISHOP, GOLD, KING, KNIGHT, LANCE, PAWN, Piece, ROOK, SILVER } from "../thunderlight/piece-type";
+import { PAWN } from "../thunderlight/piece-type";
 
 const hand = ref<HTMLElement | undefined>(undefined);
 const board = useBoard();
 const bestMove = ref<BestMove>(new BestMove(true, new Coordinate(0, 0), new Coordinate(0, 0), "travel", PAWN));
 const mode = ref<EngineMode>('board');
-const { isFetching, error, data } = useFetch("http://localhost:5173/start/").get({
+const { data } = useFetch("http://localhost:5173/start/").post({
     id: 1,
 });
 
@@ -142,7 +142,7 @@ async function onPieceDrop(_: HTMLElement) {
         while(true) {
             console.log("Wait for it...")
 
-            console.log(resp, resp.value);
+            console.log(resp);
             await sleep(250);
         }
     } 
