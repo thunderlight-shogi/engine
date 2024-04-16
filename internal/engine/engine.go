@@ -49,21 +49,23 @@ func Start(id uint) error {
 }
 
 func Move(move board.Move) error {
-	piece_from := global_state.Board.At(move.OldCoords)
-	piece_to := global_state.Board.At(move.NewCoords)
-
 	switch move.MoveType {
 	case board.Attacking:
+		piece_from := global_state.Board.At(move.OldCoords)
+		piece_to := global_state.Board.At(move.NewCoords)
 		global_state.Board.Inventories[global_state.CurMovePlayer].AddPiece(piece_to)
 		global_state.Board.Set(move.OldCoords, nil)
 		global_state.Board.Set(move.NewCoords, piece_from)
 
 	case board.PromotionAttacking:
+		piece_from := global_state.Board.At(move.OldCoords)
+		piece_to := global_state.Board.At(move.NewCoords)
 		global_state.Board.Inventories[global_state.CurMovePlayer].AddPiece(piece_to)
 		global_state.Board.Set(move.OldCoords, nil)
 		global_state.Board.Set(move.NewCoords, piece_from.GetPromotedPiece())
 
 	case board.Dropping:
+		piece_to := global_state.Board.At(move.NewCoords)
 		global_state.Board.Inventories[global_state.CurMovePlayer].AddPiece(piece_to)
 		new_piece := global_state.Board.Inventories[global_state.CurMovePlayer].
 			ExtractPieceToPlayer(move.PieceType, global_state.CurMovePlayer)
@@ -71,10 +73,12 @@ func Move(move board.Move) error {
 		global_state.Board.Set(move.NewCoords, new_piece)
 
 	case board.Moving:
+		piece_from := global_state.Board.At(move.OldCoords)
 		global_state.Board.Set(move.OldCoords, nil)
 		global_state.Board.Set(move.NewCoords, piece_from)
 
 	case board.PromotionMoving:
+		piece_from := global_state.Board.At(move.OldCoords)
 		global_state.Board.Set(move.OldCoords, nil)
 		global_state.Board.Set(move.NewCoords, piece_from.GetPromotedPiece())
 	default:
