@@ -93,7 +93,7 @@ func defendedPieces(
 	/*
 		Count of defended pieces
 	*/
-	defendMatrix := createAttackMatrix(gameState.Board, player)
+	defendMatrix := createDefendMatrix(gameState.Board, player)
 	var result float32 = float32(sumOf2DMatrix(defendMatrix))
 
 	return result * DEFENDED_PIECES_WEIGHT
