@@ -39,11 +39,25 @@ func createDefendMatrix(
 		which has player's figure in it
 	*/
 
-	// TODO: Сделать метод. Хер знает как, щас лень придумывать
 	defendCounts := make([][]uint, 9)
 	for i := range defendCounts {
 		defendCounts[i] = make([]uint, 9)
 	}
+
+	boardVar.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
+		movesCoords := boardVar.GetPieceReachableMoves(pos)
+		for _, move := range movesCoords {
+			moveX, moveY := move.Get()
+			var moveCell = boardVar.Cells[moveX][moveY]
+			if moveCell == nil {
+				continue
+			}
+			var friendlyPiece bool = moveCell.Player == player
+			if friendlyPiece {
+				defendCounts[moveX][moveY] += 1
+			}
+		}
+	})
 	return defendCounts
 }
 
