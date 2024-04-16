@@ -9,7 +9,7 @@ import (
 // Metrics weights
 const MATERIAL_WEIGHT = 1.0
 const ATTACK_COUNT_WEIGHT = 1.0
-const PIECE_ADVANCEMENT_WEIGHT = 1.0
+const PIECE_ADVANCEMENT_WEIGHT = 2.0
 const DEFENDED_PIECES_WEIGHT = 1.0
 const CHECK_WEIGHT = 10.0
 const CHECKMATE_WEIGHT = 99999.0
@@ -124,9 +124,8 @@ func checkCheckmate(
 		Has player checkmated his opponent?
 	*/
 
-	// TODO: Вызывать GeneratePossibleStates довольно затратно только для того, чтобы проверить мат. Оптимизировать
-	// 		 (можно проверять, находится ли король под шахом и только тогда генерить возможные геймстейты)
-	isOpponentCheckmated := len(gameState.GeneratePossibleStates()) == 0 && gameState.CurMovePlayer != player
+	isOpponentChecked := gameState.KingUnderAttack && gameState.CurMovePlayer != player
+	isOpponentCheckmated := isOpponentChecked && len(gameState.GeneratePossibleStates()) == 0 && gameState.CurMovePlayer != player
 	var result float32
 	if isOpponentCheckmated {
 		result = 1
@@ -226,7 +225,7 @@ func kingAttackRadius1(
 	var curBoard = gameState.Board
 	var result float32 = 0
 
-	attackMatrix := createAttackMatrix(curBoard, player)
+	attackMatrix := createAttackMatrix(curBoard, getOppositePlayer(player))
 	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
 	kingX, kingY := kingCoords.Get()
 
@@ -251,7 +250,7 @@ func kingAttackRadius2(
 	var curBoard = gameState.Board
 	var result float32 = 0
 
-	attackMatrix := createAttackMatrix(curBoard, player)
+	attackMatrix := createAttackMatrix(curBoard, getOppositePlayer(player))
 	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
 	kingX, kingY := kingCoords.Get()
 

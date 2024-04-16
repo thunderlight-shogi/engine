@@ -16,11 +16,11 @@ type Position struct {
 type MoveType uint
 
 const (
-	Moving MoveType = iota
-	Attacking
-	Dropping
+	PromotionAttacking MoveType = iota
 	PromotionMoving
-	PromotionAttacking
+	Attacking
+	Moving
+	Dropping
 )
 
 type Move struct {
