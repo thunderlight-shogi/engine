@@ -8,6 +8,7 @@ services:
       dockerfile: build/client.Dockerfile
     image: thunderlight-client:latest
     container_name: client
+    stdin_open: true
     networks:
       - app-network
     ports:
