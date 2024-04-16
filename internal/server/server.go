@@ -358,5 +358,5 @@ func Run() {
 	http.HandleFunc("POST /piece/upd", pieceUpdHandler)  // Update existing piece
 	http.HandleFunc("POST /piece/del", pieceDelHandler)  // Delete piece
 
-	http.ListenAndServe(":80", nil)
+	http.ListenAndServe(":88", nil)
 }
