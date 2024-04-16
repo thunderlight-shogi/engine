@@ -67,3 +67,11 @@ func abs(num int) int {
 func chebyshevDistance(x1, y1, x2, y2 int) int {
 	return max(abs(x1-x2), abs(y1-y2))
 }
+
+func getOppositePlayer(player model.Player) model.Player {
+	if player == model.Sente {
+		return model.Gote
+	} else {
+		return model.Sente
+	}
+}
