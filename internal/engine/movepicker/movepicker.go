@@ -36,7 +36,7 @@ func getMoveFromBoardDifference(baseGs *movegen.GameState, newGs *movegen.GameSt
 		pickedMove.MoveType = board.Dropping
 		var baseInventory = baseBoard.Inventories[baseGs.CurMovePlayer]
 		var newInventory = newBoard.Inventories[baseGs.CurMovePlayer]
-		for _, pieceType := range newInventory.Pieces() {
+		for _, pieceType := range baseInventory.Pieces() {
 			if newInventory.CountPiece(pieceType) != baseInventory.CountPiece(pieceType) {
 				pickedMove.PieceType = pieceType
 				break
