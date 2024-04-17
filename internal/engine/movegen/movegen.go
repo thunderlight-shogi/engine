@@ -12,33 +12,27 @@ import (
 // TODO: Удаляется вертикаль??? Исправить
 // TODO: GameState сделать указателем
 
+// TODO: Убрать changePos и возможно перенести эту функцию в gamestate
 func generateGameStateAfterChangeAt(board board.Board, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
-	ipUnderAttack := board.IsKingAttackedByPiece(changePos)
+	ipUnderAttack := board.IsKingAttacked(nextPlayer)
 
 	return &gamestate.GameState{Board: board, CurMovePlayer: nextPlayer, KingUnderAttack: ipUnderAttack}
 }
 
-func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(someBoard board.Board, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
+func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(someBoard board.Board, curPlayer, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
 	// e.g., pawn cannot move to last row because it will have no moves to board field (so this is not possible game state)
 	if len(someBoard.GetPieceMovesToBoardField(changePos)) != 0 {
 		// TODO: сильно замедляет, исправить
-		var isKingAttackedByPiece bool = false
-		someBoard.IterateBoardPieces(nextPlayer, func(piece *board.Piece, pos board.Position) {
-			if someBoard.IsKingAttackedByPiece(pos) {
-				isKingAttackedByPiece = true
-			}
-		})
+		var isCurPlayerKingAttacked = someBoard.IsKingAttacked(curPlayer)
 
-		if isKingAttackedByPiece {
-			return nil
-		} else {
+		if !isCurPlayerKingAttacked {
 			return generateGameStateAfterChangeAt(someBoard, nextPlayer, changePos)
 		}
 	}
 	return nil
 }
 
-func tryGeneratePromotionGameStateWithMove(someBoard board.Board, nextPlayer model.Player, fromPos, toPos board.Position) *gamestate.GameState {
+func tryGeneratePromotionGameStateWithMove(someBoard board.Board, curPlayer, nextPlayer model.Player, fromPos, toPos board.Position) *gamestate.GameState {
 	fromFile, fromRank := fromPos.Get()
 	toFile, toRank := toPos.Get()
 	var boardPiece = someBoard.Cells[fromFile][fromRank]
@@ -51,16 +45,9 @@ func tryGeneratePromotionGameStateWithMove(someBoard board.Board, nextPlayer mod
 			altNewBoard.Cells[fromFile][fromRank] = nil
 
 			// TODO: сильно замедляет, исправить
-			var isKingAttackedByPiece bool = false
-			altNewBoard.IterateBoardPieces(nextPlayer, func(piece *board.Piece, pos board.Position) {
-				if altNewBoard.IsKingAttackedByPiece(pos) {
-					isKingAttackedByPiece = true
-				}
-			})
+			var isCurPlayerKingAttacked = someBoard.IsKingAttacked(curPlayer)
 
-			if isKingAttackedByPiece {
-				return nil
-			} else {
+			if !isCurPlayerKingAttacked {
 				return generateGameStateAfterChangeAt(altNewBoard, nextPlayer, toPos)
 			}
 		}
@@ -83,7 +70,7 @@ func generatePossibleStatesWithMove(gs *gamestate.GameState, fromPos, toPos boar
 	}
 
 	// creating alternative gamestate for promotion of piece
-	promotionGameState := tryGeneratePromotionGameStateWithMove(newBoard, nextPlayer, fromPos, toPos)
+	promotionGameState := tryGeneratePromotionGameStateWithMove(newBoard, gs.CurMovePlayer, nextPlayer, fromPos, toPos)
 	if promotionGameState != nil {
 		gss = append(gss, *promotionGameState)
 	}
@@ -91,7 +78,7 @@ func generatePossibleStatesWithMove(gs *gamestate.GameState, fromPos, toPos boar
 	newBoard.Cells[toFile][toRank] = newBoard.Cells[fromFile][fromRank]
 	newBoard.Cells[fromFile][fromRank] = nil
 
-	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, nextPlayer, toPos)
+	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, gs.CurMovePlayer, nextPlayer, toPos)
 	if newGameState != nil {
 		gss = append(gss, *newGameState)
 	}
@@ -157,7 +144,7 @@ func generatePossibleStatesWithDrop(gs *gamestate.GameState, pieceType *model.Pi
 		}
 	}
 
-	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, nextPlayer, dropPos)
+	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, curPlayer, nextPlayer, dropPos)
 	if newGameState != nil {
 		gss = append(gss, *newGameState)
 	}
@@ -189,7 +176,7 @@ func generatePossibleStatesFromDefendingKing(gs *gamestate.GameState) (gss []gam
 	var curBoard = gs.Board
 	var curPlayer = gs.CurMovePlayer
 
-	var kingPosition = curBoard.GetKingPositionForPlayer(curPlayer)
+	var kingPosition = curBoard.GetKingPosition(curPlayer)
 	var kingFile, kingRank = kingPosition.Get()
 	var king = curBoard.Cells[kingFile][kingRank]
 

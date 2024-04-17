@@ -105,8 +105,13 @@ func alphabeta(gs *gamestate.GameState, depth int, a *float32, b *float32, maxim
 	if depth == 0 {
 		return evaluator.Evaluate(gs)
 	}
+
 	var allBoards = movegen.GeneratePossibleStates(gs)
+	if len(allBoards) == 0 {
+		return evaluator.Evaluate(gs)
+	}
 	SortGameStates(allBoards, gs)
+
 	if maximizingPlayer {
 		var value float32 = -math.MaxFloat32
 		for idx := range allBoards {
@@ -133,6 +138,10 @@ func alphabeta(gs *gamestate.GameState, depth int, a *float32, b *float32, maxim
 
 func Search(currentGameState *gamestate.GameState) board.Move {
 	var allGs = movegen.GeneratePossibleStates(currentGameState)
+
+	if len(allGs) == 0 {
+		return board.Move{MoveType: board.Surrender}
+	}
 
 	var bestValue float32 = -math.MaxFloat32
 	var maximizingPlayer = true

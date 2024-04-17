@@ -21,6 +21,7 @@ const (
 	Attacking
 	Moving
 	Dropping
+	Surrender
 )
 
 type Move struct {
@@ -142,7 +143,7 @@ func (this_board Board) IterateInventory(
 	callback func(piece *model.PieceType),
 ) {
 	/*
-		Iterates over player's inventory in current game state
+		Iterates over player's inventory
 		and for each figure calls callback function
 	*/
 	playerInventory := this_board.Inventories[player]
@@ -154,18 +155,52 @@ func (this_board Board) IterateInventory(
 	}
 }
 
+func (this_board Board) IterateAllBoardPieces(
+	callback func(piece *Piece, pos Position),
+) {
+	/*
+		Iterates over all pieces on board
+		and for each figure calls callback function
+	*/
+	for x, column := range this_board.Cells {
+		for y, cell := range column {
+			if cell != nil {
+				callback(cell, NewPos(x, y))
+			}
+		}
+	}
+}
+
 func (this_board Board) IterateBoardPieces(
 	player model.Player,
 	callback func(piece *Piece, pos Position),
 ) {
 	/*
-		Iterates over player's pieces on board in current game state
+		Iterates over player's pieces on board
 		and for each figure calls callback function
+	*/
+	this_board.IterateAllBoardPieces(func(piece *Piece, pos Position) {
+		if piece.Player == player { // If player's piece
+			callback(piece, pos)
+		}
+	})
+}
+
+func (this_board Board) IterateBoardPiecesWithEarlyExit(
+	player model.Player,
+	callback func(piece *Piece, pos Position) bool,
+) {
+	/*
+		Iterates over player's pieces on board
+		and for each figure calls callback function.
+		If callback return true then iterating finishes
 	*/
 	for x, column := range this_board.Cells {
 		for y, cell := range column {
-			if cell != nil && cell.Player == player { // If player's cell
-				callback(cell, NewPos(x, y))
+			if cell != nil && cell.Player == player {
+				if callback(cell, NewPos(x, y)) {
+					return
+				}
 			}
 		}
 	}
@@ -286,27 +321,49 @@ func (this_board Board) GetPossibleDropsCoords() (dropsCoords []Position) {
 	return
 }
 
-func (this_board Board) IsKingAttackedByPiece(attackerPos Position) bool {
-	attackerMovesPositions := this_board.GetPiecePossibleMoves(attackerPos)
-	for _, movePos := range attackerMovesPositions {
-		moveFile, moveRank := movePos.Get()
-		var isImportantPiece bool = this_board.Cells[moveFile][moveRank] != nil && this_board.Cells[moveFile][moveRank].Type.ImportantPiece
-		if isImportantPiece {
-			return true
-		}
-	}
-	return false
-}
-
-func (this_board Board) GetKingPositionForPlayer(player model.Player) Position {
+func (this_board Board) GetKingPosition(kingPlayer model.Player) Position {
 	for x := range this_board.Cells {
 		for y, piece := range this_board.Cells[x] {
-			if piece != nil && piece.Type.ImportantPiece && piece.Player == player {
+			if piece != nil && piece.Type.ImportantPiece && piece.Player == kingPlayer {
 				return NewPos(x, y)
 			}
 		}
 	}
 	panic("The king is not on the board")
+}
+
+func (this_board Board) IsCellAttacked(attackerPlayer model.Player, cellPos Position) bool {
+	var isCellAttacked bool = false
+	this_board.IterateBoardPiecesWithEarlyExit(attackerPlayer, func(piece *Piece, pos Position) bool {
+		var movesPositions = this_board.GetPieceReachableMoves(pos)
+		idx := slices.Index(movesPositions, cellPos)
+		if idx != -1 {
+			isCellAttacked = true
+			return true
+		}
+		return false
+	})
+
+	return isCellAttacked
+}
+
+func (this_board Board) IsKingAttacked(kingPlayer model.Player) bool {
+	var kingPos = this_board.GetKingPosition(kingPlayer)
+	var attackerPlayer = this_board.At(kingPos).GetAttackerPlayer()
+	return this_board.IsCellAttacked(attackerPlayer, kingPos)
+}
+
+func (this_board Board) IsKingAttackedByPiece(kingPlayer model.Player, attackerPos Position) bool {
+	attackerMovesPositions := this_board.GetPiecePossibleMoves(attackerPos)
+	for _, movePos := range attackerMovesPositions {
+		moveFile, moveRank := movePos.Get()
+		var piece = this_board.Cells[moveFile][moveRank]
+		var isImportantPiece bool = piece != nil && piece.Type.ImportantPiece
+		if isImportantPiece && piece.Player == kingPlayer {
+			return true
+		}
+	}
+	return false
 }
 
 func (this_board Board) GetPositionsOfAttackersOnCell(attackerPlayer model.Player, cellPos Position) []Position {
@@ -329,7 +386,7 @@ func (this_board Board) GetKingPossibleMoves(kingPos Position) []Position {
 
 	var potentialMovesPositions = this_board.GetPiecePossibleMoves(kingPos)
 	for _, pos := range potentialMovesPositions {
-		if len(this_board.GetPositionsOfAttackersOnCell(attackerPlayer, pos)) == 0 {
+		if !this_board.IsCellAttacked(attackerPlayer, pos) {
 			kingMovesPositions = append(kingMovesPositions, pos)
 		}
 	}
@@ -338,7 +395,7 @@ func (this_board Board) GetKingPossibleMoves(kingPos Position) []Position {
 
 // For test purposes
 func (this_board Board) Print() {
-	fmt.Println("-------------")
+	fmt.Println("----------------------")
 	for pieceType, count := range this_board.Inventories[model.Gote].pieces {
 		for range count {
 			fmt.Print(string(pieceType.Kanji))
@@ -372,5 +429,5 @@ func (this_board Board) Print() {
 			fmt.Print(string(pieceType.Kanji))
 		}
 	}
-	fmt.Println("\n-------------")
+	fmt.Println("\n----------------------")
 }
