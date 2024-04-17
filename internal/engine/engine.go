@@ -30,7 +30,7 @@ func Start(id uint) error {
 		return result.Error
 	}
 
-	global_state.Board = board.Construct()
+	newBoard := board.Construct()
 	global_type_map = make(map[uint]*model.PieceType)
 
 	for _, piece := range pos.Pieces {
@@ -42,14 +42,14 @@ func Start(id uint) error {
 			pt.PromotePiece.DemotePiece = pt
 		}
 
-		global_state.Board.Cells[piece.File-1][piece.Rank-1] =
+		newBoard.Cells[piece.File-1][piece.Rank-1] =
 			&board.Piece{
 				Type:   pt,
 				Player: piece.Player,
 			}
 	}
 
-	global_state.CurMovePlayer = model.Sente
+	global_state = *gamestate.NewGameState(newBoard, model.Sente)
 
 	return nil
 }
@@ -57,33 +57,16 @@ func Start(id uint) error {
 func Move(move board.Move) error {
 	switch move.MoveType {
 	case board.Attacking:
-		piece_from := global_state.Board.At(move.OldCoords)
-		piece_to := global_state.Board.At(move.NewCoords)
-		global_state.Board.Inventories[global_state.CurMovePlayer].AddPiece(piece_to)
-		global_state.Board.Set(move.OldCoords, nil)
-		global_state.Board.Set(move.NewCoords, piece_from)
+	case board.Moving:
+		global_state.Board.MakeMove(move.OldCoords, move.NewCoords, false)
 
 	case board.PromotionAttacking:
-		piece_from := global_state.Board.At(move.OldCoords)
-		piece_to := global_state.Board.At(move.NewCoords)
-		global_state.Board.Inventories[global_state.CurMovePlayer].AddPiece(piece_to)
-		global_state.Board.Set(move.OldCoords, nil)
-		global_state.Board.Set(move.NewCoords, piece_from.GetPromotedPiece())
+	case board.PromotionMoving:
+		global_state.Board.MakeMove(move.OldCoords, move.NewCoords, true)
 
 	case board.Dropping:
-		new_piece := global_state.Board.Inventories[global_state.CurMovePlayer].
-			ExtractPieceToPlayer(move.PieceType, global_state.CurMovePlayer)
-		global_state.Board.Set(move.NewCoords, new_piece)
+		global_state.Board.MakeDrop(move.PieceType, global_state.CurMovePlayer, move.NewCoords)
 
-	case board.Moving:
-		piece_from := global_state.Board.At(move.OldCoords)
-		global_state.Board.Set(move.OldCoords, nil)
-		global_state.Board.Set(move.NewCoords, piece_from)
-
-	case board.PromotionMoving:
-		piece_from := global_state.Board.At(move.OldCoords)
-		global_state.Board.Set(move.OldCoords, nil)
-		global_state.Board.Set(move.NewCoords, piece_from.GetPromotedPiece())
 	default:
 		return ErrUnknownMoveType
 	}

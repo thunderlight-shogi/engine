@@ -19,7 +19,7 @@ func createAttackMatrix(
 	}
 
 	boardVar.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
-		movesCoords := boardVar.GetPiecePossibleMoves(pos)
+		movesCoords := boardVar.GetPiecePossibleMoves(pos, true)
 		for _, move := range movesCoords {
 			moveX, moveY := move.Get()
 			attackCounts[moveX][moveY] += 1
@@ -45,7 +45,7 @@ func createDefendMatrix(
 	}
 
 	boardVar.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
-		movesCoords := boardVar.GetPieceReachableMoves(pos)
+		movesCoords := boardVar.GetPieceReachableCells(pos, true)
 		for _, move := range movesCoords {
 			moveX, moveY := move.Get()
 			var moveCell = boardVar.Cells[moveX][moveY]

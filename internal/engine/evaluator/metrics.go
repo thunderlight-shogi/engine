@@ -71,7 +71,7 @@ func pieceAdvancement(
 	var result float32 = 0
 
 	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
-		var y = pos.GetRank()
+		var y = pos.Rank
 		// Calculating y-offset from player's base
 		var baseYOffset int
 		if player == model.Sente { // First player. Base starts at 8 and goes to 0
@@ -275,7 +275,7 @@ func kingFreeCells(
 	*/
 	kingPos := gameState.Board.GetKingPosition(player)
 
-	var result float32 = float32(len(gameState.Board.GetKingPossibleMoves(kingPos)))
+	var result float32 = float32(len(gameState.Board.GetKingPossibleMoves(kingPos, true)))
 
 	return result * KING_FREE_CELLS_WEIGHT
 }

@@ -33,7 +33,7 @@ func getMoveFromBoardDifference(baseGs *gamestate.GameState, newGs *gamestate.Ga
 	//if there was NO cell that WAS EMPTY before move we
 	//check what piece player have dropped
 
-	if pickedMove.OldCoords.GetFile() == -1 {
+	if pickedMove.OldCoords.File == -1 {
 		pickedMove.MoveType = board.Dropping
 		var baseInventory = baseBoard.Inventories[baseGs.CurMovePlayer]
 		var newInventory = newBoard.Inventories[baseGs.CurMovePlayer]
@@ -45,9 +45,9 @@ func getMoveFromBoardDifference(baseGs *gamestate.GameState, newGs *gamestate.Ga
 		}
 	} else {
 		//check for move type
-		var file = pickedMove.NewCoords.GetFile()
-		var rank = pickedMove.NewCoords.GetRank()
-		var oldType = baseBoard.Cells[pickedMove.OldCoords.GetFile()][pickedMove.OldCoords.GetRank()].Type
+		var file = pickedMove.NewCoords.File
+		var rank = pickedMove.NewCoords.Rank
+		var oldType = baseBoard.Cells[pickedMove.OldCoords.File][pickedMove.OldCoords.Rank].Type
 		var newType = newBoard.Cells[file][rank].Type
 		pickedMove.PieceType = oldType
 		if baseBoard.Cells[file][rank] != nil {

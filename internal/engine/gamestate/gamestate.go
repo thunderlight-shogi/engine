@@ -11,6 +11,15 @@ type GameState struct {
 	KingUnderAttack bool
 }
 
+func NewGameState(someBoard board.Board, player model.Player) (gs *GameState) {
+	gs = &GameState{}
+	gs.Board = someBoard
+	gs.Board.CachePossibleMoves()
+	gs.CurMovePlayer = player
+	gs.KingUnderAttack = gs.Board.IsKingAttacked(gs.CurMovePlayer)
+	return
+}
+
 func (gs *GameState) GetNextPlayer() model.Player {
 	if gs.CurMovePlayer == model.Sente {
 		return model.Gote
