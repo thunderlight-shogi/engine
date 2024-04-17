@@ -53,8 +53,13 @@ func movePlayerHandler(w http.ResponseWriter, r *http.Request) {
 
 	var move board.Move
 	json.Unmarshal(body, &move)
-
 	move.PieceType, err = engine.FindPiece(move.PieceType.Id)
+
+	marshal, err := json.Marshal(move)
+	fmt.Println("MARSHAL:")
+	fmt.Println(string(marshal))
+	fmt.Println(string(body));
+
 	if err != nil {
 		writeError(w, err)
 		return
@@ -96,6 +101,8 @@ func moveHelpHandler(w http.ResponseWriter, r *http.Request) {
 		writeError(w, err)
 		return
 	}
+
+	fmt.Println(string(body))
 
 	w.Write(body)
 }

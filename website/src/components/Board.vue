@@ -8,18 +8,18 @@ import { EngineMode } from '../thunderlight/engine-mode';
 import { jukebox } from '../utils/jukebox';
 import { sleep } from '../utils/sleep';
 import DraggablePiece from './DraggablePiece.vue';
-import Inventory from './Inventory.vue';
 import ModeSwitch from './ModeSwitch.vue';
 import Board from '../thunderlight/board';
-import { ThunderlightEngine } from '../api/engine';
+import { Move, ThunderlightEngine } from '../api/engine';
+import { PieceType } from '../thunderlight/piece-type';
 
 const hand = ref<HTMLElement | undefined>(undefined);
 const engine = new ThunderlightEngine();
 const board = reactive(new Board(engine));
 const mode = ref<EngineMode>('board');
 
-onMounted(() => {
-    board.init();
+onMounted(async () => {
+    await board.init();
 })
 
 function getCells(): HTMLElement[] {
@@ -110,6 +110,22 @@ async function onPieceDrop(_: HTMLElement) {
     
     fadeCells();
     hand.value = undefined;
+
+    if (move !== 'back' && move !== 'prohibited') {
+        const pieceType: PieceType | undefined = board.at(destination)?.type;
+
+        if (pieceType === undefined) {
+            throw new Error(`There is not piece at ${destination.toString()}.`);
+        }
+
+        console.log("SENDING THE MOVE");
+        await engine.sendMove(new Move(source, destination, move, pieceType));
+        console.log("MOVE SENT");
+
+        const engineMove: Move = await engine.makeBestMove(board.pieceTypes);
+        console.log("BEST MOVE MADE");
+        board.move(engineMove.source, engineMove.destination);
+    }
 }
 
 function onPieceMove(event: MouseEvent): void {
