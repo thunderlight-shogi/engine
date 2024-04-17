@@ -21,6 +21,7 @@ const (
 	Attacking
 	Moving
 	Dropping
+	Surrender
 )
 
 type Move struct {
