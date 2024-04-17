@@ -2,16 +2,20 @@ package engine
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
-	"github.com/thunderlight-shogi/engine/internal/engine/movegen"
+	"github.com/thunderlight-shogi/engine/internal/engine/gamestate"
 	"github.com/thunderlight-shogi/engine/internal/engine/movepicker"
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
 var ErrUnknownMoveType error = errors.New("unknown move type")
+var ErrUnknownPieceType error = errors.New("unknown piece type")
 
-var global_state movegen.GameState
+var global_state gamestate.GameState
+
+var global_type_map map[uint]*model.PieceType
 
 func Start(id uint) error {
 	db := model.GetDB()
@@ -32,6 +36,8 @@ func Start(id uint) error {
 	for _, piece := range pos.Pieces {
 		pt := piece.PieceType
 
+		global_type_map[pt.Id] = pt
+
 		if pt.PromotePiece != nil {
 			pt.PromotePiece.DemotePiece = pt
 		}
@@ -46,6 +52,23 @@ func Start(id uint) error {
 	global_state.CurMovePlayer = model.Sente
 
 	return nil
+}
+
+func isCellAttacked(this_board board.Board, attackerPlayer model.Player, cellPos board.Position) bool {
+	for x, file := range this_board.Cells {
+		for y, piece := range file {
+			if piece != nil && piece.Player == attackerPlayer { // If player's cell
+				pos := board.NewPos(x, y)
+
+				var movesPositions = this_board.GetPieceReachableMoves(pos)
+				idx := slices.Index(movesPositions, cellPos)
+				if idx != -1 {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func Move(move board.Move) error {
@@ -82,9 +105,22 @@ func Move(move board.Move) error {
 		return ErrUnknownMoveType
 	}
 
+	enemyKingPos := global_state.Board.GetKingPositionForPlayer(global_state.GetNextPlayer())
+	global_state.KingUnderAttack = isCellAttacked(global_state.Board, global_state.CurMovePlayer, enemyKingPos)
+
 	global_state.CurMovePlayer = global_state.GetNextPlayer()
 
 	return nil
+}
+
+func FindPiece(id uint) (*model.PieceType, error) {
+	t, found := global_type_map[id]
+
+	if found {
+		return t, nil
+	} else {
+		return nil, ErrUnknownPieceType
+	}
 }
 
 func EngineMove() (move board.Move, err error) {

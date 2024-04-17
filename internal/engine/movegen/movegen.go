@@ -4,6 +4,7 @@ import (
 	"slices"
 
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
+	"github.com/thunderlight-shogi/engine/internal/engine/gamestate"
 	"github.com/thunderlight-shogi/engine/internal/model"
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )
@@ -11,27 +12,13 @@ import (
 // TODO: Удаляется вертикаль??? Исправить
 // TODO: GameState сделать указателем
 
-type GameState struct {
-	Board           board.Board
-	CurMovePlayer   model.Player
-	KingUnderAttack bool
-}
-
-func (gs *GameState) GetNextPlayer() model.Player {
-	if gs.CurMovePlayer == model.Sente {
-		return model.Gote
-	} else {
-		return model.Sente
-	}
-}
-
-func generateGameStateAfterChangeAt(board board.Board, nextPlayer model.Player, changePos board.Position) *GameState {
+func generateGameStateAfterChangeAt(board board.Board, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
 	ipUnderAttack := board.IsKingAttackedByPiece(changePos)
 
-	return &GameState{Board: board, CurMovePlayer: nextPlayer, KingUnderAttack: ipUnderAttack}
+	return &gamestate.GameState{Board: board, CurMovePlayer: nextPlayer, KingUnderAttack: ipUnderAttack}
 }
 
-func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(someBoard board.Board, nextPlayer model.Player, changePos board.Position) *GameState {
+func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(someBoard board.Board, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
 	// e.g., pawn cannot move to last row because it will have no moves to board field (so this is not possible game state)
 	if len(someBoard.GetPieceMovesToBoardField(changePos)) != 0 {
 		// TODO: сильно замедляет, исправить
@@ -51,7 +38,7 @@ func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(someBoard board.Board, 
 	return nil
 }
 
-func tryGeneratePromotionGameStateWithMove(someBoard board.Board, nextPlayer model.Player, fromPos, toPos board.Position) *GameState {
+func tryGeneratePromotionGameStateWithMove(someBoard board.Board, nextPlayer model.Player, fromPos, toPos board.Position) *gamestate.GameState {
 	fromFile, fromRank := fromPos.Get()
 	toFile, toRank := toPos.Get()
 	var boardPiece = someBoard.Cells[fromFile][fromRank]
@@ -81,8 +68,8 @@ func tryGeneratePromotionGameStateWithMove(someBoard board.Board, nextPlayer mod
 	return nil
 }
 
-func (gs *GameState) generatePossibleStatesWithMove(fromPos, toPos board.Position) (gss []GameState) {
-	gss = []GameState{}
+func generatePossibleStatesWithMove(gs *gamestate.GameState, fromPos, toPos board.Position) (gss []gamestate.GameState) {
+	gss = []gamestate.GameState{}
 	fromFile, fromRank := fromPos.Get()
 	toFile, toRank := toPos.Get()
 
@@ -112,8 +99,8 @@ func (gs *GameState) generatePossibleStatesWithMove(fromPos, toPos board.Positio
 	return
 }
 
-func (gs *GameState) generatePossibleStatesFromBoardPiece(piecePos board.Position) (gss []GameState) {
-	gss = []GameState{}
+func generatePossibleStatesFromBoardPiece(gs *gamestate.GameState, piecePos board.Position) (gss []gamestate.GameState) {
+	gss = []gamestate.GameState{}
 
 	var curBoard = gs.Board
 
@@ -125,23 +112,23 @@ func (gs *GameState) generatePossibleStatesFromBoardPiece(piecePos board.Positio
 	}
 
 	for _, movePos := range movesPositions {
-		gss = append(gss, gs.generatePossibleStatesWithMove(piecePos, movePos)...)
+		gss = append(gss, generatePossibleStatesWithMove(gs, piecePos, movePos)...)
 	}
 	return
 }
 
-func (gs *GameState) generatePossibleStatesFromBoardPieces() (gss []GameState) {
-	gss = []GameState{}
+func generatePossibleStatesFromBoardPieces(gs *gamestate.GameState) (gss []gamestate.GameState) {
+	gss = []gamestate.GameState{}
 
 	var curBoard = gs.Board
 	curBoard.IterateBoardPieces(gs.CurMovePlayer, func(piece *board.Piece, pos board.Position) {
-		gss = append(gss, gs.generatePossibleStatesFromBoardPiece(pos)...)
+		gss = append(gss, generatePossibleStatesFromBoardPiece(gs, pos)...)
 	})
 	return
 }
 
-func (gs *GameState) generatePossibleStatesWithDrop(pieceType *model.PieceType, dropPos board.Position) (gss []GameState) {
-	gss = []GameState{}
+func generatePossibleStatesWithDrop(gs *gamestate.GameState, pieceType *model.PieceType, dropPos board.Position) (gss []gamestate.GameState) {
+	gss = []gamestate.GameState{}
 	dropFile, dropRank := dropPos.Get()
 
 	var curBoard = gs.Board
@@ -162,7 +149,7 @@ func (gs *GameState) generatePossibleStatesWithDrop(pieceType *model.PieceType, 
 			moveFile, moveRank := movePos.Get()
 			var cell = newBoard.Cells[moveFile][moveRank]
 			if cell != nil && cell.Type.ImportantPiece {
-				var runningFromPawnStates = gs.generatePossibleStatesFromBoardPiece(movePos)
+				var runningFromPawnStates = generatePossibleStatesFromBoardPiece(gs, movePos)
 				if len(runningFromPawnStates) == 0 { // if king can't run away from dropped pawn
 					return
 				}
@@ -177,8 +164,8 @@ func (gs *GameState) generatePossibleStatesWithDrop(pieceType *model.PieceType, 
 	return
 }
 
-func (gs *GameState) generatePossibleStatesFromInventoryPieces() (gss []GameState) {
-	gss = []GameState{}
+func generatePossibleStatesFromInventoryPieces(gs *gamestate.GameState) (gss []gamestate.GameState) {
+	gss = []gamestate.GameState{}
 
 	var curBoard = gs.Board
 	var curPlayer = gs.CurMovePlayer
@@ -190,14 +177,14 @@ func (gs *GameState) generatePossibleStatesFromInventoryPieces() (gss []GameStat
 	var dropsPositions = curBoard.GetPossibleDropsCoords()
 	for _, dropPos := range dropsPositions {
 		for _, piece := range curBoard.Inventories[gs.CurMovePlayer].Pieces() {
-			gss = append(gss, gs.generatePossibleStatesWithDrop(piece, dropPos)...)
+			gss = append(gss, generatePossibleStatesWithDrop(gs, piece, dropPos)...)
 		}
 	}
 	return
 }
 
-func (gs *GameState) generatePossibleStatesFromDefendingKing() (gss []GameState) {
-	gss = []GameState{}
+func generatePossibleStatesFromDefendingKing(gs *gamestate.GameState) (gss []gamestate.GameState) {
+	gss = []gamestate.GameState{}
 
 	var curBoard = gs.Board
 	var curPlayer = gs.CurMovePlayer
@@ -226,7 +213,7 @@ func (gs *GameState) generatePossibleStatesFromDefendingKing() (gss []GameState)
 				// eating
 				idx := slices.Index(movesPositions, attackerPos)
 				if idx != -1 {
-					gss = append(gss, gs.generatePossibleStatesWithMove(pos, attackerPos)...)
+					gss = append(gss, generatePossibleStatesWithMove(gs, pos, attackerPos)...)
 				}
 
 				// closing from
@@ -235,7 +222,7 @@ func (gs *GameState) generatePossibleStatesFromDefendingKing() (gss []GameState)
 					for j := 1; j < len(attackPath)-1; j++ {
 						closeFile, closeRank := attackPath[j].Coordinates()
 						if closeFile == moveFile && closeRank == moveRank {
-							gss = append(gss, gs.generatePossibleStatesWithMove(pos, board.NewPos(closeFile, closeRank))...)
+							gss = append(gss, generatePossibleStatesWithMove(gs, pos, board.NewPos(closeFile, closeRank))...)
 							break
 						}
 					}
@@ -248,25 +235,25 @@ func (gs *GameState) generatePossibleStatesFromDefendingKing() (gss []GameState)
 			for i := 1; i < len(attackPath)-1; i++ {
 				for _, pieceType := range curBoard.Inventories[curPlayer].Pieces() {
 					dropFile, dropRank := attackPath[i].Coordinates()
-					gss = append(gss, gs.generatePossibleStatesWithDrop(pieceType, board.NewPos(dropFile, dropRank))...)
+					gss = append(gss, generatePossibleStatesWithDrop(gs, pieceType, board.NewPos(dropFile, dropRank))...)
 				}
 			}
 		}
 	}
 
 	// important piece is running away
-	gss = append(gss, gs.generatePossibleStatesFromBoardPiece(kingPosition)...)
+	gss = append(gss, generatePossibleStatesFromBoardPiece(gs, kingPosition)...)
 	return
 }
 
-func (gs *GameState) GeneratePossibleStates() (gss []GameState) {
-	gss = []GameState{}
+func GeneratePossibleStates(gs *gamestate.GameState) (gss []gamestate.GameState) {
+	gss = []gamestate.GameState{}
 
 	if !gs.KingUnderAttack {
-		gss = append(gss, gs.generatePossibleStatesFromBoardPieces()...)
-		gss = append(gss, gs.generatePossibleStatesFromInventoryPieces()...)
+		gss = append(gss, generatePossibleStatesFromBoardPieces(gs)...)
+		gss = append(gss, generatePossibleStatesFromInventoryPieces(gs)...)
 	} else {
-		gss = append(gss, gs.generatePossibleStatesFromDefendingKing()...)
+		gss = append(gss, generatePossibleStatesFromDefendingKing(gs)...)
 	}
 
 	return

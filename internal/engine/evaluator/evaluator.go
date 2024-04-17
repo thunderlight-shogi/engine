@@ -2,13 +2,14 @@ package evaluator
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/thunderlight-shogi/engine/internal/engine/movegen"
+	"github.com/thunderlight-shogi/engine/internal/engine/gamestate"
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
 // Metrics used when evaluating board
-var used_metrics = [...]func(*movegen.GameState, model.Player) float32{
+var used_metrics = [...]func(*gamestate.GameState, model.Player) float32{
 	material,
 	attackCount,
 	pieceAdvancement,
@@ -36,7 +37,7 @@ var titles = [...]string{
 	"kingFreeCells",
 }
 
-func Evaluate(gameState *movegen.GameState) float32 {
+func Evaluate(gameState *gamestate.GameState) float32 {
 	/*
 		Does evaluation of game state by summing up each metric
 	*/
@@ -48,7 +49,7 @@ func Evaluate(gameState *movegen.GameState) float32 {
 	return result
 }
 
-func Evaluation_report(gameState *movegen.GameState) string {
+func Evaluation_report(gameState *gamestate.GameState) string {
 	/*
 		Returns info about each metric for debug purposes
 	*/
@@ -63,6 +64,25 @@ func Evaluation_report(gameState *movegen.GameState) string {
 		func_name := titles[i]
 		metric_value := metric(gameState, model.Gote)
 		report += fmt.Sprintf("%s: %.2f\n", func_name, metric_value)
+	}
+	return report
+}
+
+func MetricsBenchmark(gameState *gamestate.GameState) string {
+	/*
+		Returns info about each metric for debug purposes
+	*/
+	report := ""
+	for i, metric := range used_metrics {
+		func_name := titles[i]
+
+		start := time.Now()
+		for range 10000 {
+			metric(gameState, model.Sente)
+		}
+		elapsed := time.Since(start) / 10000
+
+		report += fmt.Sprintf("%s took %s\n", func_name, elapsed)
 	}
 	return report
 }

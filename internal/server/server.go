@@ -48,6 +48,12 @@ func movePlayerHandler(w http.ResponseWriter, r *http.Request) {
 	var move board.Move
 	json.Unmarshal(body, &move)
 
+	move.PieceType, err = engine.FindPiece(move.PieceType.Id)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
 	err = engine.Move(move)
 
 	if err != nil {
@@ -338,6 +344,24 @@ func pieceDelHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
+func moveTypeGetHandler(w http.ResponseWriter, r *http.Request) {
+	m := make(map[string]board.MoveType)
+
+	m["moving"] = board.Moving
+	m["attacking"] = board.Attacking
+	m["dropping"] = board.Dropping
+	m["promotion_moving"] = board.PromotionMoving
+	m["promotion_attacking"] = board.PromotionAttacking
+
+	str, err := json.Marshal(m)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	w.Write(str)
+}
+
 func Run() {
 	http.HandleFunc("POST /start", startEngineHandler) // Start engine
 
@@ -356,6 +380,8 @@ func Run() {
 	http.HandleFunc("POST /piece/add", pieceAddHandler)  // Create a new piece
 	http.HandleFunc("POST /piece/upd", pieceUpdHandler)  // Update existing piece
 	http.HandleFunc("POST /piece/del", pieceDelHandler)  // Delete piece
+
+	http.HandleFunc("GET /move_type/get", moveTypeGetHandler) // Get available piece types
 
 	http.ListenAndServe(":88", nil)
 }
