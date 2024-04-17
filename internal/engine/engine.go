@@ -32,6 +32,7 @@ func Start(id uint) error {
 	}
 
 	global_state.Board = board.Construct()
+	global_type_map = make(map[uint]*model.PieceType)
 
 	for _, piece := range pos.Pieces {
 		pt := piece.PieceType
