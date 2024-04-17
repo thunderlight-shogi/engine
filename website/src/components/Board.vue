@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { generateUUIDv4 } from '../crypto/uuids';
 import { byClass, closest, indexOfChild, locate, locateMouse, measure, move } from '../dom/dom';
 import { firecracker } from '../particles/particles';
-import { useBoard } from '../stores/board-store';
 import { Coordinate } from '../thunderlight/coordinate';
 import { EngineMode } from '../thunderlight/engine-mode';
 import { jukebox } from '../utils/jukebox';
@@ -11,13 +10,16 @@ import { sleep } from '../utils/sleep';
 import DraggablePiece from './DraggablePiece.vue';
 import Inventory from './Inventory.vue';
 import ModeSwitch from './ModeSwitch.vue';
+import Board from '../thunderlight/board';
+import { ThunderlightEngine } from '../api/engine';
 
 const hand = ref<HTMLElement | undefined>(undefined);
-const board = useBoard();
+const engine = new ThunderlightEngine();
+const board = reactive(new Board(engine));
 const mode = ref<EngineMode>('board');
 
-onMounted(async () => {
-    console.log(data.value);
+onMounted(() => {
+    board.init();
 })
 
 function getCells(): HTMLElement[] {
@@ -134,8 +136,6 @@ function onPieceMove(event: MouseEvent): void {
         <ModeSwitch v-model="mode"></ModeSwitch>
 
         <div id="board">
-            <Inventory player="gote" v-model="hand"></Inventory>
-
             <div id="cells" @mousemove="onPieceMove">
                 <div class="cell" v-for="piece of board.cells">
                     <DraggablePiece 
@@ -151,10 +151,7 @@ function onPieceMove(event: MouseEvent): void {
                     ></DraggablePiece>
                 </div>
             </div>
-
-            <Inventory player="sente" v-model="hand"></Inventory>
         </div>
-
     </div>
     
 </template> 

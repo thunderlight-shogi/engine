@@ -8,11 +8,11 @@ export class RestAPI {
         private readonly domain: string
     ) {}
 
-    public async get(path: string, parameters: Record<string, string> = {}): Promise<any> {
+    public async get(path: string, parameters: HTTPParams = {}): Promise<any> {
         return await this.fetch(path, "get", parameters);
     }
 
-    public async post(path: string, parameters: Record<string, string> = {}): Promise<any> {
+    public async post(path: string, parameters: HTTPParams = {}): Promise<any> {
         return await this.fetch(path, "post", parameters);
     }
 
@@ -25,7 +25,7 @@ export class RestAPI {
         }
 
         const response = await fetch(url, {
-            body: method === "post" ? JSON.stringify(parameters) : "",
+            ...(method === "post" && {body: JSON.stringify(parameters)}),
             method
         });
 
@@ -53,7 +53,7 @@ export class RestAPI {
         }
     }
 
-    private convertRequestToString(path: string, method: HTTPMethod, parameters: Record<string, string> = {}): string {
+    private convertRequestToString(path: string, method: HTTPMethod, parameters: HTTPParams = {}): string {
         return `@${this.domain} <--${method}-- ${path}(${JSON.stringify(parameters)})`;
     }
 }

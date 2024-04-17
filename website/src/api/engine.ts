@@ -1,9 +1,14 @@
-import { Coordinate } from "../thunderlight/coordinate";
+import { MoveType } from "../stores/board-store";
+import { BOARD_SIZE, Coordinate } from "../thunderlight/coordinate";
 import { Piece, PieceTypes } from "../thunderlight/piece-type";
 import { Player } from "../thunderlight/player";
 import { RestAPI } from "../utils/requests";
 
 const ENGINE_API_DOMAIN = "http://localhost:5174";
+
+export class Move {
+
+}
 
 export class ThunderlightEngine {
     private readonly api: RestAPI;
@@ -38,11 +43,17 @@ export class ThunderlightEngine {
         }
 
         for(const pieceType of response) {
-            pieceTypes.add(pieceType.id, pieceType.kanji);
+            pieceTypes.add(pieceType.id, String.fromCharCode(pieceType.kanji));
         }
 
         for(const firstPieceType of pieceTypes.list) {
             for(const secondPieceType of response) {
+                const secondPromotionPieceType = secondPieceType.promote_piece;
+
+                if (!secondPromotionPieceType) {
+                    continue;
+                }
+
                 const secondPieceTypeKanji = String.fromCharCode(secondPieceType.promote_piece.kanji);
                 if (firstPieceType.kanji === secondPieceTypeKanji) {
                     pieceTypes.addDemotion(firstPieceType.id, secondPieceType.id);
@@ -50,6 +61,7 @@ export class ThunderlightEngine {
             }
         }
 
+        console.log(pieceTypes);
         return pieceTypes;
     }
 
@@ -67,6 +79,7 @@ export class ThunderlightEngine {
             pieces[this.getFlatCoordinates(rank, file)] = new Piece(pieceType, player);
         }
 
+        console.log(pieces);
         return pieces;
     } 
 
@@ -76,14 +89,46 @@ export class ThunderlightEngine {
         }
     }
 
-    private translateAPICoordinateComponent(coordinateComponent: number) {
+    public async getBestMove() {
+        const response = await this.api.get("move/help");
+
+
+    }
+
+    private translateRankToX(coordinateComponent: number) {
         return coordinateComponent - 1;
+    }
+
+    private translateFileToY(coordinateComponent: number) {
+        return BOARD_SIZE - coordinateComponent - 1;
+    }
+
+    private getMoveType(moveId: number): MoveType {
+        switch (moveId) {
+            case 0:
+                return "attack+"
+
+            case 1:
+                return "travel+"
+
+            case 2:
+                return "attack"
+
+            case 3:
+                return "travel"
+
+            case 4:
+                return "drop"
+
+            default:
+                throw new Error(`There is no move type defined with id = ${moveId}.`);
+        }
     }
 
     private getCoordinate(file: number, rank: number): Coordinate {
         return new Coordinate(
-            this.translateAPICoordinateComponent(rank),
-            this.translateAPICoordinateComponent(file),
+            this.translateRankToX(rank),
+            this.translateFileToY(file),
         );
     }
 

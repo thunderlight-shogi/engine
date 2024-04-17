@@ -1,4 +1,3 @@
-import { generateUUIDv4 } from "../crypto/uuids";
 import { Player } from "./player";
 
 export type PieceState = "idle" | "drop";
@@ -69,8 +68,6 @@ export class PieceType {
 }
 
 export class Piece {
-    public readonly id: string = generateUUIDv4();
-
     constructor(public type: PieceType,
                 public readonly player: Player,
                 public state: PieceState = "idle") {}

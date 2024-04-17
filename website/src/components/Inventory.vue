@@ -1,19 +1,17 @@
 <script setup lang="ts">
-import { generateUUIDv4 } from '../crypto/uuids';
 import { byClass, closest, indexOfChild } from '../dom/dom';
-import { useBoard } from '../stores/board-store';
+import Board from '../thunderlight/board';
 import { Coordinate } from '../thunderlight/coordinate';
 import { PieceType } from '../thunderlight/piece-type';
 import { Player } from '../thunderlight/player';
 import { jukebox } from '../utils/jukebox';
-import DraggablePiece from './DraggablePiece.vue';
 
 defineProps<{ 
     player: Player,
+    board: Board,
 }>();
 
 const hand = defineModel<HTMLElement | undefined>(undefined);
-const board = useBoard();
 
 function getCells(): HTMLElement[] {
     return byClass("cell");
@@ -64,7 +62,7 @@ async function onPieceDrop(_: HTMLElement, type: PieceType) {
 
 <template>
 <div class="inventory">
-    <div class="inventory-slot" v-for="slot of board.getInventoryOf(player).slots">
+    <!--div class="inventory-slot" v-for="slot of board.getInventoryOf(player).slots">
         <DraggablePiece 
             :key="generateUUIDv4()"
             :type="slot.type" 
@@ -75,7 +73,7 @@ async function onPieceDrop(_: HTMLElement, type: PieceType) {
             state="idle"
         ></DraggablePiece>
         <span class="inventory-slot-count">{{ slot.count }}</span>
-    </div>
+    </!--div-->
 </div>
 </template>
 

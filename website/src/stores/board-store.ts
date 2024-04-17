@@ -1,20 +1,24 @@
 import { defineStore } from "pinia";
-import { reactive, ref } from "vue";
+import { Ref, ref } from "vue";
 import { Player, getEnemyOf } from "../thunderlight/player";
 import { Coordinate } from "../thunderlight/coordinate";
 import { between } from "../utils/numbers";
-import { Piece, PieceType } from "../thunderlight/piece-type";
-import { ThunderlightEngine as ThunderlightEngine } from "../api/engine";
+import { Piece, PieceType, PieceTypes } from "../thunderlight/piece-type";
+import { useEngine } from "./engine-store";
 
 
-export type MoveType = "travel" | "attack" | "back" | "prohibited";
+export type MoveType = "travel+" | "attack+" | "travel" | "attack" | "back" | "prohibited" | "drop";
 export class Inventory {
-    public readonly slots: InventorySlot[];
+    public slots: InventorySlot[];
 
-    constructor(protected readonly owner: Player, types: PieceType[] = TYPES.filter(type => !type.promoted)) {
+    constructor(public owner: Player, types: PieceTypes) {
         this.slots = [];
 
-        for (const type of types) {
+        for (const type of types.list) {
+            if (type.promoted) {
+                continue;
+            }
+
             this.slots.push(new InventorySlot(type, 0));
         }
     }
@@ -23,7 +27,7 @@ export class Inventory {
         return this.owner === player;
     }
 
-    private getSlotOf(type: PieceType): InventorySlot {
+    public getSlotOf(type: PieceType): InventorySlot {
         const slot: InventorySlot | undefined = this.slots.find(slot => slot.type.equals(type.demotion));
 
         if (!slot) {
@@ -64,16 +68,14 @@ export class InventorySlot {
 }
 
 export const useBoard = defineStore('board', async () => {
-    const engine = new ThunderlightEngine();
-    await engine.start();
-
-    const cells = reactive(await engine.getStartingPosition());
+    const cells = ref() as Ref<(Piece | undefined)[]>;
+    const pieceTypes = ref() as Ref<PieceTypes>;
     let turn = ref<Player>('sente');
     let player = ref<Player>('sente');
-    let inventories = ref<Inventory[]>([
-        new Inventory('sente'),
-        new Inventory('gote')
-    ]);
+    let inventories = ref([
+        new Inventory('sente', pieceTypes.value),
+        new Inventory('gote', pieceTypes.value)
+    ]) as Ref<Inventory[]>;
 
     function ensureOccupied(coordinate: Coordinate) {
         if (isVacant(coordinate)) {
@@ -87,7 +89,7 @@ export const useBoard = defineStore('board', async () => {
     }
 
     function put(piece: Piece | undefined, coordinate: Coordinate): void {
-        cells.splice(coordinate.absolute, 1, piece);
+        cells.value.splice(coordinate.absolute, 1, piece);
     }
 
     function pickUp(coordinate: Coordinate): Piece {
@@ -103,7 +105,7 @@ export const useBoard = defineStore('board', async () => {
     }
 
     function at(coordinate: Coordinate): Piece | undefined {
-        return cells[coordinate.absolute];
+        return cells.value[coordinate.absolute];
     }
 
     function isVacant(coordinate: Coordinate): boolean {
@@ -175,21 +177,21 @@ export const useBoard = defineStore('board', async () => {
     }
 
     function getInventoryOf(player: Player): Inventory {
-        const inventory = inventories.value.find(inventory => inventory.isOwnedBy(player));
-
-        if (!inventory) {
-            throw Error(`There's no inventory for ${player}.`);
+        for (const inventory of inventories.value) {
+            if (inventory.isOwnedBy(player)) {
+                return inventory;
+            }
         }
 
-        return inventory;
+        throw Error(`There's no inventory for ${player}.`);
     }
 
     return {
         player,
         turn,
         cells,
-        getInventoryOf,
 
+        getInventoryOf,
         move,
         drop
     };
