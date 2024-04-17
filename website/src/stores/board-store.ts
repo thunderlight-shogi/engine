@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
-import { Ref, reactive, ref } from "vue";
-import { DEFAULT_BOARD } from "../thunderlight/board";
+import { reactive, ref } from "vue";
 import { Player, getEnemyOf } from "../thunderlight/player";
 import { Coordinate } from "../thunderlight/coordinate";
 import { between } from "../utils/numbers";
-import { Piece, PieceType, TYPES } from "../thunderlight/piece-type";
+import { Piece, PieceType } from "../thunderlight/piece-type";
+import { ThunderlightEngine as ThunderlightEngine } from "../api/engine";
 
 
 export type MoveType = "travel" | "attack" | "back" | "prohibited";
@@ -63,14 +63,17 @@ export class InventorySlot {
     }
 }
 
-export const useBoard = defineStore('board', () => {
-    const cells = reactive(DEFAULT_BOARD);
+export const useBoard = defineStore('board', async () => {
+    const engine = new ThunderlightEngine();
+    await engine.start();
+
+    const cells = reactive(await engine.getStartingPosition());
     let turn = ref<Player>('sente');
     let player = ref<Player>('sente');
-    let inventories = ref([
+    let inventories = ref<Inventory[]>([
         new Inventory('sente'),
         new Inventory('gote')
-    ]) as Ref<Inventory[]>;
+    ]);
 
     function ensureOccupied(coordinate: Coordinate) {
         if (isVacant(coordinate)) {

@@ -1,3 +1,5 @@
+export const BOARD_SIZE = 9;
+
 export class Coordinate {
     constructor(public readonly x: number, public readonly y: number) {}
 
@@ -10,6 +12,6 @@ export class Coordinate {
     }
 
     get absolute(): number {
-        return this.x + 9 * this.y;
+        return this.x + BOARD_SIZE * this.y;
     }
 }

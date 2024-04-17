@@ -11,18 +11,10 @@ import { sleep } from '../utils/sleep';
 import DraggablePiece from './DraggablePiece.vue';
 import Inventory from './Inventory.vue';
 import ModeSwitch from './ModeSwitch.vue';
-import { useFetch } from '@vueuse/core';
-import { BestMove } from '../thunderlight/best-move';
-import BestMoveDisplay from './BestMoveDisplay.vue';
-import { PAWN } from "../thunderlight/piece-type";
 
 const hand = ref<HTMLElement | undefined>(undefined);
 const board = useBoard();
-const bestMove = ref<BestMove>(new BestMove(true, new Coordinate(0, 0), new Coordinate(0, 0), "travel", PAWN));
 const mode = ref<EngineMode>('board');
-const { data } = useFetch("http://localhost:5174/start/").post({
-    id: 1,
-});
 
 onMounted(async () => {
     console.log(data.value);
@@ -113,28 +105,6 @@ async function onPieceDrop(_: HTMLElement) {
             jukebox.play("piece.prohibited");
             break;
     }
-
-    if (move != 'prohibited') {
-        console.log("The move is allowed, sending move/player request")
-
-        const movePlayerResponse = await fetch("http://localhost:5174/move/player", {
-            method: "POST",
-            body: JSON.stringify({
-                old_pos: {
-                    file: source.x,
-                    rank: source.y,
-                },
-
-                new_pos: {
-                    file: destination.x,
-                    rank: destination.y,
-                },
-            })
-        });
-
-        const movePlayerObject = await movePlayerResponse.json();
-        console.log(movePlayerObject);
-    } 
     
     fadeCells();
     hand.value = undefined;
@@ -185,7 +155,6 @@ function onPieceMove(event: MouseEvent): void {
             <Inventory player="sente" v-model="hand"></Inventory>
         </div>
 
-        <BestMoveDisplay v-model="bestMove"></BestMoveDisplay>
     </div>
     
 </template> 
