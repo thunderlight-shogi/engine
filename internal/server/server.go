@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"fmt"
 
+	"github.com/gorilla/handlers"
+
 	"github.com/thunderlight-shogi/engine/internal/engine"
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
 	"github.com/thunderlight-shogi/engine/internal/model"
@@ -15,6 +17,8 @@ func startEngineHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 
+	fmt.Println(string(body));
+
 	if err != nil {
 		writeError(w, err)
 		return
@@ -22,6 +26,8 @@ func startEngineHandler(w http.ResponseWriter, r *http.Request) {
 
 	var preset model.Preset
 	err = json.Unmarshal(body, &preset)
+
+	fmt.Println(preset.Id)
 
 	if err != nil {
 		writeError(w, err)
@@ -366,26 +372,23 @@ func moveTypeGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Run() {
-	http.HandleFunc("POST /start", startEngineHandler) // Start engine
+	fmt.Println("[!] The Thunderlight RestAPI Server is about to start.")
 
-	http.HandleFunc("POST /move/player", movePlayerHandler) // Player made a move
-	http.HandleFunc("POST /move/engine", moveEngineHandler) // Get move from engine
-	http.HandleFunc("POST /move/help", moveHelpHandler)     // Get a hint from engine
-
-	http.HandleFunc("GET /preset/list", presetListHandler) // Get of all available presets
-	http.HandleFunc("POST /preset/get", presetGetHandler)  // Get preset
-	http.HandleFunc("POST /preset/add", presetAddHandler)  // Create new preset
-	http.HandleFunc("POST /preset/upd", presetUpdHandler)  // Update existing preset
-	http.HandleFunc("POST /preset/del", presetDelHandler)  // Delete preset
-
-	http.HandleFunc("GET /piece/list", pieceListHandler) // Get list of all available pieces
-	http.HandleFunc("POST /piece/get", pieceGetHandler)  // Get piece for preview
-	http.HandleFunc("POST /piece/add", pieceAddHandler)  // Create a new piece
-	http.HandleFunc("POST /piece/upd", pieceUpdHandler)  // Update existing piece
-	http.HandleFunc("POST /piece/del", pieceDelHandler)  // Delete piece
-
-	http.HandleFunc("GET /move_type/get", moveTypeGetHandler) // Get available piece types
-
-	fmt.Println("The Thunderlight RestAPI server is about to start.")
+	http.Handle("/start", handlers.CORS()(http.HandlerFunc(startEngineHandler)))
+    http.Handle("/move/player", handlers.CORS()(http.HandlerFunc(movePlayerHandler)))
+    http.Handle("/move/engine", handlers.CORS()(http.HandlerFunc(moveEngineHandler)))
+    http.Handle("/move/help", handlers.CORS()(http.HandlerFunc(moveHelpHandler)))
+    http.Handle("/preset/list", handlers.CORS()(http.HandlerFunc(presetListHandler)))
+    http.Handle("/preset/get", handlers.CORS()(http.HandlerFunc(presetGetHandler)))
+    http.Handle("/preset/add", handlers.CORS()(http.HandlerFunc(presetAddHandler)))
+    http.Handle("/preset/upd", handlers.CORS()(http.HandlerFunc(presetUpdHandler)))
+    http.Handle("/preset/del", handlers.CORS()(http.HandlerFunc(presetDelHandler)))
+    http.Handle("/piece/list", handlers.CORS()(http.HandlerFunc(pieceListHandler)))
+    http.Handle("/piece/get", handlers.CORS()(http.HandlerFunc(pieceGetHandler)))
+    http.Handle("/piece/add", handlers.CORS()(http.HandlerFunc(pieceAddHandler)))
+    http.Handle("/piece/upd", handlers.CORS()(http.HandlerFunc(pieceUpdHandler)))
+    http.Handle("/piece/del", handlers.CORS()(http.HandlerFunc(pieceDelHandler)))
+    http.Handle("/move_type/get", handlers.CORS()(http.HandlerFunc(moveTypeGetHandler)))
+	
 	http.ListenAndServe(":88", nil)
 }
