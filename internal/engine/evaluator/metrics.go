@@ -150,7 +150,7 @@ func kingGuardsCount(
 	var curBoard = gameState.Board
 	var result float32 = 0
 
-	kingCoords := curBoard.GetKingPositionForPlayer(player)
+	kingCoords := curBoard.GetKingPosition(player)
 	kingX, kingY := kingCoords.Get()
 
 	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
@@ -176,7 +176,7 @@ func kingDefenceRadius1(
 	var result float32 = 0
 
 	defendMatrix := createDefendMatrix(curBoard, player)
-	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingCoords := gameState.Board.GetKingPosition(player)
 	kingX, kingY := kingCoords.Get()
 
 	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
@@ -202,7 +202,7 @@ func kingDefenceRadius2(
 	var result float32 = 0
 
 	defendMatrix := createDefendMatrix(curBoard, player)
-	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingCoords := gameState.Board.GetKingPosition(player)
 	kingX, kingY := kingCoords.Get()
 
 	curBoard.IterateBoardPieces(player, func(piece *board.Piece, pos board.Position) {
@@ -227,7 +227,7 @@ func kingAttackRadius1(
 	var result float32 = 0
 
 	attackMatrix := createAttackMatrix(curBoard, getOppositePlayer(player))
-	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingCoords := gameState.Board.GetKingPosition(player)
 	kingX, kingY := kingCoords.Get()
 
 	curBoard.IterateEmptyCells(func(pos board.Position) {
@@ -252,7 +252,7 @@ func kingAttackRadius2(
 	var result float32 = 0
 
 	attackMatrix := createAttackMatrix(curBoard, getOppositePlayer(player))
-	kingCoords := gameState.Board.GetKingPositionForPlayer(player)
+	kingCoords := gameState.Board.GetKingPosition(player)
 	kingX, kingY := kingCoords.Get()
 
 	curBoard.IterateEmptyCells(func(pos board.Position) {
@@ -273,7 +273,7 @@ func kingFreeCells(
 	/*
 		How many free cells can king go to
 	*/
-	kingPos := gameState.Board.GetKingPositionForPlayer(player)
+	kingPos := gameState.Board.GetKingPosition(player)
 
 	var result float32 = float32(len(gameState.Board.GetKingPossibleMoves(kingPos)))
 
