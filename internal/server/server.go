@@ -223,7 +223,10 @@ func pieceListHandler(w http.ResponseWriter, r *http.Request) {
 	pieces := make([]model.PieceType, 0)
 	db := model.GetDB()
 
-	err := db.Find(&pieces).Error
+	err := db.
+		Preload("PromotePiece").
+		Find(&pieces).Error
+
 	if err != nil {
 		writeError(w, err)
 		return
@@ -383,5 +386,6 @@ func Run() {
 
 	http.HandleFunc("GET /move_type/get", moveTypeGetHandler) // Get available piece types
 
+	fmt.Println("The Thunderlight RestAPI server is about to start.")
 	http.ListenAndServe(":88", nil)
 }
