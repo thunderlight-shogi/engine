@@ -84,11 +84,16 @@ func (writer *KifuWriter) Move(move board.Move, elapsed time.Duration) error {
 
 	writer.prev_pos = move.NewCoords
 
-	_, err := fmt.Fprintf(writer.buffer, "%4d   %-8s (%d:%d)\n",
+	var (
+		minutes uint = uint(elapsed.Minutes())
+		seconds uint = uint(elapsed.Seconds()) - 60*minutes
+	)
+
+	_, err := fmt.Fprintf(writer.buffer, "%4d   %-8s (%02d:%02d)\n",
 		writer.move_number,
 		mv,
-		uint(elapsed.Minutes()),
-		uint(elapsed.Seconds()),
+		minutes,
+		seconds,
 	)
 	return err
 }
