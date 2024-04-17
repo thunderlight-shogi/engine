@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/thunderlight-shogi/engine/internal/engine/board"
+	"github.com/thunderlight-shogi/engine/internal/engine/evaluator"
 	"github.com/thunderlight-shogi/engine/internal/engine/gamestate"
 	"github.com/thunderlight-shogi/engine/internal/engine/movepicker"
 	"github.com/thunderlight-shogi/engine/internal/model"
@@ -15,6 +16,14 @@ var ErrUnknownPieceType error = errors.New("unknown piece type")
 var global_state gamestate.GameState
 
 var global_type_map map[uint]*model.PieceType
+
+func GetState() *gamestate.GameState {
+	return &global_state
+}
+
+func GetReport() string {
+	return evaluator.Evaluation_report(&global_state)
+}
 
 func Start(id uint) error {
 	db := model.GetDB()
