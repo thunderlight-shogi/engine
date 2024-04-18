@@ -455,7 +455,7 @@ func seed() {
 		Name:           "King",
 		Kanji:          '王',
 		ImportantPiece: true,
-		Cost:           999999,
+		Cost:           0,
 		Moves: []Move{
 			{
 				FileShift: -1,
