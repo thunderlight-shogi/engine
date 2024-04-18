@@ -99,7 +99,7 @@ function onPieceDrop(_: MouseEvent) {
     opacity: 0.3
     
     &.drop
-        animation: piece-drop 200ms ease-in
+        // animation: piece-drop 200ms ease-in
 
     &.enemy
         transform: rotate(180deg)

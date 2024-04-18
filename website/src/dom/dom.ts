@@ -30,6 +30,10 @@ export function closest(neighborhood: Iterable<HTMLElement>, element: HTMLElemen
     return minBy(neighborhood, locate, byDistanceTo(location));
 }
 
+export function closestTo(neighborhood: Iterable<HTMLElement>, location: Location2D) {
+    return minBy(neighborhood, locate, byDistanceTo(location));
+}
+
 export function byClass(className: string): HTMLElement[] {
     return [...document.getElementsByClassName(className) as HTMLCollectionOf<HTMLElement>];
 }

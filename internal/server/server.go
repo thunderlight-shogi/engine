@@ -17,8 +17,6 @@ func startEngineHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 
-	fmt.Println(string(body))
-
 	if err != nil {
 		writeError(w, err)
 		return
@@ -26,8 +24,6 @@ func startEngineHandler(w http.ResponseWriter, r *http.Request) {
 
 	var preset model.Preset
 	err = json.Unmarshal(body, &preset)
-
-	fmt.Println(preset.Id)
 
 	if err != nil {
 		writeError(w, err)
@@ -53,8 +49,8 @@ func movePlayerHandler(w http.ResponseWriter, r *http.Request) {
 
 	var move board.Move
 	json.Unmarshal(body, &move)
-
 	move.PieceType, err = engine.FindPiece(move.PieceType.Id)
+
 	if err != nil {
 		writeError(w, err)
 		return
@@ -87,11 +83,8 @@ func moveEngineHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func moveHelpHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("move/help is requested. Waiting for the engine to response...")
 
 	move := engine.GetEngineMove()
-
-	fmt.Println("move/help is finished.")
 
 	body, err := json.Marshal(move)
 	if err != nil {
@@ -373,6 +366,23 @@ func moveTypeGetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(str)
 }
 
+type Metrics struct {
+	Text string `json:"text"`
+}
+
+func metricsHandler(w http.ResponseWriter, r *http.Request) {
+	var metrics Metrics
+	metrics.Text = engine.GetReport()
+
+	str, err := json.Marshal(metrics)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	w.Write(str)
+}
+
 func Run() {
 	fmt.Println("[!] The Thunderlight RestAPI Server is about to start.")
 
@@ -380,6 +390,7 @@ func Run() {
 	http.Handle("/move/player", handlers.CORS()(http.HandlerFunc(movePlayerHandler)))
 	http.Handle("/move/engine", handlers.CORS()(http.HandlerFunc(moveEngineHandler)))
 	http.Handle("/move/help", handlers.CORS()(http.HandlerFunc(moveHelpHandler)))
+	http.Handle("/metrics", handlers.CORS()(http.HandlerFunc(metricsHandler)))
 	http.Handle("/preset/list", handlers.CORS()(http.HandlerFunc(presetListHandler)))
 	http.Handle("/preset/get", handlers.CORS()(http.HandlerFunc(presetGetHandler)))
 	http.Handle("/preset/add", handlers.CORS()(http.HandlerFunc(presetAddHandler)))

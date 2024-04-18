@@ -4,10 +4,9 @@ import { Player, getEnemyOf } from "../thunderlight/player";
 import { Coordinate } from "../thunderlight/coordinate";
 import { between } from "../utils/numbers";
 import { Piece, PieceType, PieceTypes } from "../thunderlight/piece-type";
-import { useEngine } from "./engine-store";
 
 
-export type MoveType = "travel+" | "attack+" | "travel" | "attack" | "back" | "prohibited" | "drop";
+export type MoveType = "travel+" | "attack+" | "travel" | "attack" | "back" | "prohibited" | "drop" | "resign";
 export class Inventory {
     public slots: InventorySlot[];
 
@@ -15,6 +14,8 @@ export class Inventory {
         this.slots = [];
 
         for (const type of types.list) {
+            console.log(type, type.promoted);
+
             if (type.promoted) {
                 continue;
             }
@@ -28,13 +29,17 @@ export class Inventory {
     }
 
     public getSlotOf(type: PieceType): InventorySlot {
-        const slot: InventorySlot | undefined = this.slots.find(slot => slot.type.equals(type.demotion));
+        console.log("THIS SLOTS:", this.slots);
 
-        if (!slot) {
-            throw new Error(`The inventory slot of ${type.kanji} does not exist.`);
+        for (const slot of this.slots) {
+            console.log(slot, slot.type.demotion.kanji, type.demotion.kanji);
+
+            if (slot.type.demotion.kanji === type.demotion.kanji) {
+                return slot;
+            }
         }
 
-        return slot;
+        throw new Error(`The inventory slot of ${type.kanji} does not exist.`);
     }
 
     public add(type: PieceType) {
