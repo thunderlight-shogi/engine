@@ -378,6 +378,24 @@ func moveTypeGetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(str)
 }
 
+type Metrics struct {
+	Text string `json:"text"`
+}
+
+func metricsHandler(w http.ResponseWriter, r *http.Request) {
+	var metrics Metrics
+	metrics.Text = engine.GetReport()
+
+	str, err := json.Marshal(metrics)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	fmt.Println(string(str))
+	w.Write(str)
+}
+
 func Run() {
 	fmt.Println("[!] The Thunderlight RestAPI Server is about to start.")
 
@@ -385,6 +403,7 @@ func Run() {
     http.Handle("/move/player", handlers.CORS()(http.HandlerFunc(movePlayerHandler)))
     http.Handle("/move/engine", handlers.CORS()(http.HandlerFunc(moveEngineHandler)))
     http.Handle("/move/help", handlers.CORS()(http.HandlerFunc(moveHelpHandler)))
+	http.Handle("/metrics", handlers.CORS()(http.HandlerFunc(metricsHandler)))
     http.Handle("/preset/list", handlers.CORS()(http.HandlerFunc(presetListHandler)))
     http.Handle("/preset/get", handlers.CORS()(http.HandlerFunc(presetGetHandler)))
     http.Handle("/preset/add", handlers.CORS()(http.HandlerFunc(presetAddHandler)))

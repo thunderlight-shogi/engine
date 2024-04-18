@@ -21,16 +21,16 @@ export class Board {
         }
         this.turn = 'sente';
         this.player = 'sente';
-        this.inventories = [
-            new Inventory('sente', this.pieceTypes),
-            new Inventory('gote', this.pieceTypes)
-        ];
     }
 
     async init() {
         await this.engine.start();
         this.pieceTypes = await this.engine.getPieceTypes();
         this.cells = await this.engine.getStartingPosition();
+        this.inventories = [
+            new Inventory('sente', this.pieceTypes),
+            new Inventory('gote', this.pieceTypes)
+        ];
     }
 
     ensureOccupied(coordinate: Coordinate): void {
@@ -51,6 +51,7 @@ export class Board {
     }
 
     pickUp(coordinate: Coordinate): Piece {
+        console.log("BEFORE PICKUP:", this.at(coordinate));
         const piece = this.at(coordinate);
 
         if (piece === undefined) {
@@ -59,6 +60,7 @@ export class Board {
 
         this.put(undefined, coordinate);
 
+        console.log("AFTER PICKUP:", this.at(coordinate));
         return piece;
     }
 
@@ -97,9 +99,7 @@ export class Board {
         return 'prohibited';
     }
 
-    move(source: Coordinate, destination: Coordinate): MoveType {
-        const moveType = this.getMoveType(source, destination);
-
+    move(source: Coordinate, destination: Coordinate, moveType: MoveType = this.getMoveType(source, destination)): MoveType {
         if (moveType === 'attack') {
             const victim = this.at(destination);
 
@@ -121,6 +121,9 @@ export class Board {
         }
 
         console.info(`Perfomed a move: ${source} ---${moveType}--> ${destination}`);
+
+        console.log("BOARD AFTER MOVE IS: ", this.cells);
+
         return moveType;
     }
 

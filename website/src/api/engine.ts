@@ -171,6 +171,11 @@ export class ThunderlightEngine {
         );
     }
 
+    public async getMetrics(): Promise<string> {
+        const response = await this.api.post("metrics");
+        return response.text;
+    }
+
     private translateRankToX(rank: number) {
         return BOARD_SIZE - rank;
     }

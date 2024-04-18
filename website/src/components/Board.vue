@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
 import { generateUUIDv4 } from '../crypto/uuids';
-import { byClass, closest, indexOfChild, locate, locateMouse, measure, move } from '../dom/dom';
+import { byClass, closest, closestTo, indexOfChild, locate, locateMouse, measure, move } from '../dom/dom';
 import { firecracker } from '../particles/particles';
 import { Coordinate } from '../thunderlight/coordinate';
 import { EngineMode } from '../thunderlight/engine-mode';
@@ -12,11 +12,13 @@ import ModeSwitch from './ModeSwitch.vue';
 import Board from '../thunderlight/board';
 import { Move, ThunderlightEngine } from '../api/engine';
 import { PieceType } from '../thunderlight/piece-type';
+import MetricsDisplay from './MetricsDisplay.vue';
 
 const hand = ref<HTMLElement | undefined>(undefined);
 const engine = new ThunderlightEngine();
 const board = reactive(new Board(engine));
 const mode = ref<EngineMode>('board');
+const metrics = ref<string>('Metrics are not collected yet.');
 
 onMounted(async () => {
     await board.init();
@@ -120,11 +122,14 @@ async function onPieceDrop(_: HTMLElement) {
 
         console.log("SENDING THE MOVE");
         await engine.sendMove(new Move(source, destination, move, pieceType));
+        metrics.value = await engine.getMetrics();
         console.log("MOVE SENT");
 
         const engineMove: Move = await engine.makeBestMove(board.pieceTypes);
         console.log("BEST MOVE MADE");
-        board.move(engineMove.source, engineMove.destination);
+        board.move(engineMove.source, engineMove.destination, engineMove.moveType);
+
+        metrics.value = await engine.getMetrics();
     }
 }
 
@@ -135,14 +140,39 @@ function onPieceMove(event: MouseEvent): void {
 
     const mouse = locateMouse(event).shift(measure(hand.value).shorten(3));
     const cells = getCells();
-    const underlyingCell = closest(cells, hand.value);
-
+    const underlyingCell = closest(cells, hand.value); 
+ 
     if(!underlyingCell.classList.contains('highlighted')) {
         fadeCells();
     }
 
     move(hand.value, mouse);
     highlight(underlyingCell);
+}
+
+async function onCellRightClick(event: MouseEvent): Promise<void> {
+    const mouse = locateMouse(event);
+    const cells = getCells();
+    const underlyingCell = closestTo(cells, mouse);
+    const cellLocation = locateCell(underlyingCell);
+
+    let promptMessage = `What do you want to drop here at ${cellLocation.toString()}?\n\n`;
+    let slots = board.getInventoryOf(board.turn).slots.filter(slot => slot.count !== 0);
+
+    slots.forEach((slot, index) => {
+        promptMessage += `• Enter ${index} for ${slot.type.kanji};\n`;
+    });
+
+    const promptString = prompt(promptMessage);
+
+    if (promptString === null) {
+        alert("No such piece index! Try again.");
+        return;
+    }
+
+    const slot = slots[parseInt(promptString)];
+    board.drop(cellLocation, slot.type);
+    await engine.sendMove(new Move(new Coordinate(-1, -1), cellLocation, "drop", slot.type));
 }
 
 </script>
@@ -153,7 +183,7 @@ function onPieceMove(event: MouseEvent): void {
 
         <div id="board">
             <div id="cells" @mousemove="onPieceMove">
-                <div class="cell" v-for="piece of board.cells">
+                <div class="cell" v-for="piece of board.cells" @click.right.prevent="onCellRightClick">
                     <DraggablePiece 
                         v-if="piece !== undefined"
                         :key="piece?.id ?? generateUUIDv4()"
@@ -167,6 +197,8 @@ function onPieceMove(event: MouseEvent): void {
                     ></DraggablePiece>
                 </div>
             </div>
+
+            <MetricsDisplay v-model="metrics"></MetricsDisplay>
         </div>
     </div>
     
