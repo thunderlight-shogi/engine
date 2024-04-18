@@ -134,7 +134,7 @@ export class ThunderlightEngine {
             move_type: this.getMoveTypeId(moveType),
 
             piece_type: {
-                id: pieceType.id,
+                id: pieceType.demotion.id,
             }
         });
     }
@@ -148,8 +148,8 @@ export class ThunderlightEngine {
         } = await this.api.get("move/engine");
 
         return new Move(
-            new Coordinate(source.file, source.rank),
-            new Coordinate(destination.file, destination.rank),
+            new Coordinate(BOARD_SIZE - source.file - 1, source.rank),
+            new Coordinate(BOARD_SIZE - destination.file - 1, destination.rank),
             this.getMoveType(moveTypeId),
             pieceTypes.find(pieceTypeId),
         );

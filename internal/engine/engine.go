@@ -48,6 +48,7 @@ func Start(id uint) error {
 		global_type_map[pt.Id] = pt
 
 		if pt.PromotePiece != nil {
+			global_type_map[pt.PromotePiece.Id] = pt.PromotePiece
 			pt.PromotePiece.DemotePiece = pt
 		}
 
