@@ -113,12 +113,6 @@ func FindPiece(id uint) (*model.PieceType, error) {
 	}
 }
 
-func EngineMove() (move board.Move, err error) {
-	move = movepicker.Search(&global_state)
-	err = Move(move)
-	return
-}
-
-func GetHelp() board.Move {
+func GetEngineMove() board.Move {
 	return movepicker.Search(&global_state)
 }

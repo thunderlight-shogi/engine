@@ -2,9 +2,9 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
-	"fmt"
 
 	"github.com/gorilla/handlers"
 
@@ -17,7 +17,7 @@ func startEngineHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 
-	fmt.Println(string(body));
+	fmt.Println(string(body))
 
 	if err != nil {
 		writeError(w, err)
@@ -69,7 +69,9 @@ func movePlayerHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func moveEngineHandler(w http.ResponseWriter, r *http.Request) {
-	move, err := engine.EngineMove()
+	move := engine.GetEngineMove()
+	err := engine.Move(move)
+
 	if err != nil {
 		writeError(w, err)
 		return
@@ -87,7 +89,7 @@ func moveEngineHandler(w http.ResponseWriter, r *http.Request) {
 func moveHelpHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("move/help is requested. Waiting for the engine to response...")
 
-	move := engine.GetHelp()
+	move := engine.GetEngineMove()
 
 	fmt.Println("move/help is finished.")
 
@@ -375,20 +377,20 @@ func Run() {
 	fmt.Println("[!] The Thunderlight RestAPI Server is about to start.")
 
 	http.Handle("/start", handlers.CORS()(http.HandlerFunc(startEngineHandler)))
-    http.Handle("/move/player", handlers.CORS()(http.HandlerFunc(movePlayerHandler)))
-    http.Handle("/move/engine", handlers.CORS()(http.HandlerFunc(moveEngineHandler)))
-    http.Handle("/move/help", handlers.CORS()(http.HandlerFunc(moveHelpHandler)))
-    http.Handle("/preset/list", handlers.CORS()(http.HandlerFunc(presetListHandler)))
-    http.Handle("/preset/get", handlers.CORS()(http.HandlerFunc(presetGetHandler)))
-    http.Handle("/preset/add", handlers.CORS()(http.HandlerFunc(presetAddHandler)))
-    http.Handle("/preset/upd", handlers.CORS()(http.HandlerFunc(presetUpdHandler)))
-    http.Handle("/preset/del", handlers.CORS()(http.HandlerFunc(presetDelHandler)))
-    http.Handle("/piece/list", handlers.CORS()(http.HandlerFunc(pieceListHandler)))
-    http.Handle("/piece/get", handlers.CORS()(http.HandlerFunc(pieceGetHandler)))
-    http.Handle("/piece/add", handlers.CORS()(http.HandlerFunc(pieceAddHandler)))
-    http.Handle("/piece/upd", handlers.CORS()(http.HandlerFunc(pieceUpdHandler)))
-    http.Handle("/piece/del", handlers.CORS()(http.HandlerFunc(pieceDelHandler)))
-    http.Handle("/move_type/get", handlers.CORS()(http.HandlerFunc(moveTypeGetHandler)))
-	
+	http.Handle("/move/player", handlers.CORS()(http.HandlerFunc(movePlayerHandler)))
+	http.Handle("/move/engine", handlers.CORS()(http.HandlerFunc(moveEngineHandler)))
+	http.Handle("/move/help", handlers.CORS()(http.HandlerFunc(moveHelpHandler)))
+	http.Handle("/preset/list", handlers.CORS()(http.HandlerFunc(presetListHandler)))
+	http.Handle("/preset/get", handlers.CORS()(http.HandlerFunc(presetGetHandler)))
+	http.Handle("/preset/add", handlers.CORS()(http.HandlerFunc(presetAddHandler)))
+	http.Handle("/preset/upd", handlers.CORS()(http.HandlerFunc(presetUpdHandler)))
+	http.Handle("/preset/del", handlers.CORS()(http.HandlerFunc(presetDelHandler)))
+	http.Handle("/piece/list", handlers.CORS()(http.HandlerFunc(pieceListHandler)))
+	http.Handle("/piece/get", handlers.CORS()(http.HandlerFunc(pieceGetHandler)))
+	http.Handle("/piece/add", handlers.CORS()(http.HandlerFunc(pieceAddHandler)))
+	http.Handle("/piece/upd", handlers.CORS()(http.HandlerFunc(pieceUpdHandler)))
+	http.Handle("/piece/del", handlers.CORS()(http.HandlerFunc(pieceDelHandler)))
+	http.Handle("/move_type/get", handlers.CORS()(http.HandlerFunc(moveTypeGetHandler)))
+
 	http.ListenAndServe(":88", nil)
 }
