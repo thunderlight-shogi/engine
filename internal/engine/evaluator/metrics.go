@@ -275,7 +275,7 @@ func kingFreeCells(
 	*/
 	kingPos := gameState.Board.GetKingPosition(player)
 
-	var result float32 = float32(len(gameState.Board.GetKingPossibleMoves(kingPos, true)))
+	var result float32 = float32(len(gameState.Board.GetKingPossibleMoves(kingPos)))
 
 	return result * KING_FREE_CELLS_WEIGHT
 }

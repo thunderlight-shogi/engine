@@ -156,34 +156,17 @@ func (this_board Board) MakeMove(fromPos, toPos Position, withPromotion bool) {
 		this_board.Set(toPos, cellMoveFrom)
 	}
 
-	// Recaching kings
-	cellMoveTo = this_board.At(toPos)
-	if !cellMoveTo.Type.ImportantPiece {
-		king1Pos := this_board.GetKingPosition(cellMoveTo.Player)
-		this_board.RecacheKingPossibleMoves(king1Pos)
-	}
-	king2Pos := this_board.GetKingPosition(cellMoveTo.GetAttackerPlayer())
-	this_board.RecacheKingPossibleMoves(king2Pos)
-
-	// Other recaching
-	this_board.RecachePossibleMoves(fromPos)
-	this_board.RecachePossibleMoves(toPos)
+	// Recaching
+	this_board.RecachePossibleMovesAfterMove(fromPos, toPos)
+	//this_board.RecachePossibleMoves(fromPos)
+	//this_board.RecachePossibleMoves(toPos)
 }
 
 func (this_board Board) MakeDrop(pieceType *model.PieceType, player model.Player, dropPos Position) {
 	this_board.Set(dropPos, this_board.Inventories[player].ExtractPieceToPlayer(pieceType, player))
 
-	// Recaching kings
-	dropPiece := this_board.At(dropPos)
-	if !pieceType.ImportantPiece {
-		king1Pos := this_board.GetKingPosition(player)
-		this_board.RecacheKingPossibleMoves(king1Pos)
-	}
-	king2Pos := this_board.GetKingPosition(dropPiece.GetAttackerPlayer())
-	this_board.RecacheKingPossibleMoves(king2Pos)
-
 	// Other recaching
-	this_board.RecachePossibleMoves(dropPos)
+	this_board.RecachePossibleMovesAfterDrop(dropPos)
 }
 
 func (this_board Board) IterateInventory(
@@ -438,11 +421,7 @@ func (this_board Board) GetPositionsOfAttackersOnCell(attackerPlayer model.Playe
 }
 
 // TODO: Объединить в GetPiecePossibleMoves
-func (this_board Board) GetKingPossibleMoves(kingPos Position, useCache bool) []Position {
-	if useCache {
-		return this_board.cachedPiecesPossibleMoves[kingPos]
-	}
-
+func (this_board Board) GetKingPossibleMoves(kingPos Position) []Position {
 	var kingMovesPositions = []Position{}
 	var king = this_board.At(kingPos)
 	var attackerPlayer = king.GetAttackerPlayer()
@@ -464,66 +443,75 @@ func (this_board Board) CachePossibleMoves() {
 	this_board.IterateAllBoardPieces(func(piece *Piece, pos Position) {
 		//fmt.Printf("pos: %v\n", pos)
 		this_board.cachedPiecesReachableCells[pos] = this_board.GetPieceReachableCells(pos, false)
-		var possibleMoves []Position
-		if piece.Type.ImportantPiece {
-			possibleMoves = this_board.GetKingPossibleMoves(pos, false)
-		} else {
-			possibleMoves = this_board.GetPiecePossibleMoves(pos, false)
-		}
-		this_board.cachedPiecesPossibleMoves[pos] = possibleMoves
+		this_board.cachedPiecesPossibleMoves[pos] = this_board.GetPiecePossibleMoves(pos, false)
 		//fmt.Printf("this_board.cachedPiecesPossibleMoves[pos]: %v\n", this_board.cachedPiecesPossibleMoves[pos])
 	})
 }
 
-func (this_board Board) RecachePossibleMoves(posToRecache Position) {
-	var recachePiece = this_board.At(posToRecache)
-	if recachePiece == nil {
-		delete(this_board.cachedPiecesPossibleMoves, posToRecache)
-		delete(this_board.cachedPiecesReachableCells, posToRecache)
-	} else {
-		this_board.cachedPiecesReachableCells[posToRecache] = this_board.GetPieceReachableCells(posToRecache, false)
-		var possibleMoves []Position
-		if recachePiece.Type.ImportantPiece {
-			possibleMoves = this_board.GetKingPossibleMoves(posToRecache, false)
-		} else {
-			possibleMoves = this_board.GetPiecePossibleMoves(posToRecache, false)
-		}
-		this_board.cachedPiecesPossibleMoves[posToRecache] = possibleMoves
-	}
-	//fmt.Printf("posToRecache: %v\n", posToRecache)
+func (this_board Board) RecachePossibleMovesAfterDrop(dropPosToRecache Position) {
+	var recachePiece = this_board.At(dropPosToRecache)
+	this_board.cachedPiecesReachableCells[dropPosToRecache] = this_board.GetPieceReachableCells(dropPosToRecache, false)
+	this_board.cachedPiecesPossibleMoves[dropPosToRecache] = this_board.GetPiecePossibleMoves(dropPosToRecache, false)
+	// fmt.Printf("posToRecache: %v\n", dropPosToRecache)
 	// if recachePiece != nil {
-	// 	//fmt.Printf("recachePiece: %v\n\n", recachePiece.Type)
+	// 	fmt.Printf("recachePiece: %v\n\n", recachePiece.Type)
 	// } else {
-	// 	//fmt.Printf("recachePiece: %v\n\n", recachePiece)
+	// 	fmt.Printf("recachePiece: %v\n\n", recachePiece)
 	// }
 	this_board.IterateAllBoardPieces(func(piece *Piece, pos Position) {
-		if piece.Type.ImportantPiece {
+		if piece == recachePiece {
 			return
 		}
 
 		var pieceCachedReachableCells = this_board.cachedPiecesReachableCells[pos]
-		idx := slices.Index(pieceCachedReachableCells, posToRecache)
+		idx := slices.Index(pieceCachedReachableCells, dropPosToRecache)
 		if idx != -1 {
 			//start := time.Now()
 			this_board.cachedPiecesReachableCells[pos] = this_board.GetPieceReachableCells(pos, false)
-			//test.TimePosMoveGen += time.Since(start)
-			//test.Count++
-			//fmt.Printf("test.Count: %v\n", test.Count)
-			//fmt.Printf("this_board.At(pos).Type: %v\n", this_board.At(pos).Type)
-			//fmt.Printf("pos: %v\n", pos)
-			//fmt.Printf("this_board.cachedPiecesReachableCells[pos]: %v\n\n", this_board.cachedPiecesReachableCells[pos])
+			// test.TimePosMoveGen += time.Since(start)
+			// test.Count++
+			// fmt.Printf("test.Count: %v\n", test.Count)
+			// fmt.Printf("this_board.At(pos).Type: %v\n", this_board.At(pos).Type)
+			// fmt.Printf("pos: %v\n", pos)
+			// fmt.Printf("this_board.cachedPiecesReachableCells[pos]: %v\n\n", this_board.cachedPiecesReachableCells[pos])
 			this_board.cachedPiecesPossibleMoves[pos] = this_board.GetPiecePossibleMoves(pos, false)
 		}
 	})
 }
 
 func (this_board Board) RecachePossibleMovesAfterMove(oldPos, newPos Position) {
+	var cellNew = this_board.At(newPos)
+	delete(this_board.cachedPiecesPossibleMoves, oldPos)
+	delete(this_board.cachedPiecesReachableCells, oldPos)
 
-}
+	this_board.cachedPiecesReachableCells[newPos] = this_board.GetPieceReachableCells(newPos, false)
+	this_board.cachedPiecesPossibleMoves[newPos] = this_board.GetPiecePossibleMoves(newPos, false)
 
-func (this_board Board) RecacheKingPossibleMoves(kingPosToRecache Position) {
-	possibleMoves := this_board.GetKingPossibleMoves(kingPosToRecache, false)
-	this_board.cachedPiecesPossibleMoves[kingPosToRecache] = possibleMoves
+	// fmt.Printf("oldPosToRecache1: %v\n", oldPos)
+	// fmt.Printf("newPosToRecache2: %v\n", newPos)
+	// fmt.Printf("cellNew: %v\n", cellNew.Type)
+	// fmt.Printf("cellOld: %v\n\n", cellOld)
+
+	this_board.IterateAllBoardPieces(func(piece *Piece, pos Position) {
+		if piece == cellNew {
+			return
+		}
+
+		var pieceCachedReachableCells = this_board.cachedPiecesReachableCells[pos]
+		idx1 := slices.Index(pieceCachedReachableCells, oldPos)
+		idx2 := slices.Index(pieceCachedReachableCells, newPos)
+		if idx1 != -1 || idx2 != -1 {
+			//start := time.Now()
+			this_board.cachedPiecesReachableCells[pos] = this_board.GetPieceReachableCells(pos, false)
+			//test.TimePosMoveGen += time.Since(start)
+			// test.Count++
+			// fmt.Printf("test.Count: %v\n", test.Count)
+			// fmt.Printf("this_board.At(pos).Type: %v\n", this_board.At(pos).Type)
+			// fmt.Printf("pos: %v\n", pos)
+			// fmt.Printf("this_board.cachedPiecesReachableCells[pos]: %v\n\n", this_board.cachedPiecesReachableCells[pos])
+			this_board.cachedPiecesPossibleMoves[pos] = this_board.GetPiecePossibleMoves(pos, false)
+		}
+	})
 }
 
 // For test purposes

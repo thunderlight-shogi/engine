@@ -11,8 +11,10 @@ import (
 
 // TODO: Удаляется вертикаль??? Исправить
 // TODO: GameState сделать указателем
+// TODO: Добавить на вход GeneratePossibleMoves переменную, которая будет определять
+//       нужно ли кешировать возможные ходы фигур для генерируемых досок
 
-// TODO: Убрать changePos и возможно перенести эту функцию в gamestate
+// TODO: Убрать changePos и возможно перенести эту функцию в gamestate (типо конструктор)
 func generateGameStateAfterChangeAt(board board.Board, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
 	ipUnderAttack := board.IsKingAttacked(nextPlayer)
 
@@ -118,7 +120,7 @@ func generatePossibleStatesFromBoardPiece(gs *gamestate.GameState, piecePos boar
 
 	var movesPositions []board.Position
 	if curBoard.At(piecePos).Type.ImportantPiece {
-		movesPositions = curBoard.GetKingPossibleMoves(piecePos, true)
+		movesPositions = curBoard.GetKingPossibleMoves(piecePos)
 	} else {
 		movesPositions = curBoard.GetPiecePossibleMoves(piecePos, true)
 	}
