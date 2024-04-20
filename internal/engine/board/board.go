@@ -404,8 +404,13 @@ func (this_board Board) Print() {
 	fmt.Println()
 
 	for i := range 9 {
-		for j := range 9 {
-			var piece = this_board.Cells[8-j][i]
+		fmt.Print(" ", 8-i, " ")
+	}
+	fmt.Println()
+
+	for rank := range 9 {
+		for file := range 9 {
+			var piece = this_board.Cells[8-file][rank]
 			if piece == nil {
 				fmt.Print(" - ")
 			} else {
@@ -421,7 +426,7 @@ func (this_board Board) Print() {
 				fmt.Print(str)
 			}
 		}
-		fmt.Println()
+		fmt.Print(" ", rank, "\n")
 	}
 
 	for pieceType, count := range this_board.Inventories[model.Sente].pieces {

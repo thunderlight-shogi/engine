@@ -52,7 +52,7 @@ func Start(id uint) error {
 			pt.PromotePiece.DemotePiece = pt
 		}
 
-		global_state.Board.Cells[piece.File-1][piece.Rank-1] =
+		global_state.Board.Cells[piece.File][piece.Rank] =
 			&board.Piece{
 				Type:   pt,
 				Player: piece.Player,
