@@ -66,12 +66,10 @@ func Start(id uint) error {
 
 func Move(move board.Move) error {
 	switch move.MoveType {
-	case board.Attacking:
-	case board.Moving:
+	case board.Attacking, board.Moving:
 		global_state.Board.MakeMove(move.OldCoords, move.NewCoords, false)
 
-	case board.PromotionAttacking:
-	case board.PromotionMoving:
+	case board.PromotionAttacking, board.PromotionMoving:
 		global_state.Board.MakeMove(move.OldCoords, move.NewCoords, true)
 
 	case board.Dropping:
