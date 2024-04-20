@@ -9,22 +9,19 @@ import (
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )
 
-// TODO: Удаляется вертикаль??? Исправить
-// TODO: GameState сделать указателем
 // TODO: Добавить на вход GeneratePossibleMoves переменную, которая будет определять
-//       нужно ли кешировать возможные ходы фигур для генерируемых досок
+//       нужно ли кешировать возможные ходы фигур для генерируемых досок (может поломать эвалюатор, мб не стоит делать)
 
-// TODO: Убрать changePos и возможно перенести эту функцию в gamestate (типо конструктор)
-func generateGameStateAfterChangeAt(board board.Board, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
-	ipUnderAttack := board.IsKingAttacked(nextPlayer)
+// TODO: Убрать changePos и возможно перенести эту функцию в gamestate (типо как конструктор)
+func generateGameStateAfterChangeAt(someBoard board.Board, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
+	ipUnderAttack := someBoard.IsKingAttacked(nextPlayer)
 
-	return &gamestate.GameState{Board: board, CurMovePlayer: nextPlayer, KingUnderAttack: ipUnderAttack}
+	return &gamestate.GameState{Board: someBoard, CurMovePlayer: nextPlayer, KingUnderAttack: ipUnderAttack}
 }
 
 func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(someBoard board.Board, curPlayer, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
 	// e.g., pawn cannot move to last row because it will have no moves to board field (so this is not possible game state)
 	if len(someBoard.GetPieceMovesToBoardField(changePos)) != 0 {
-		// TODO: сильно замедляет, исправить
 		var isCurPlayerKingAttacked = someBoard.IsKingAttacked(curPlayer)
 
 		if !isCurPlayerKingAttacked {
@@ -39,14 +36,13 @@ func tryGeneratePromotionGameStateWithMove(someBoard board.Board, curPlayer, nex
 	toRank := toPos.Rank
 	var boardPiece = someBoard.At(fromPos)
 	if boardPiece.IsPromotable() {
-		var toPromotionZone = slices.Contains(someBoard.GetPromotionZone(boardPiece.Player), toRank)
-		var fromPromotionZone = slices.Contains(someBoard.GetPromotionZone(boardPiece.Player), fromRank)
+		var toPromotionZone = slices.Contains(board.GetPromotionZone(boardPiece.Player), toRank)
+		var fromPromotionZone = slices.Contains(board.GetPromotionZone(boardPiece.Player), fromRank)
 		if toPromotionZone || fromPromotionZone {
 			altNewBoard := someBoard.Clone()
 			altNewBoard.MakeMove(fromPos, toPos, true)
 
-			// TODO: сильно замедляет, исправить
-			var isCurPlayerKingAttacked = someBoard.IsKingAttacked(curPlayer)
+			var isCurPlayerKingAttacked = altNewBoard.IsKingAttacked(curPlayer)
 
 			if !isCurPlayerKingAttacked {
 				return generateGameStateAfterChangeAt(altNewBoard, nextPlayer, toPos)

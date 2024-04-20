@@ -8,81 +8,14 @@ import (
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )
 
-type Position struct {
-	File int `json:"file"`
-	Rank int `json:"rank"`
-}
-
-type MoveType uint
-
-const (
-	PromotionAttacking MoveType = iota
-	PromotionMoving
-	Attacking
-	Moving
-	Dropping
-)
-
-type Move struct {
-	OldCoords Position         `json:"old_pos"`
-	NewCoords Position         `json:"new_pos"`
-	PieceType *model.PieceType `json:"piece_type"`
-	MoveType  MoveType         `json:"move_type"`
-}
-
-func NewPos(file, rank int) Position {
-	return Position{File: file, Rank: rank}
-}
-
-func (pos Position) Get() (int, int) {
-	return pos.File, pos.Rank
-}
-
-type Piece struct {
-	Type   *model.PieceType
-	Player model.Player
-}
-
 type board struct {
-	Cells                      [9][9]*Piece // [Horizontal offset][Vertical offset]
-	Inventories                map[model.Player]Inventory
-	cachedPiecesReachableCells map[Position][]Position
-	cachedPiecesPossibleMoves  map[Position][]Position
+	Cells               [9][9]*Piece // [File][Rank]
+	Inventories         map[model.Player]Inventory
+	reachableCellsCache [9][9][]Position
+	possibleMovesCache  [9][9][]Position
 }
 
 type Board = *board
-
-var PromotionZoneForSente = []int{0, 1, 2}
-var PromotionZoneForGote = []int{6, 7, 8}
-
-func (this_piece *Piece) IsPromoted() bool {
-	return this_piece.Type.DemotePiece != nil
-}
-
-func (this_piece *Piece) IsPromotable() bool {
-	return this_piece.Type.PromotePiece != nil
-}
-
-func (this_piece *Piece) getShiftSign() int {
-	if this_piece.Player == model.Sente {
-		return 1
-	} else {
-		return -1
-	}
-}
-
-func (this_piece *Piece) GetPromotedPiece() *Piece {
-	return &Piece{Type: this_piece.Type.PromotePiece, Player: this_piece.Player}
-}
-
-func (this_piece *Piece) GetAttackerPlayer() (attackerPlayer model.Player) {
-	if this_piece.Player == model.Sente {
-		attackerPlayer = model.Gote
-	} else {
-		attackerPlayer = model.Sente
-	}
-	return
-}
 
 func Construct() (newby Board) {
 	newby = new(board)
@@ -97,9 +30,9 @@ func Construct() (newby Board) {
 func (this_board Board) Clone() (newby Board) {
 	newby = new(board)
 
-	for i := range newby.Cells {
-		for j := range newby.Cells[i] {
-			newby.Cells[i][j] = this_board.Cells[i][j]
+	for x := range newby.Cells {
+		for y := range newby.Cells[x] {
+			newby.Cells[x][y] = this_board.Cells[x][y]
 		}
 	}
 
@@ -107,17 +40,48 @@ func (this_board Board) Clone() (newby Board) {
 	newby.Inventories[model.Sente] = this_board.Inventories[model.Sente].clone()
 	newby.Inventories[model.Gote] = this_board.Inventories[model.Gote].clone()
 
-	newby.cachedPiecesReachableCells = make(map[Position][]Position)
-	for key, value := range this_board.cachedPiecesReachableCells {
-		newby.cachedPiecesReachableCells[key] = value
+	for x := range newby.reachableCellsCache {
+		for y := range newby.reachableCellsCache[x] {
+			newby.reachableCellsCache[x][y] = this_board.reachableCellsCache[x][y]
+		}
 	}
 
-	newby.cachedPiecesPossibleMoves = make(map[Position][]Position)
-	for key, value := range this_board.cachedPiecesPossibleMoves {
-		newby.cachedPiecesPossibleMoves[key] = value
+	for x := range newby.possibleMovesCache {
+		for y := range newby.possibleMovesCache[x] {
+			newby.possibleMovesCache[x][y] = this_board.possibleMovesCache[x][y]
+		}
 	}
 
 	return
+}
+
+func (this_board Board) Equal(other Board) bool {
+	for x := range this_board.Cells {
+		for y := range this_board.Cells[x] {
+			if this_board.Cells[x][y] == nil {
+				if other.Cells[x][y] != nil {
+					return false
+				}
+			} else if other.Cells[x][y] == nil {
+				return false
+			} else if *this_board.Cells[x][y] != *other.Cells[x][y] {
+				return false
+			}
+		}
+	}
+
+	for key, value := range this_board.Inventories[model.Sente].pieces {
+		if other.Inventories[model.Sente].pieces[key] != value {
+			return false
+		}
+	}
+
+	for key, value := range this_board.Inventories[model.Gote].pieces {
+		if other.Inventories[model.Gote].pieces[key] != value {
+			return false
+		}
+	}
+	return true
 }
 
 func (this_board Board) At(pos Position) *Piece {
@@ -126,18 +90,6 @@ func (this_board Board) At(pos Position) *Piece {
 
 func (this_board Board) Set(pos Position, piece *Piece) {
 	this_board.Cells[pos.File][pos.Rank] = piece
-}
-
-// func (this_board Board) CachedPiecesPossibleMoves() map[Position][]Position {
-// 	return this_board.cachedPiecesPossibleMoves
-// }
-
-func (this_board Board) GetPromotionZone(player model.Player) []int {
-	if player == model.Sente {
-		return PromotionZoneForSente
-	} else {
-		return PromotionZoneForGote
-	}
 }
 
 func (this_board Board) MakeMove(fromPos, toPos Position, withPromotion bool) {
@@ -156,101 +108,15 @@ func (this_board Board) MakeMove(fromPos, toPos Position, withPromotion bool) {
 		this_board.Set(toPos, cellMoveFrom)
 	}
 
-	// Recaching
-	this_board.RecachePossibleMovesAfterMove(fromPos, toPos)
-	//this_board.RecachePossibleMoves(fromPos)
-	//this_board.RecachePossibleMoves(toPos)
+	// Updating cache
+	this_board.updateCacheAfterMove(fromPos, toPos)
 }
 
 func (this_board Board) MakeDrop(pieceType *model.PieceType, player model.Player, dropPos Position) {
 	this_board.Set(dropPos, this_board.Inventories[player].ExtractPieceToPlayer(pieceType, player))
 
-	// Other recaching
-	this_board.RecachePossibleMovesAfterDrop(dropPos)
-}
-
-func (this_board Board) IterateInventory(
-	player model.Player,
-	callback func(piece *model.PieceType),
-) {
-	/*
-		Iterates over player's inventory
-		and for each figure calls callback function
-	*/
-	playerInventory := this_board.Inventories[player]
-	for _, pieceType := range playerInventory.Pieces() {
-		count := playerInventory.CountPiece(pieceType)
-		for range count {
-			callback(pieceType)
-		}
-	}
-}
-
-func (this_board Board) IterateAllBoardPieces(
-	callback func(piece *Piece, pos Position),
-) {
-	/*
-		Iterates over all pieces on board
-		and for each figure calls callback function
-	*/
-	for x := range this_board.Cells {
-		for y, cell := range this_board.Cells[x] {
-			if cell != nil {
-				callback(cell, NewPos(x, y))
-			}
-		}
-	}
-}
-
-func (this_board Board) IterateBoardPieces(
-	player model.Player,
-	callback func(piece *Piece, pos Position),
-) {
-	/*
-		Iterates over player's pieces on board
-		and for each figure calls callback function
-	*/
-	this_board.IterateAllBoardPieces(func(piece *Piece, pos Position) {
-		if piece.Player == player { // If player's piece
-			callback(piece, pos)
-		}
-	})
-}
-
-func (this_board Board) IterateBoardPiecesWithEarlyExit(
-	player model.Player,
-	callback func(piece *Piece, pos Position) bool,
-) {
-	/*
-		Iterates over player's pieces on board
-		and for each figure calls callback function.
-		If callback return true then iterating finishes
-	*/
-	for x := range this_board.Cells {
-		for y, cell := range this_board.Cells[x] {
-			if cell != nil && cell.Player == player {
-				if callback(cell, NewPos(x, y)) {
-					return
-				}
-			}
-		}
-	}
-}
-
-func (this_board Board) IterateEmptyCells(
-	callback func(pos Position),
-) {
-	/*
-		Iterates over all empty cells on board
-		and for each calls callback function
-	*/
-	for x := range this_board.Cells {
-		for y, cell := range this_board.Cells[x] {
-			if cell == nil {
-				callback(NewPos(x, y))
-			}
-		}
-	}
+	// Updating cache
+	this_board.updateCacheAfterDrop(dropPos)
 }
 
 func (this_board Board) IsTherePawn(file int) bool {
@@ -317,8 +183,7 @@ func (this_board Board) GetPieceMovesToBoardField(piecePos Position) (movesPosit
 
 func (this_board Board) GetPieceReachableCells(piecePos Position, useCache bool) (reachableCellsPositions []Position) {
 	if useCache {
-		cached := this_board.cachedPiecesReachableCells[piecePos]
-		return cached
+		return this_board.reachableCellsCache[piecePos.File][piecePos.Rank]
 	}
 
 	reachableCellsPositions = []Position{}
@@ -334,7 +199,7 @@ func (this_board Board) GetPieceReachableCells(piecePos Position, useCache bool)
 
 func (this_board Board) GetPiecePossibleMoves(piecePos Position, useCache bool) (possibleMovesPositions []Position) {
 	if useCache {
-		return this_board.cachedPiecesPossibleMoves[piecePos]
+		return this_board.possibleMovesCache[piecePos.File][piecePos.Rank]
 	}
 
 	possibleMovesPositions = []Position{}
@@ -369,6 +234,7 @@ func (this_board Board) GetKingPosition(kingPlayer model.Player) Position {
 			}
 		}
 	}
+	this_board.Print()
 	panic("The king is not on the board")
 }
 
@@ -433,85 +299,6 @@ func (this_board Board) GetKingPossibleMoves(kingPos Position) []Position {
 		}
 	}
 	return kingMovesPositions
-}
-
-func (this_board Board) CachePossibleMoves() {
-	//fmt.Println("hehe")
-	//fmt.Printf("this_board.Cells: %v\n", this_board.Cells)
-	this_board.cachedPiecesReachableCells = make(map[Position][]Position)
-	this_board.cachedPiecesPossibleMoves = make(map[Position][]Position)
-	this_board.IterateAllBoardPieces(func(piece *Piece, pos Position) {
-		//fmt.Printf("pos: %v\n", pos)
-		this_board.cachedPiecesReachableCells[pos] = this_board.GetPieceReachableCells(pos, false)
-		this_board.cachedPiecesPossibleMoves[pos] = this_board.GetPiecePossibleMoves(pos, false)
-		//fmt.Printf("this_board.cachedPiecesPossibleMoves[pos]: %v\n", this_board.cachedPiecesPossibleMoves[pos])
-	})
-}
-
-func (this_board Board) RecachePossibleMovesAfterDrop(dropPosToRecache Position) {
-	var recachePiece = this_board.At(dropPosToRecache)
-	this_board.cachedPiecesReachableCells[dropPosToRecache] = this_board.GetPieceReachableCells(dropPosToRecache, false)
-	this_board.cachedPiecesPossibleMoves[dropPosToRecache] = this_board.GetPiecePossibleMoves(dropPosToRecache, false)
-	// fmt.Printf("posToRecache: %v\n", dropPosToRecache)
-	// if recachePiece != nil {
-	// 	fmt.Printf("recachePiece: %v\n\n", recachePiece.Type)
-	// } else {
-	// 	fmt.Printf("recachePiece: %v\n\n", recachePiece)
-	// }
-	this_board.IterateAllBoardPieces(func(piece *Piece, pos Position) {
-		if piece == recachePiece {
-			return
-		}
-
-		var pieceCachedReachableCells = this_board.cachedPiecesReachableCells[pos]
-		idx := slices.Index(pieceCachedReachableCells, dropPosToRecache)
-		if idx != -1 {
-			//start := time.Now()
-			this_board.cachedPiecesReachableCells[pos] = this_board.GetPieceReachableCells(pos, false)
-			// test.TimePosMoveGen += time.Since(start)
-			// test.Count++
-			// fmt.Printf("test.Count: %v\n", test.Count)
-			// fmt.Printf("this_board.At(pos).Type: %v\n", this_board.At(pos).Type)
-			// fmt.Printf("pos: %v\n", pos)
-			// fmt.Printf("this_board.cachedPiecesReachableCells[pos]: %v\n\n", this_board.cachedPiecesReachableCells[pos])
-			this_board.cachedPiecesPossibleMoves[pos] = this_board.GetPiecePossibleMoves(pos, false)
-		}
-	})
-}
-
-func (this_board Board) RecachePossibleMovesAfterMove(oldPos, newPos Position) {
-	var cellNew = this_board.At(newPos)
-	delete(this_board.cachedPiecesPossibleMoves, oldPos)
-	delete(this_board.cachedPiecesReachableCells, oldPos)
-
-	this_board.cachedPiecesReachableCells[newPos] = this_board.GetPieceReachableCells(newPos, false)
-	this_board.cachedPiecesPossibleMoves[newPos] = this_board.GetPiecePossibleMoves(newPos, false)
-
-	// fmt.Printf("oldPosToRecache1: %v\n", oldPos)
-	// fmt.Printf("newPosToRecache2: %v\n", newPos)
-	// fmt.Printf("cellNew: %v\n", cellNew.Type)
-	// fmt.Printf("cellOld: %v\n\n", cellOld)
-
-	this_board.IterateAllBoardPieces(func(piece *Piece, pos Position) {
-		if piece == cellNew {
-			return
-		}
-
-		var pieceCachedReachableCells = this_board.cachedPiecesReachableCells[pos]
-		idx1 := slices.Index(pieceCachedReachableCells, oldPos)
-		idx2 := slices.Index(pieceCachedReachableCells, newPos)
-		if idx1 != -1 || idx2 != -1 {
-			//start := time.Now()
-			this_board.cachedPiecesReachableCells[pos] = this_board.GetPieceReachableCells(pos, false)
-			//test.TimePosMoveGen += time.Since(start)
-			// test.Count++
-			// fmt.Printf("test.Count: %v\n", test.Count)
-			// fmt.Printf("this_board.At(pos).Type: %v\n", this_board.At(pos).Type)
-			// fmt.Printf("pos: %v\n", pos)
-			// fmt.Printf("this_board.cachedPiecesReachableCells[pos]: %v\n\n", this_board.cachedPiecesReachableCells[pos])
-			this_board.cachedPiecesPossibleMoves[pos] = this_board.GetPiecePossibleMoves(pos, false)
-		}
-	})
 }
 
 // For test purposes

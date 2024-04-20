@@ -5,6 +5,8 @@ import (
 	"github.com/thunderlight-shogi/engine/internal/model"
 )
 
+// TODO: GameState сделать указателем
+
 type GameState struct {
 	Board           board.Board
 	CurMovePlayer   model.Player
