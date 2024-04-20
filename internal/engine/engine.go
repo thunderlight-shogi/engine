@@ -13,21 +13,26 @@ import (
 var ErrUnknownMoveType error = errors.New("unknown move type")
 var ErrUnknownPieceType error = errors.New("unknown piece type")
 
-var global_state gamestate.GameState
-
-var global_type_map map[uint]*model.PieceType
-
-func GetState() *gamestate.GameState {
-	return &global_state
+type engine struct {
+	gamestate *gamestate.GameState
+	typemap   map[uint]*model.PieceType
 }
 
-func GetReport() string {
-	return evaluator.Evaluation_report(&global_state)
+type Engine = *engine
+
+func (engine Engine) GetState() *gamestate.GameState {
+	return engine.gamestate
 }
 
-func Start(id uint) error {
+func (engine Engine) GetReport() string {
+	return evaluator.Evaluation_report(engine.gamestate)
+}
+
+func Start(id uint) (new_eng Engine, err error) {
 	db := model.GetDB()
 	var pos model.Preset
+
+	err = nil
 
 	result := db.Preload("Pieces").
 		Preload("Pieces.PieceType").
@@ -35,20 +40,24 @@ func Start(id uint) error {
 		Preload("Pieces.PieceType.Moves").
 		Preload("Pieces.PieceType.PromotePiece.Moves").
 		First(&pos, id)
+
 	if result.Error != nil {
-		return result.Error
+		err = result.Error
+		return
 	}
 
+	new_eng = new(engine)
+
 	newBoard := board.Construct()
-	global_type_map = make(map[uint]*model.PieceType)
+	new_eng.typemap = make(map[uint]*model.PieceType)
 
 	for _, piece := range pos.Pieces {
 		pt := piece.PieceType
 
-		global_type_map[pt.Id] = pt
+		new_eng.typemap[pt.Id] = pt
 
 		if pt.PromotePiece != nil {
-			global_type_map[pt.PromotePiece.Id] = pt.PromotePiece
+			new_eng.typemap[pt.PromotePiece.Id] = pt.PromotePiece
 			pt.PromotePiece.DemotePiece = pt
 		}
 
@@ -59,34 +68,34 @@ func Start(id uint) error {
 			}
 	}
 
-	global_state = *gamestate.NewGameState(newBoard, model.Sente)
+	new_eng.gamestate = gamestate.NewGameState(newBoard, model.Sente)
 
-	return nil
+	return
 }
 
-func Move(move board.Move) error {
+func (engine Engine) Move(move board.Move) error {
 	switch move.MoveType {
 	case board.Attacking, board.Moving:
-		global_state.Board.MakeMove(move.OldCoords, move.NewCoords, false)
+		engine.gamestate.Board.MakeMove(move.OldCoords, move.NewCoords, false)
 
 	case board.PromotionAttacking, board.PromotionMoving:
-		global_state.Board.MakeMove(move.OldCoords, move.NewCoords, true)
+		engine.gamestate.Board.MakeMove(move.OldCoords, move.NewCoords, true)
 
 	case board.Dropping:
-		global_state.Board.MakeDrop(move.PieceType, global_state.CurMovePlayer, move.NewCoords)
+		engine.gamestate.Board.MakeDrop(move.PieceType, engine.gamestate.CurMovePlayer, move.NewCoords)
 
 	default:
 		return ErrUnknownMoveType
 	}
 
-	global_state.CurMovePlayer = global_state.GetNextPlayer()
-	global_state.KingUnderAttack = global_state.Board.IsKingAttacked(global_state.CurMovePlayer)
+	engine.gamestate.CurMovePlayer = engine.gamestate.GetNextPlayer()
+	engine.gamestate.KingUnderAttack = engine.gamestate.Board.IsKingAttacked(engine.gamestate.CurMovePlayer)
 
 	return nil
 }
 
-func FindPiece(id uint) (*model.PieceType, error) {
-	t, found := global_type_map[id]
+func (engine Engine) FindPiece(id uint) (*model.PieceType, error) {
+	t, found := engine.typemap[id]
 
 	if found {
 		return t, nil
@@ -95,6 +104,6 @@ func FindPiece(id uint) (*model.PieceType, error) {
 	}
 }
 
-func GetEngineMove() board.Move {
-	return movepicker.Search(&global_state)
+func (engine Engine) GetEngineMove() board.Move {
+	return movepicker.Search(engine.gamestate)
 }

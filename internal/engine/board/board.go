@@ -329,7 +329,11 @@ func (this_board Board) Print() {
 				case model.Gote:
 					str += "☗"
 				}
-				str += string(piece.Type.Kanji)
+				if piece.IsPromoted() {
+					str += "\x1b[96m" + string(piece.Type.Kanji) + "\x1b[97m"
+				} else {
+					str += string(piece.Type.Kanji)
+				}
 
 				fmt.Print(str)
 			}
