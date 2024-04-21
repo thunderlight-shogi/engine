@@ -9,20 +9,19 @@ import (
 	"github.com/thunderlight-shogi/engine/pkg/graphics"
 )
 
-// TODO: Удаляется вертикаль??? Исправить
-// TODO: GameState сделать указателем
+// TODO: Добавить на вход GeneratePossibleMoves переменную, которая будет определять
+//       нужно ли кешировать возможные ходы фигур для генерируемых досок (может поломать эвалюатор, мб не стоит делать)
 
-// TODO: Убрать changePos и возможно перенести эту функцию в gamestate
-func generateGameStateAfterChangeAt(board board.Board, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
-	ipUnderAttack := board.IsKingAttacked(nextPlayer)
+// TODO: Убрать changePos и возможно перенести эту функцию в gamestate (типо как конструктор)
+func generateGameStateAfterChangeAt(someBoard board.Board, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
+	ipUnderAttack := someBoard.IsKingAttacked(nextPlayer)
 
-	return &gamestate.GameState{Board: board, CurMovePlayer: nextPlayer, KingUnderAttack: ipUnderAttack}
+	return &gamestate.GameState{Board: someBoard, CurMovePlayer: nextPlayer, KingUnderAttack: ipUnderAttack}
 }
 
 func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(someBoard board.Board, curPlayer, nextPlayer model.Player, changePos board.Position) *gamestate.GameState {
 	// e.g., pawn cannot move to last row because it will have no moves to board field (so this is not possible game state)
 	if len(someBoard.GetPieceMovesToBoardField(changePos)) != 0 {
-		// TODO: сильно замедляет, исправить
 		var isCurPlayerKingAttacked = someBoard.IsKingAttacked(curPlayer)
 
 		if !isCurPlayerKingAttacked {
@@ -33,19 +32,17 @@ func tryGenerateGameStateAfterChangeAtWithNextMovesCheck(someBoard board.Board, 
 }
 
 func tryGeneratePromotionGameStateWithMove(someBoard board.Board, curPlayer, nextPlayer model.Player, fromPos, toPos board.Position) *gamestate.GameState {
-	fromFile, fromRank := fromPos.Get()
-	toFile, toRank := toPos.Get()
-	var boardPiece = someBoard.Cells[fromFile][fromRank]
+	fromRank := fromPos.Rank
+	toRank := toPos.Rank
+	var boardPiece = someBoard.At(fromPos)
 	if boardPiece.IsPromotable() {
-		var toPromotionZone = slices.Contains(someBoard.GetPromotionZone(boardPiece.Player), toRank)
-		var fromPromotionZone = slices.Contains(someBoard.GetPromotionZone(boardPiece.Player), fromRank)
+		var toPromotionZone = slices.Contains(board.GetPromotionZone(boardPiece.Player), toRank)
+		var fromPromotionZone = slices.Contains(board.GetPromotionZone(boardPiece.Player), fromRank)
 		if toPromotionZone || fromPromotionZone {
 			altNewBoard := someBoard.Clone()
-			altNewBoard.Cells[toFile][toRank] = boardPiece.GetPromotedPiece()
-			altNewBoard.Cells[fromFile][fromRank] = nil
+			altNewBoard.MakeMove(fromPos, toPos, true)
 
-			// TODO: сильно замедляет, исправить
-			var isCurPlayerKingAttacked = someBoard.IsKingAttacked(curPlayer)
+			var isCurPlayerKingAttacked = altNewBoard.IsKingAttacked(curPlayer)
 
 			if !isCurPlayerKingAttacked {
 				return generateGameStateAfterChangeAt(altNewBoard, nextPlayer, toPos)
@@ -57,17 +54,9 @@ func tryGeneratePromotionGameStateWithMove(someBoard board.Board, curPlayer, nex
 
 func generatePossibleStatesWithMove(gs *gamestate.GameState, fromPos, toPos board.Position) (gss []gamestate.GameState) {
 	gss = []gamestate.GameState{}
-	fromFile, fromRank := fromPos.Get()
-	toFile, toRank := toPos.Get()
 
 	var newBoard = gs.Board.Clone()
 	var nextPlayer = gs.GetNextPlayer()
-
-	var cellMoveTo = newBoard.Cells[toFile][toRank]
-	var emptyCell = cellMoveTo == nil
-	if !emptyCell {
-		newBoard.Inventories[gs.CurMovePlayer].AddPiece(cellMoveTo)
-	}
 
 	// creating alternative gamestate for promotion of piece
 	promotionGameState := tryGeneratePromotionGameStateWithMove(newBoard, gs.CurMovePlayer, nextPlayer, fromPos, toPos)
@@ -75,14 +64,48 @@ func generatePossibleStatesWithMove(gs *gamestate.GameState, fromPos, toPos boar
 		gss = append(gss, *promotionGameState)
 	}
 
-	newBoard.Cells[toFile][toRank] = newBoard.Cells[fromFile][fromRank]
-	newBoard.Cells[fromFile][fromRank] = nil
+	newBoard.MakeMove(fromPos, toPos, false)
 
 	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, gs.CurMovePlayer, nextPlayer, toPos)
 	if newGameState != nil {
 		gss = append(gss, *newGameState)
 	}
+	return
+}
 
+func generatePossibleStatesWithDrop(gs *gamestate.GameState, pieceType *model.PieceType, dropPos board.Position) (gss []gamestate.GameState) {
+	gss = []gamestate.GameState{}
+
+	var curBoard = gs.Board
+	var curPlayer = gs.CurMovePlayer
+	var nextPlayer = gs.GetNextPlayer()
+
+	// check for two pawns in a column
+	if pieceType.Name == "Pawn" && curBoard.IsTherePawn(dropPos.File) {
+		return
+	}
+
+	newBoard := curBoard.Clone()
+	newBoard.MakeDrop(pieceType, curPlayer, dropPos)
+
+	// TODO: по-любому как-то можно оптимизировать сейчас
+	if pieceType.Name == "Pawn" {
+		pawnMovesPositions := newBoard.GetPiecePossibleMoves(dropPos, true)
+		for _, movePos := range pawnMovesPositions {
+			var cell = newBoard.At(movePos)
+			if cell != nil && cell.Type.ImportantPiece {
+				var runningFromPawnStates = generatePossibleStatesFromBoardPiece(gs, movePos)
+				if len(runningFromPawnStates) == 0 { // if king can't run away from dropped pawn
+					return
+				}
+			}
+		}
+	}
+
+	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, curPlayer, nextPlayer, dropPos)
+	if newGameState != nil {
+		gss = append(gss, *newGameState)
+	}
 	return
 }
 
@@ -92,10 +115,10 @@ func generatePossibleStatesFromBoardPiece(gs *gamestate.GameState, piecePos boar
 	var curBoard = gs.Board
 
 	var movesPositions []board.Position
-	if curBoard.Cells[piecePos.GetFile()][piecePos.GetRank()].Type.ImportantPiece {
+	if curBoard.At(piecePos).Type.ImportantPiece {
 		movesPositions = curBoard.GetKingPossibleMoves(piecePos)
 	} else {
-		movesPositions = curBoard.GetPiecePossibleMoves(piecePos)
+		movesPositions = curBoard.GetPiecePossibleMoves(piecePos, true)
 	}
 
 	for _, movePos := range movesPositions {
@@ -111,43 +134,6 @@ func generatePossibleStatesFromBoardPieces(gs *gamestate.GameState) (gss []games
 	curBoard.IterateBoardPieces(gs.CurMovePlayer, func(piece *board.Piece, pos board.Position) {
 		gss = append(gss, generatePossibleStatesFromBoardPiece(gs, pos)...)
 	})
-	return
-}
-
-func generatePossibleStatesWithDrop(gs *gamestate.GameState, pieceType *model.PieceType, dropPos board.Position) (gss []gamestate.GameState) {
-	gss = []gamestate.GameState{}
-	dropFile, dropRank := dropPos.Get()
-
-	var curBoard = gs.Board
-	var curPlayer = gs.CurMovePlayer
-	var nextPlayer = gs.GetNextPlayer()
-
-	// check for two pawns in a column
-	if pieceType.Name == "Pawn" && curBoard.IsTherePawn(dropFile) {
-		return
-	}
-
-	newBoard := curBoard.Clone()
-	newBoard.Cells[dropFile][dropRank] = newBoard.Inventories[curPlayer].ExtractPieceToPlayer(pieceType, curPlayer)
-
-	if pieceType.Name == "Pawn" {
-		pawnMovesPositions := newBoard.GetPiecePossibleMoves(dropPos)
-		for _, movePos := range pawnMovesPositions {
-			moveFile, moveRank := movePos.Get()
-			var cell = newBoard.Cells[moveFile][moveRank]
-			if cell != nil && cell.Type.ImportantPiece {
-				var runningFromPawnStates = generatePossibleStatesFromBoardPiece(gs, movePos)
-				if len(runningFromPawnStates) == 0 { // if king can't run away from dropped pawn
-					return
-				}
-			}
-		}
-	}
-
-	newGameState := tryGenerateGameStateAfterChangeAtWithNextMovesCheck(newBoard, curPlayer, nextPlayer, dropPos)
-	if newGameState != nil {
-		gss = append(gss, *newGameState)
-	}
 	return
 }
 
@@ -185,7 +171,7 @@ func generatePossibleStatesFromDefendingKing(gs *gamestate.GameState) (gss []gam
 
 	if len(attackers) == 1 { // can eat attacker or drop(move) piece on his path
 		attackerPos := attackers[0]
-		attackerPoint := graphics.NewPoint(attackerPos.GetFile(), attackerPos.GetRank())
+		attackerPoint := graphics.NewPoint(attackerPos.File, attackerPos.Rank)
 		ipPoint := graphics.NewPoint(kingFile, kingRank)
 		attackPath := graphics.GetLinePoints(attackerPoint, ipPoint) // TODO: будет неправильно работать для коня, исправить
 
@@ -195,7 +181,7 @@ func generatePossibleStatesFromDefendingKing(gs *gamestate.GameState) (gss []gam
 			// (because important piece will eat attacker when it starts to run away (see below))
 			// + to not create game state where important piece closing by itself
 			if !piece.Type.ImportantPiece {
-				var movesPositions = curBoard.GetPiecePossibleMoves(pos)
+				var movesPositions = curBoard.GetPiecePossibleMoves(pos, true)
 
 				// eating
 				idx := slices.Index(movesPositions, attackerPos)
