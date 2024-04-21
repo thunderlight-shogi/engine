@@ -51,7 +51,6 @@ export class Board {
     }
 
     pickUp(coordinate: Coordinate): Piece {
-        console.log("BEFORE PICKUP:", this.at(coordinate));
         const piece = this.at(coordinate);
 
         if (piece === undefined) {
@@ -59,8 +58,6 @@ export class Board {
         }
 
         this.put(undefined, coordinate);
-
-        console.log("AFTER PICKUP:", this.at(coordinate));
         return piece;
     }
 
@@ -121,9 +118,6 @@ export class Board {
         }
 
         console.info(`Perfomed a move: ${source} ---${moveType}--> ${destination}`);
-
-        console.log("BOARD AFTER MOVE IS: ", this.cells);
-
         return moveType;
     }
 

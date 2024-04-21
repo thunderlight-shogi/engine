@@ -14,8 +14,6 @@ export class Inventory {
         this.slots = [];
 
         for (const type of types.list) {
-            console.log(type, type.promoted);
-
             if (type.promoted) {
                 continue;
             }
@@ -29,11 +27,7 @@ export class Inventory {
     }
 
     public getSlotOf(type: PieceType): InventorySlot {
-        console.log("THIS SLOTS:", this.slots);
-
         for (const slot of this.slots) {
-            console.log(slot, slot.type.demotion.kanji, type.demotion.kanji);
-
             if (slot.type.demotion.kanji === type.demotion.kanji) {
                 return slot;
             }

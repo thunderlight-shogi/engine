@@ -30,7 +30,6 @@ const modes: EngineModeInfo[] = [
 function switchMode(newMode: EngineMode) {
     mode.value = newMode;
     jukebox.play("mode.switch");
-    console.log(newMode);
 }
 
 </script>

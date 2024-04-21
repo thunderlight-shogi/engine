@@ -71,7 +71,6 @@ export class ThunderlightEngine {
             }
         }
 
-        console.log(pieceTypes);
         return pieceTypes;
     }
 
@@ -82,8 +81,6 @@ export class ThunderlightEngine {
             id: this.startingPositionId,
         })
 
-        console.log(startingPosition);
-
         for (const {rank, file, player: playerId, piece_type: { id: pieceTypeId }} of startingPosition.pieces) {
             const player = this.getPlayerName(playerId);
             const pieceType = pieceTypes.find(pieceTypeId);
@@ -91,7 +88,6 @@ export class ThunderlightEngine {
             pieces[this.getFlatCoordinates(rank, file)] = new Piece(pieceType, player);
         }
 
-        console.log(pieces);
         return pieces;
     } 
 
@@ -102,24 +98,6 @@ export class ThunderlightEngine {
     }
 
     public async sendMove({source, destination, moveType, pieceType}: Move) {
-        console.log({
-            old_pos: {
-                file: source.x,
-                rank: BOARD_SIZE - source.y - 1,
-            },
-
-            new_pos: {
-                file: destination.x,
-                rank: BOARD_SIZE - destination.y, 
-            },
-
-            move_type: this.getMoveTypeId(moveType),
-
-            piece_type: {
-                id: pieceType.id,
-            }
-        })
-
         await this.api.post("move/player", {
             old_pos: {
                 file: BOARD_SIZE - source.x - 1,

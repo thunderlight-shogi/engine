@@ -120,13 +120,10 @@ async function onPieceDrop(_: HTMLElement) {
             throw new Error(`There is not piece at ${destination.toString()}.`);
         }
 
-        console.log("SENDING THE MOVE");
         await engine.sendMove(new Move(source, destination, move, pieceType));
         metrics.value = await engine.getMetrics();
-        console.log("MOVE SENT");
 
         const engineMove: Move = await engine.makeBestMove(board.pieceTypes);
-        console.log("BEST MOVE MADE");
         board.move(engineMove.source, engineMove.destination, engineMove.moveType);
 
         metrics.value = await engine.getMetrics();
