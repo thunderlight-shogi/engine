@@ -86,11 +86,11 @@ export class Board {
         }
 
         if (this.isVacant(destination)) {
-            return 'travel';
+            return this.isEnemyCamp(destination) ? "travel+" : "travel";
         }
 
         if (this.isEnemy(destination)) {
-            return 'attack';
+            return 'attack+';
         }
 
         return 'prohibited';

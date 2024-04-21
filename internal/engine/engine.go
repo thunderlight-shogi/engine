@@ -48,6 +48,7 @@ func Start(id uint) error {
 		global_type_map[pt.Id] = pt
 
 		if pt.PromotePiece != nil {
+			global_type_map[pt.PromotePiece.Id] = pt.PromotePiece
 			pt.PromotePiece.DemotePiece = pt
 		}
 
@@ -113,12 +114,6 @@ func FindPiece(id uint) (*model.PieceType, error) {
 	}
 }
 
-func EngineMove() (move board.Move, err error) {
-	move = movepicker.Search(&global_state)
-	err = Move(move)
-	return
-}
-
-func GetHelp() board.Move {
+func GetEngineMove() board.Move {
 	return movepicker.Search(&global_state)
 }
