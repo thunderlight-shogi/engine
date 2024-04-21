@@ -199,7 +199,7 @@ export function triggerReflow(element: HTMLElement) {
 export function triggerClass(element: HTMLElement, className: string) {
     removeClass(element, className);
     triggerReflow(element);
-    setTimeout(() => addClass(element, className), 3000);
+    setTimeout(() => addClass(element, className), 0);
 }
 
 /**
