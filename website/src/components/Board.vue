@@ -13,6 +13,8 @@ import Board from '../thunderlight/board';
 import { Move, ThunderlightEngine } from '../api/engine';
 import { PieceType } from '../thunderlight/piece-type';
 import MetricsDisplay from './MetricsDisplay.vue';
+import LoadingSplash from './splashes/LoadingSplash.vue';
+import ProverbSplash from './splashes/ProverbSplash.vue';
 
 const hand = ref<HTMLElement | undefined>(undefined);
 const engine = new ThunderlightEngine();
@@ -175,6 +177,9 @@ async function onCellRightClick(event: MouseEvent): Promise<void> {
 </script>
 
 <template>
+    <ProverbSplash></ProverbSplash>
+    <LoadingSplash></LoadingSplash>
+
     <div id="board-ui">
         <ModeSwitch v-model="mode"></ModeSwitch>
 

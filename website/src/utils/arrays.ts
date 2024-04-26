@@ -19,6 +19,24 @@ export function pick<T>(array: T[]): T {
 }
 
 /**
+ * The function `pick` randomly selects and returns an element from an array.
+ * @param {T[]} array - The `pick` function takes an array of type `T` as a parameter.
+ * @returns The function `pick` returns a randomly selected element from the input array `array`.
+ * 
+ * @author Anatoly Frolov <contact@anafro.ru>
+ */
+export function indexedPick<T>(array: T[]): {index: number, element: T} {
+    if(array.length === 0) {
+        throw new Error("Cannot pick an element from an empty array.");
+    }
+
+    const index: number = Math.floor(Math.random() * array.length);
+    const element: T = array[index];
+
+    return {index, element};
+}
+
+/**
  * The function `firstFrom` returns the first element of an array.
  * @param {T[]} array - The `array` parameter is an array of type `T`, which means it can hold elements
  * of any type. The function `firstFrom` takes an array as input and returns the first element of that
