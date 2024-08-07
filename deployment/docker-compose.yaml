@@ -1,6 +1,21 @@
 version: '3'
 
 services:
+  # Client container
+  client:
+    build:
+      context: ../
+      dockerfile: build/client.Dockerfile
+    image: thunderlight-client:latest
+    container_name: client
+    stdin_open: true
+    networks:
+      - app-network
+    ports:
+      - 5173:5173
+    depends_on:
+      database:
+        condition: service_healthy
   # App container
   app:
     build:
@@ -13,7 +28,7 @@ services:
     networks:
       - app-network
     ports:
-      - 5173:80
+      - 5174:88
     depends_on:
       database:
         condition: service_healthy

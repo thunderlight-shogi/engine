@@ -1,20 +1,25 @@
 import { defineStore } from "pinia";
-import { Ref, reactive, ref } from "vue";
-import { DEFAULT_BOARD } from "../thunderlight/board";
+import { Ref, ref } from "vue";
 import { Player, getEnemyOf } from "../thunderlight/player";
 import { Coordinate } from "../thunderlight/coordinate";
 import { between } from "../utils/numbers";
-import { Piece, PieceType, TYPES } from "../thunderlight/piece-type";
+import { Piece, PieceType, PieceTypes } from "../thunderlight/piece-type";
 
 
-export type MoveType = "travel" | "attack" | "back" | "prohibited";
+export type MoveType = "travel+" | "attack+" | "travel" | "attack" | "back" | "prohibited" | "drop" | "resign";
 export class Inventory {
-    public readonly slots: InventorySlot[];
+    public slots: InventorySlot[];
 
-    constructor(protected readonly owner: Player, types: PieceType[] = TYPES.filter(type => !type.promoted)) {
+    constructor(public owner: Player, types: PieceTypes) {
         this.slots = [];
 
-        for (const type of types) {
+        for (const type of types.list) {
+            console.log(type, type.promoted);
+
+            if (type.promoted) {
+                continue;
+            }
+
             this.slots.push(new InventorySlot(type, 0));
         }
     }
@@ -23,14 +28,18 @@ export class Inventory {
         return this.owner === player;
     }
 
-    private getSlotOf(type: PieceType): InventorySlot {
-        const slot: InventorySlot | undefined = this.slots.find(slot => slot.type.equals(type.demotion));
+    public getSlotOf(type: PieceType): InventorySlot {
+        console.log("THIS SLOTS:", this.slots);
 
-        if (!slot) {
-            throw new Error(`The inventory slot of ${type.kanji} does not exist.`);
+        for (const slot of this.slots) {
+            console.log(slot, slot.type.demotion.kanji, type.demotion.kanji);
+
+            if (slot.type.demotion.kanji === type.demotion.kanji) {
+                return slot;
+            }
         }
 
-        return slot;
+        throw new Error(`The inventory slot of ${type.kanji} does not exist.`);
     }
 
     public add(type: PieceType) {
@@ -63,13 +72,14 @@ export class InventorySlot {
     }
 }
 
-export const useBoard = defineStore('board', () => {
-    const cells = reactive(DEFAULT_BOARD);
+export const useBoard = defineStore('board', async () => {
+    const cells = ref() as Ref<(Piece | undefined)[]>;
+    const pieceTypes = ref() as Ref<PieceTypes>;
     let turn = ref<Player>('sente');
     let player = ref<Player>('sente');
     let inventories = ref([
-        new Inventory('sente'),
-        new Inventory('gote')
+        new Inventory('sente', pieceTypes.value),
+        new Inventory('gote', pieceTypes.value)
     ]) as Ref<Inventory[]>;
 
     function ensureOccupied(coordinate: Coordinate) {
@@ -84,7 +94,7 @@ export const useBoard = defineStore('board', () => {
     }
 
     function put(piece: Piece | undefined, coordinate: Coordinate): void {
-        cells.splice(coordinate.absolute, 1, piece);
+        cells.value.splice(coordinate.absolute, 1, piece);
     }
 
     function pickUp(coordinate: Coordinate): Piece {
@@ -100,16 +110,11 @@ export const useBoard = defineStore('board', () => {
     }
 
     function at(coordinate: Coordinate): Piece | undefined {
-        return cells[coordinate.absolute];
+        return cells.value[coordinate.absolute];
     }
 
     function isVacant(coordinate: Coordinate): boolean {
         return at(coordinate) === undefined;
-    }
-
-    function isFriend(coordinate: Coordinate): boolean {
-        ensureOccupied(coordinate);
-        return at(coordinate)?.player === turn.value;
     }
 
     function isEnemy(coordinate: Coordinate): boolean {
@@ -177,21 +182,21 @@ export const useBoard = defineStore('board', () => {
     }
 
     function getInventoryOf(player: Player): Inventory {
-        const inventory = inventories.value.find(inventory => inventory.isOwnedBy(player));
-
-        if (!inventory) {
-            throw Error(`There's no inventory for ${player}.`);
+        for (const inventory of inventories.value) {
+            if (inventory.isOwnedBy(player)) {
+                return inventory;
+            }
         }
 
-        return inventory;
+        throw Error(`There's no inventory for ${player}.`);
     }
 
     return {
         player,
         turn,
         cells,
-        getInventoryOf,
 
+        getInventoryOf,
         move,
         drop
     };

@@ -3,1142 +3,1194 @@ package model
 func seed() {
 	// Silver+
 	var SilverPlus = PieceType{
+		Id:    12,
 		Name:  "Silver+",
 		Kanji: '全',
+		Cost:  6,
 		Moves: []Move{
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: 1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   0,
+				FileShift: 1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   0,
+				FileShift: -1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   1,
+				FileShift: 0,
+				RankShift: 1,
 			},
 		},
 	}
 
 	// Knight+
 	var KnightPlus = PieceType{
+		Id:    10,
 		Name:  "Knight+",
 		Kanji: '圭',
+		Cost:  6,
 		Moves: []Move{
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: 1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   0,
+				FileShift: 1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   0,
+				FileShift: -1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   1,
+				FileShift: 0,
+				RankShift: 1,
 			},
 		},
 	}
 
 	// Lance+
 	var LancePlus = PieceType{
+		Id:    8,
 		Name:  "Lance+",
 		Kanji: '杏',
+		Cost:  6,
 		Moves: []Move{
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: 1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   0,
+				FileShift: 1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   0,
+				FileShift: -1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   1,
+				FileShift: 0,
+				RankShift: 1,
 			},
 		},
 	}
 
 	// Pawn+
 	var PawnPlus = PieceType{
+		Id:    2,
 		Name:  "Pawn+",
 		Kanji: 'と',
+		Cost:  7,
 		Moves: []Move{
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: 1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   0,
+				FileShift: 1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   0,
+				FileShift: -1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   1,
+				FileShift: 0,
+				RankShift: 1,
 			},
 		},
 	}
 	// Rook+
 	var RookPlus = PieceType{
+		Id:    6,
 		Name:  "Rook+",
 		Kanji: '竜',
+		Cost:  11,
 		Moves: []Move{
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -2,
+				FileShift: 0,
+				RankShift: -2,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -3,
+				FileShift: 0,
+				RankShift: -3,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -4,
+				FileShift: 0,
+				RankShift: -4,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -5,
+				FileShift: 0,
+				RankShift: -5,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -6,
+				FileShift: 0,
+				RankShift: -6,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -7,
+				FileShift: 0,
+				RankShift: -7,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -8,
-			},
-
-			{
-				HorizontalShift: 0,
-				VerticalShift:   1,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   2,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   3,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   4,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   5,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   6,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   7,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   8,
+				FileShift: 0,
+				RankShift: -8,
 			},
 
 			{
-				HorizontalShift: -1,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: -2,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 2,
 			},
 			{
-				HorizontalShift: -3,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 3,
 			},
 			{
-				HorizontalShift: -4,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 4,
 			},
 			{
-				HorizontalShift: -5,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 5,
 			},
 			{
-				HorizontalShift: -6,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 6,
 			},
 			{
-				HorizontalShift: -7,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 7,
 			},
 			{
-				HorizontalShift: -8,
-				VerticalShift:   0,
-			},
-
-			{
-				HorizontalShift: 1,
-				VerticalShift:   0,
-			},
-			{
-				HorizontalShift: 2,
-				VerticalShift:   0,
-			},
-			{
-				HorizontalShift: 3,
-				VerticalShift:   0,
-			},
-			{
-				HorizontalShift: 4,
-				VerticalShift:   0,
-			},
-			{
-				HorizontalShift: 5,
-				VerticalShift:   0,
-			},
-			{
-				HorizontalShift: 6,
-				VerticalShift:   0,
-			},
-			{
-				HorizontalShift: 7,
-				VerticalShift:   0,
-			},
-			{
-				HorizontalShift: 8,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 8,
 			},
 
 			{
-				HorizontalShift: 1,
-				VerticalShift:   1,
+				FileShift: -1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   1,
+				FileShift: -2,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: -3,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -4,
+				RankShift: 0,
+			},
+			{
+				FileShift: -5,
+				RankShift: 0,
+			},
+			{
+				FileShift: -6,
+				RankShift: 0,
+			},
+			{
+				FileShift: -7,
+				RankShift: 0,
+			},
+			{
+				FileShift: -8,
+				RankShift: 0,
+			},
+
+			{
+				FileShift: 1,
+				RankShift: 0,
+			},
+			{
+				FileShift: 2,
+				RankShift: 0,
+			},
+			{
+				FileShift: 3,
+				RankShift: 0,
+			},
+			{
+				FileShift: 4,
+				RankShift: 0,
+			},
+			{
+				FileShift: 5,
+				RankShift: 0,
+			},
+			{
+				FileShift: 6,
+				RankShift: 0,
+			},
+			{
+				FileShift: 7,
+				RankShift: 0,
+			},
+			{
+				FileShift: 8,
+				RankShift: 0,
+			},
+
+			{
+				FileShift: 1,
+				RankShift: 1,
+			},
+			{
+				FileShift: -1,
+				RankShift: 1,
+			},
+			{
+				FileShift: 1,
+				RankShift: -1,
+			},
+			{
+				FileShift: -1,
+				RankShift: -1,
 			},
 		},
 	}
 
 	// Bishop+
 	var BishopPlus = PieceType{
+		Id:    4,
 		Name:  "Bishop+",
 		Kanji: '馬',
+		Cost:  10,
 		Moves: []Move{
 			{
-				HorizontalShift: 1,
-				VerticalShift:   1,
+				FileShift: 1,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: 2,
-				VerticalShift:   2,
+				FileShift: 2,
+				RankShift: 2,
 			},
 			{
-				HorizontalShift: 3,
-				VerticalShift:   3,
+				FileShift: 3,
+				RankShift: 3,
 			},
 			{
-				HorizontalShift: 4,
-				VerticalShift:   4,
+				FileShift: 4,
+				RankShift: 4,
 			},
 			{
-				HorizontalShift: 5,
-				VerticalShift:   5,
+				FileShift: 5,
+				RankShift: 5,
 			},
 			{
-				HorizontalShift: 6,
-				VerticalShift:   6,
+				FileShift: 6,
+				RankShift: 6,
 			},
 			{
-				HorizontalShift: 7,
-				VerticalShift:   7,
+				FileShift: 7,
+				RankShift: 7,
 			},
 			{
-				HorizontalShift: 8,
-				VerticalShift:   8,
+				FileShift: 8,
+				RankShift: 8,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   1,
+				FileShift: -1,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: -2,
-				VerticalShift:   2,
+				FileShift: -2,
+				RankShift: 2,
 			},
 			{
-				HorizontalShift: -3,
-				VerticalShift:   3,
+				FileShift: -3,
+				RankShift: 3,
 			},
 			{
-				HorizontalShift: -4,
-				VerticalShift:   4,
+				FileShift: -4,
+				RankShift: 4,
 			},
 			{
-				HorizontalShift: -5,
-				VerticalShift:   5,
+				FileShift: -5,
+				RankShift: 5,
 			},
 			{
-				HorizontalShift: -6,
-				VerticalShift:   6,
+				FileShift: -6,
+				RankShift: 6,
 			},
 			{
-				HorizontalShift: -7,
-				VerticalShift:   7,
+				FileShift: -7,
+				RankShift: 7,
 			},
 			{
-				HorizontalShift: -8,
-				VerticalShift:   8,
+				FileShift: -8,
+				RankShift: 8,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: 1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 2,
-				VerticalShift:   -2,
+				FileShift: 2,
+				RankShift: -2,
 			},
 			{
-				HorizontalShift: 3,
-				VerticalShift:   -3,
+				FileShift: 3,
+				RankShift: -3,
 			},
 			{
-				HorizontalShift: 4,
-				VerticalShift:   -4,
+				FileShift: 4,
+				RankShift: -4,
 			},
 			{
-				HorizontalShift: 5,
-				VerticalShift:   -5,
+				FileShift: 5,
+				RankShift: -5,
 			},
 			{
-				HorizontalShift: 6,
-				VerticalShift:   -6,
+				FileShift: 6,
+				RankShift: -6,
 			},
 			{
-				HorizontalShift: 7,
-				VerticalShift:   -7,
+				FileShift: 7,
+				RankShift: -7,
 			},
 			{
-				HorizontalShift: 8,
-				VerticalShift:   -8,
+				FileShift: 8,
+				RankShift: -8,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: -2,
-				VerticalShift:   -2,
+				FileShift: -2,
+				RankShift: -2,
 			},
 			{
-				HorizontalShift: -3,
-				VerticalShift:   -3,
+				FileShift: -3,
+				RankShift: -3,
 			},
 			{
-				HorizontalShift: -4,
-				VerticalShift:   -4,
+				FileShift: -4,
+				RankShift: -4,
 			},
 			{
-				HorizontalShift: -5,
-				VerticalShift:   -5,
+				FileShift: -5,
+				RankShift: -5,
 			},
 			{
-				HorizontalShift: -6,
-				VerticalShift:   -6,
+				FileShift: -6,
+				RankShift: -6,
 			},
 			{
-				HorizontalShift: -7,
-				VerticalShift:   -7,
+				FileShift: -7,
+				RankShift: -7,
 			},
 			{
-				HorizontalShift: -8,
-				VerticalShift:   -8,
+				FileShift: -8,
+				RankShift: -8,
 			},
 
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   1,
+				FileShift: 0,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   0,
+				FileShift: -1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   0,
+				FileShift: 1,
+				RankShift: 0,
 			},
 		},
 	}
 
 	// King
 	var King = PieceType{
+		Id:             14,
 		Name:           "King",
 		Kanji:          '王',
 		ImportantPiece: true,
+		Cost:           0,
 		Moves: []Move{
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   0,
+				FileShift: -1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   1,
+				FileShift: -1,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   1,
+				FileShift: 0,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: 1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   0,
+				FileShift: 1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   1,
+				FileShift: 1,
+				RankShift: 1,
 			},
 		},
 	}
 
 	// Gold
 	var Gold = PieceType{
+		Id:    13,
 		Name:  "Gold",
 		Kanji: '金',
+		Cost:  6,
 		Moves: []Move{
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: 1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   0,
+				FileShift: 1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   0,
+				FileShift: -1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   1,
+				FileShift: 0,
+				RankShift: 1,
 			},
 		},
 	}
 
 	// Silver
 	var Silver = PieceType{
-		Name:  "Silver",
-		Kanji: '銀',
+		Id:           11,
+		Name:         "Silver",
+		Kanji:        '銀',
+		Cost:         5,
+		PromotePiece: &SilverPlus,
 		Moves: []Move{
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: 1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   1,
+				FileShift: 1,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   1,
+				FileShift: -1,
+				RankShift: 1,
 			},
 		},
-		PromotePiece: &SilverPlus,
 	}
 
 	// Knight
 	var Knight = PieceType{
-		Name:  "Knight",
-		Kanji: '桂',
+		Id:           9,
+		Name:         "Knight",
+		Kanji:        '桂',
+		Cost:         4,
+		PromotePiece: &KnightPlus,
 		Moves: []Move{
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -2,
+				FileShift: 1,
+				RankShift: -2,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -2,
+				FileShift: -1,
+				RankShift: -2,
 			},
 		},
-		PromotePiece: &KnightPlus,
 	}
 
 	// Lance
 	var Lance = PieceType{
-		Name:  "Lance",
-		Kanji: '香',
+		Id:           7,
+		Name:         "Lance",
+		Kanji:        '香',
+		Cost:         3,
+		PromotePiece: &LancePlus,
 		Moves: []Move{
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -2,
+				FileShift: 0,
+				RankShift: -2,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -3,
+				FileShift: 0,
+				RankShift: -3,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -4,
+				FileShift: 0,
+				RankShift: -4,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -5,
+				FileShift: 0,
+				RankShift: -5,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -6,
+				FileShift: 0,
+				RankShift: -6,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -7,
+				FileShift: 0,
+				RankShift: -7,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -8,
+				FileShift: 0,
+				RankShift: -8,
 			},
 		},
-		PromotePiece: &LancePlus,
 	}
 
 	// Rook
 	var Rook = PieceType{
-		Name:  "Rook",
-		Kanji: '飛',
+		Id:           5,
+		Name:         "Rook",
+		Kanji:        '飛',
+		Cost:         9,
+		PromotePiece: &RookPlus,
 		Moves: []Move{
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -2,
+				FileShift: 0,
+				RankShift: -2,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -3,
+				FileShift: 0,
+				RankShift: -3,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -4,
+				FileShift: 0,
+				RankShift: -4,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -5,
+				FileShift: 0,
+				RankShift: -5,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -6,
+				FileShift: 0,
+				RankShift: -6,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -7,
+				FileShift: 0,
+				RankShift: -7,
 			},
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -8,
-			},
-
-			{
-				HorizontalShift: 0,
-				VerticalShift:   1,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   2,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   3,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   4,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   5,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   6,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   7,
-			},
-			{
-				HorizontalShift: 0,
-				VerticalShift:   8,
+				FileShift: 0,
+				RankShift: -8,
 			},
 
 			{
-				HorizontalShift: -1,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: -2,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 2,
 			},
 			{
-				HorizontalShift: -3,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 3,
 			},
 			{
-				HorizontalShift: -4,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 4,
 			},
 			{
-				HorizontalShift: -5,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 5,
 			},
 			{
-				HorizontalShift: -6,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 6,
 			},
 			{
-				HorizontalShift: -7,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 7,
 			},
 			{
-				HorizontalShift: -8,
-				VerticalShift:   0,
+				FileShift: 0,
+				RankShift: 8,
 			},
 
 			{
-				HorizontalShift: 1,
-				VerticalShift:   0,
+				FileShift: -1,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 2,
-				VerticalShift:   0,
+				FileShift: -2,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 3,
-				VerticalShift:   0,
+				FileShift: -3,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 4,
-				VerticalShift:   0,
+				FileShift: -4,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 5,
-				VerticalShift:   0,
+				FileShift: -5,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 6,
-				VerticalShift:   0,
+				FileShift: -6,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 7,
-				VerticalShift:   0,
+				FileShift: -7,
+				RankShift: 0,
 			},
 			{
-				HorizontalShift: 8,
-				VerticalShift:   0,
+				FileShift: -8,
+				RankShift: 0,
+			},
+
+			{
+				FileShift: 1,
+				RankShift: 0,
+			},
+			{
+				FileShift: 2,
+				RankShift: 0,
+			},
+			{
+				FileShift: 3,
+				RankShift: 0,
+			},
+			{
+				FileShift: 4,
+				RankShift: 0,
+			},
+			{
+				FileShift: 5,
+				RankShift: 0,
+			},
+			{
+				FileShift: 6,
+				RankShift: 0,
+			},
+			{
+				FileShift: 7,
+				RankShift: 0,
+			},
+			{
+				FileShift: 8,
+				RankShift: 0,
 			},
 		},
-		PromotePiece: &RookPlus,
 	}
 
 	// Bishop
 	var Bishop = PieceType{
-		Name:  "Bishop",
-		Kanji: '角',
+		Id:           3,
+		Name:         "Bishop",
+		Kanji:        '角',
+		Cost:         8,
+		PromotePiece: &BishopPlus,
 		Moves: []Move{
 			{
-				HorizontalShift: 1,
-				VerticalShift:   1,
+				FileShift: 1,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: 2,
-				VerticalShift:   2,
+				FileShift: 2,
+				RankShift: 2,
 			},
 			{
-				HorizontalShift: 3,
-				VerticalShift:   3,
+				FileShift: 3,
+				RankShift: 3,
 			},
 			{
-				HorizontalShift: 4,
-				VerticalShift:   4,
+				FileShift: 4,
+				RankShift: 4,
 			},
 			{
-				HorizontalShift: 5,
-				VerticalShift:   5,
+				FileShift: 5,
+				RankShift: 5,
 			},
 			{
-				HorizontalShift: 6,
-				VerticalShift:   6,
+				FileShift: 6,
+				RankShift: 6,
 			},
 			{
-				HorizontalShift: 7,
-				VerticalShift:   7,
+				FileShift: 7,
+				RankShift: 7,
 			},
 			{
-				HorizontalShift: 8,
-				VerticalShift:   8,
+				FileShift: 8,
+				RankShift: 8,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   1,
+				FileShift: -1,
+				RankShift: 1,
 			},
 			{
-				HorizontalShift: -2,
-				VerticalShift:   2,
+				FileShift: -2,
+				RankShift: 2,
 			},
 			{
-				HorizontalShift: -3,
-				VerticalShift:   3,
+				FileShift: -3,
+				RankShift: 3,
 			},
 			{
-				HorizontalShift: -4,
-				VerticalShift:   4,
+				FileShift: -4,
+				RankShift: 4,
 			},
 			{
-				HorizontalShift: -5,
-				VerticalShift:   5,
+				FileShift: -5,
+				RankShift: 5,
 			},
 			{
-				HorizontalShift: -6,
-				VerticalShift:   6,
+				FileShift: -6,
+				RankShift: 6,
 			},
 			{
-				HorizontalShift: -7,
-				VerticalShift:   7,
+				FileShift: -7,
+				RankShift: 7,
 			},
 			{
-				HorizontalShift: -8,
-				VerticalShift:   8,
+				FileShift: -8,
+				RankShift: 8,
 			},
 			{
-				HorizontalShift: 1,
-				VerticalShift:   -1,
+				FileShift: 1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: 2,
-				VerticalShift:   -2,
+				FileShift: 2,
+				RankShift: -2,
 			},
 			{
-				HorizontalShift: 3,
-				VerticalShift:   -3,
+				FileShift: 3,
+				RankShift: -3,
 			},
 			{
-				HorizontalShift: 4,
-				VerticalShift:   -4,
+				FileShift: 4,
+				RankShift: -4,
 			},
 			{
-				HorizontalShift: 5,
-				VerticalShift:   -5,
+				FileShift: 5,
+				RankShift: -5,
 			},
 			{
-				HorizontalShift: 6,
-				VerticalShift:   -6,
+				FileShift: 6,
+				RankShift: -6,
 			},
 			{
-				HorizontalShift: 7,
-				VerticalShift:   -7,
+				FileShift: 7,
+				RankShift: -7,
 			},
 			{
-				HorizontalShift: 8,
-				VerticalShift:   -8,
+				FileShift: 8,
+				RankShift: -8,
 			},
 			{
-				HorizontalShift: -1,
-				VerticalShift:   -1,
+				FileShift: -1,
+				RankShift: -1,
 			},
 			{
-				HorizontalShift: -2,
-				VerticalShift:   -2,
+				FileShift: -2,
+				RankShift: -2,
 			},
 			{
-				HorizontalShift: -3,
-				VerticalShift:   -3,
+				FileShift: -3,
+				RankShift: -3,
 			},
 			{
-				HorizontalShift: -4,
-				VerticalShift:   -4,
+				FileShift: -4,
+				RankShift: -4,
 			},
 			{
-				HorizontalShift: -5,
-				VerticalShift:   -5,
+				FileShift: -5,
+				RankShift: -5,
 			},
 			{
-				HorizontalShift: -6,
-				VerticalShift:   -6,
+				FileShift: -6,
+				RankShift: -6,
 			},
 			{
-				HorizontalShift: -7,
-				VerticalShift:   -7,
+				FileShift: -7,
+				RankShift: -7,
 			},
 			{
-				HorizontalShift: -8,
-				VerticalShift:   -8,
+				FileShift: -8,
+				RankShift: -8,
 			},
 		},
-		PromotePiece: &BishopPlus,
 	}
 
 	// Pawn
 	var Pawn = PieceType{
-		Name:  "Pawn",
-		Kanji: '歩',
+		Id:           1,
+		Name:         "Pawn",
+		Kanji:        '歩',
+		Cost:         1,
+		PromotePiece: &PawnPlus,
 		Moves: []Move{
 			{
-				HorizontalShift: 0,
-				VerticalShift:   -1,
+				FileShift: 0,
+				RankShift: -1,
 			},
 		},
-		PromotePiece: &PawnPlus,
 	}
 
-	db.Create([]*PieceType{&King, &Gold, &Silver, &Knight, &Lance, &Rook, &Bishop, &Pawn})
-
-	var DefaultPosition = StartingPosition{
+	var DefaultPreset = Preset{
+		Id:   1,
 		Name: "Default",
-		Pieces: []StartingPositionPiece{
+		Pieces: []PresetPiece{
 			{
-				PieceType:        Pawn,
-				HorizontalOffset: 1,
-				VerticalOffset:   3,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      0,
+				Rank:      2,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Pawn,
-				HorizontalOffset: 2,
-				VerticalOffset:   3,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      1,
+				Rank:      2,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Pawn,
-				HorizontalOffset: 3,
-				VerticalOffset:   3,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      2,
+				Rank:      2,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Pawn,
-				HorizontalOffset: 4,
-				VerticalOffset:   3,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      3,
+				Rank:      2,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Pawn,
-				HorizontalOffset: 5,
-				VerticalOffset:   3,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      4,
+				Rank:      2,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Pawn,
-				HorizontalOffset: 6,
-				VerticalOffset:   3,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      5,
+				Rank:      2,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Pawn,
-				HorizontalOffset: 7,
-				VerticalOffset:   3,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      6,
+				Rank:      2,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Pawn,
-				HorizontalOffset: 8,
-				VerticalOffset:   3,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      7,
+				Rank:      2,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Pawn,
-				HorizontalOffset: 9,
-				VerticalOffset:   3,
-				Player:           Gote,
-			},
-
-			{
-				PieceType:        Pawn,
-				HorizontalOffset: 1,
-				VerticalOffset:   7,
-				Player:           Sente,
-			},
-			{
-				PieceType:        Pawn,
-				HorizontalOffset: 2,
-				VerticalOffset:   7,
-				Player:           Sente,
-			},
-			{
-				PieceType:        Pawn,
-				HorizontalOffset: 3,
-				VerticalOffset:   7,
-				Player:           Sente,
-			},
-			{
-				PieceType:        Pawn,
-				HorizontalOffset: 4,
-				VerticalOffset:   7,
-				Player:           Sente,
-			},
-			{
-				PieceType:        Pawn,
-				HorizontalOffset: 5,
-				VerticalOffset:   7,
-				Player:           Sente,
-			},
-			{
-				PieceType:        Pawn,
-				HorizontalOffset: 6,
-				VerticalOffset:   7,
-				Player:           Sente,
-			},
-			{
-				PieceType:        Pawn,
-				HorizontalOffset: 7,
-				VerticalOffset:   7,
-				Player:           Sente,
-			},
-			{
-				PieceType:        Pawn,
-				HorizontalOffset: 8,
-				VerticalOffset:   7,
-				Player:           Sente,
-			},
-			{
-				PieceType:        Pawn,
-				HorizontalOffset: 9,
-				VerticalOffset:   7,
-				Player:           Sente,
+				PieceType: &Pawn,
+				File:      8,
+				Rank:      2,
+				Player:    Gote,
 			},
 
 			{
-				PieceType:        Rook,
-				HorizontalOffset: 8,
-				VerticalOffset:   2,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      0,
+				Rank:      6,
+				Player:    Sente,
 			},
 			{
-				PieceType:        Rook,
-				HorizontalOffset: 2,
-				VerticalOffset:   8,
-				Player:           Sente,
-			},
-
-			{
-				PieceType:        Bishop,
-				HorizontalOffset: 2,
-				VerticalOffset:   2,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      1,
+				Rank:      6,
+				Player:    Sente,
 			},
 			{
-				PieceType:        Bishop,
-				HorizontalOffset: 8,
-				VerticalOffset:   8,
-				Player:           Sente,
-			},
-
-			{
-				PieceType:        Lance,
-				HorizontalOffset: 1,
-				VerticalOffset:   1,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      2,
+				Rank:      6,
+				Player:    Sente,
 			},
 			{
-				PieceType:        Knight,
-				HorizontalOffset: 2,
-				VerticalOffset:   1,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      3,
+				Rank:      6,
+				Player:    Sente,
 			},
 			{
-				PieceType:        Silver,
-				HorizontalOffset: 3,
-				VerticalOffset:   1,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      4,
+				Rank:      6,
+				Player:    Sente,
 			},
 			{
-				PieceType:        Gold,
-				HorizontalOffset: 4,
-				VerticalOffset:   1,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      5,
+				Rank:      6,
+				Player:    Sente,
 			},
 			{
-				PieceType:        King,
-				HorizontalOffset: 5,
-				VerticalOffset:   1,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      6,
+				Rank:      6,
+				Player:    Sente,
 			},
 			{
-				PieceType:        Gold,
-				HorizontalOffset: 6,
-				VerticalOffset:   1,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      7,
+				Rank:      6,
+				Player:    Sente,
 			},
 			{
-				PieceType:        Silver,
-				HorizontalOffset: 7,
-				VerticalOffset:   1,
-				Player:           Gote,
-			},
-			{
-				PieceType:        Knight,
-				HorizontalOffset: 8,
-				VerticalOffset:   1,
-				Player:           Gote,
-			},
-			{
-				PieceType:        Lance,
-				HorizontalOffset: 9,
-				VerticalOffset:   1,
-				Player:           Gote,
+				PieceType: &Pawn,
+				File:      8,
+				Rank:      6,
+				Player:    Sente,
 			},
 
 			{
-				PieceType:        Lance,
-				HorizontalOffset: 1,
-				VerticalOffset:   9,
-				Player:           Sente,
+				PieceType: &Rook,
+				File:      7,
+				Rank:      1,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Knight,
-				HorizontalOffset: 2,
-				VerticalOffset:   9,
-				Player:           Sente,
+				PieceType: &Rook,
+				File:      1,
+				Rank:      7,
+				Player:    Sente,
+			},
+
+			{
+				PieceType: &Bishop,
+				File:      1,
+				Rank:      1,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Silver,
-				HorizontalOffset: 3,
-				VerticalOffset:   9,
-				Player:           Sente,
+				PieceType: &Bishop,
+				File:      7,
+				Rank:      7,
+				Player:    Sente,
+			},
+
+			{
+				PieceType: &Lance,
+				File:      0,
+				Rank:      0,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Gold,
-				HorizontalOffset: 4,
-				VerticalOffset:   9,
-				Player:           Sente,
+				PieceType: &Knight,
+				File:      1,
+				Rank:      0,
+				Player:    Gote,
 			},
 			{
-				PieceType:        King,
-				HorizontalOffset: 5,
-				VerticalOffset:   9,
-				Player:           Sente,
+				PieceType: &Silver,
+				File:      2,
+				Rank:      0,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Gold,
-				HorizontalOffset: 6,
-				VerticalOffset:   9,
-				Player:           Sente,
+				PieceType: &Gold,
+				File:      3,
+				Rank:      0,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Silver,
-				HorizontalOffset: 7,
-				VerticalOffset:   9,
-				Player:           Sente,
+				PieceType: &King,
+				File:      4,
+				Rank:      0,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Knight,
-				HorizontalOffset: 8,
-				VerticalOffset:   9,
-				Player:           Sente,
+				PieceType: &Gold,
+				File:      5,
+				Rank:      0,
+				Player:    Gote,
 			},
 			{
-				PieceType:        Lance,
-				HorizontalOffset: 9,
-				VerticalOffset:   9,
-				Player:           Sente,
+				PieceType: &Silver,
+				File:      6,
+				Rank:      0,
+				Player:    Gote,
+			},
+			{
+				PieceType: &Knight,
+				File:      7,
+				Rank:      0,
+				Player:    Gote,
+			},
+			{
+				PieceType: &Lance,
+				File:      8,
+				Rank:      0,
+				Player:    Gote,
+			},
+
+			{
+				PieceType: &Lance,
+				File:      0,
+				Rank:      8,
+				Player:    Sente,
+			},
+			{
+				PieceType: &Knight,
+				File:      1,
+				Rank:      8,
+				Player:    Sente,
+			},
+			{
+				PieceType: &Silver,
+				File:      2,
+				Rank:      8,
+				Player:    Sente,
+			},
+			{
+				PieceType: &Gold,
+				File:      3,
+				Rank:      8,
+				Player:    Sente,
+			},
+			{
+				PieceType: &King,
+				File:      4,
+				Rank:      8,
+				Player:    Sente,
+			},
+			{
+				PieceType: &Gold,
+				File:      5,
+				Rank:      8,
+				Player:    Sente,
+			},
+			{
+				PieceType: &Silver,
+				File:      6,
+				Rank:      8,
+				Player:    Sente,
+			},
+			{
+				PieceType: &Knight,
+				File:      7,
+				Rank:      8,
+				Player:    Sente,
+			},
+			{
+				PieceType: &Lance,
+				File:      8,
+				Rank:      8,
+				Player:    Sente,
 			},
 		},
 	}
 
-	db.Create(&DefaultPosition)
+	db.Create(&DefaultPreset)
+
+	weights := EvaluatorWeights{
+		Id:   1,
+		Name: "Default",
+
+		// Metrics weights
+		MATERIAL_WEIGHT:          1.0,
+		ATTACK_COUNT_WEIGHT:      1.0,
+		PIECE_ADVANCEMENT_WEIGHT: 1.0,
+		DEFENDED_PIECES_WEIGHT:   1.0,
+		CHECK_WEIGHT:             10.0,
+		CHECKMATE_WEIGHT:         99999.0,
+
+		KING_GUARDS_COUNT_WEIGHT:    1.0,
+		KING_DEFENCE_RADIUS1_WEIGHT: 2.0,
+		KING_DEFENCE_RADIUS2_WEIGHT: 1.0,
+		KING_ATTACK_RADIUS1_WEIGHT:  -2.0,
+		KING_ATTACK_RADIUS2_WEIGHT:  -1.0,
+		KING_FREE_CELLS_WEIGHT:      3.0,
+
+		INVENTORY_MULTIPLIER:     1.5,
+		MAX_KING_GUARDS_DISTANCE: 2,
+	}
+
+	db.Create(&weights)
 }

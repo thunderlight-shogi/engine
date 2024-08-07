@@ -1,18 +1,45 @@
-import { generateUUIDv4 } from "../crypto/uuids";
 import { Player } from "./player";
 
 export type PieceState = "idle" | "drop";
 
+export class PieceTypes {
+    public readonly list: PieceType[];
+
+    constructor() {
+        this.list = [];
+    }
+
+    public add(id: number, kanji: string): void {
+        this.list.push(new PieceType(id, kanji, this));
+    }
+
+    public find(id: number): PieceType {
+        const pieceType: PieceType | undefined = this.list.find(pieceType => pieceType.id === id);
+
+        if (pieceType === undefined) {
+            throw new Error(`There is no piece type with id = ${id}.`);
+        }
+
+        return pieceType;
+    }
+
+    public addDemotion(pieceId: number, demotionId: number): void {
+        this.find(pieceId)._demotion = this.find(demotionId);
+    }
+}
+
 export class PieceType {
-    constructor(public readonly kanji: string, 
-                public readonly _demotion: PieceType | undefined = undefined) {}
+    constructor(public readonly id: number,
+                public readonly kanji: string, 
+                private readonly pieceTypes: PieceTypes,
+                public _demotion: PieceType | undefined = undefined) {}
 
     get demotion(): PieceType {
         return this._demotion ?? this;
     }
 
     get promotions(): PieceType[] {
-        return TYPES.filter(type => this.equals(type._demotion));
+        return this.pieceTypes.list.filter(type => this.equals(type._demotion));
     }
 
     get promotable(): boolean {
@@ -34,11 +61,13 @@ export class PieceType {
     public equals(other: PieceType | undefined): boolean {
         return this.kanji === other?.kanji;
     }
+
+    public toString(): string {
+        return `${this.kanji} ${this}`
+    }
 }
 
 export class Piece {
-    public readonly id: string = generateUUIDv4();
-
     constructor(public type: PieceType,
                 public readonly player: Player,
                 public state: PieceState = "idle") {}
@@ -51,26 +80,3 @@ export class Piece {
         this.type = this.type.promotion;
     }
 }
-
-export const PAWN = new PieceType('歩');
-export const KING = new PieceType('王');
-export const ROOK = new PieceType('飛');
-export const DRAGON = new PieceType('龍', ROOK);
-export const BISHOP = new PieceType('角');
-export const HORSE = new PieceType('馬', BISHOP);
-export const GOLD = new PieceType('金');
-export const SILVER = new PieceType('銀');
-export const GOLDEN_SILVER = new PieceType('全', SILVER);
-export const KNIGHT = new PieceType('桂');
-export const GOLDEN_KNIGHT = new PieceType('今', KNIGHT);
-export const LANCE = new PieceType('香');
-export const GOLDEN_LANCE = new PieceType('杏', LANCE);
-export const TOKIN = new PieceType('と', PAWN);
-
-export const TYPES = [
-    PAWN, KING, ROOK, DRAGON,
-    BISHOP, HORSE, GOLD, SILVER,
-    GOLDEN_SILVER, KNIGHT,
-    GOLDEN_KNIGHT, LANCE,
-    GOLDEN_LANCE, TOKIN
-];

@@ -16,5 +16,12 @@ export default defineConfig({
                 additionalData: `@import "@/assets/global.sass"`
             }
         }
+    },
+    optimizeDeps: {
+        exclude: ['js-big-decimal']
+    },
+
+    server: {
+        host: '0.0.0.0',
     }
 })

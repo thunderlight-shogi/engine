@@ -1,13 +1,151 @@
-import { BISHOP, GOLD, KING, KNIGHT, LANCE, PAWN, Piece, ROOK, SILVER } from "./piece-type";
+import { ThunderlightEngine } from "../api/engine";
+import { Inventory, MoveType } from "../stores/board-store";
+import { between } from "../utils/numbers";
+import { Coordinate } from "./coordinate";
+import { Piece, PieceType, PieceTypes } from "./piece-type";
+import { Player, getEnemyOf } from "./player";
 
-export const DEFAULT_BOARD: (Piece | undefined)[] = [
-    new Piece(LANCE, 'gote'), new Piece(KNIGHT, 'gote'), new Piece(SILVER, 'gote'), new Piece(GOLD, 'gote'), new Piece(KING, 'gote'), new Piece(GOLD, 'gote'), new Piece(SILVER, 'gote'), new Piece(KNIGHT, 'gote'), new Piece(LANCE, 'gote'),
-    undefined, new Piece(ROOK, 'gote'), undefined, undefined, undefined, undefined, undefined, new Piece(BISHOP, 'gote'), undefined,
-    new Piece(PAWN, 'gote'), new Piece(PAWN, 'gote'), new Piece(PAWN, 'gote'), new Piece(PAWN, 'gote'), new Piece(PAWN, 'gote'), new Piece(PAWN, 'gote'), new Piece(PAWN, 'gote'), new Piece(PAWN, 'gote'), new Piece(PAWN, 'gote'),
-    undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-    undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-    undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-    new Piece(PAWN, 'sente'), new Piece(PAWN, 'sente'), new Piece(PAWN, 'sente'), new Piece(PAWN, 'sente'), new Piece(PAWN, 'sente'), new Piece(PAWN, 'sente'), new Piece(PAWN, 'sente'), new Piece(PAWN, 'sente'), new Piece(PAWN, 'sente'),
-    undefined, new Piece(BISHOP, 'sente'), undefined, undefined, undefined, undefined, undefined, new Piece(ROOK, 'sente'), undefined,
-    new Piece(LANCE, 'sente'), new Piece(KNIGHT, 'sente'), new Piece(SILVER, 'sente'), new Piece(GOLD, 'sente'), new Piece(KING, 'sente'), new Piece(GOLD, 'sente'), new Piece(SILVER, 'sente'), new Piece(KNIGHT, 'sente'), new Piece(LANCE, 'sente'),
-];
+export class Board {
+    cells: (Piece | undefined)[] = [];
+    pieceTypes: PieceTypes = new PieceTypes();
+    turn: Player = 'sente';
+    player: Player = 'sente';
+    inventories: Inventory[] = [];
+    engine: ThunderlightEngine;
+
+    constructor(engine: ThunderlightEngine) {
+        this.engine = engine;
+        this.cells = [];
+        for (let i = 0; i < 81; i++) {
+            this.cells.push(undefined);
+        }
+        this.turn = 'sente';
+        this.player = 'sente';
+    }
+
+    async init() {
+        await this.engine.start();
+        this.pieceTypes = await this.engine.getPieceTypes();
+        this.cells = await this.engine.getStartingPosition();
+        this.inventories = [
+            new Inventory('sente', this.pieceTypes),
+            new Inventory('gote', this.pieceTypes)
+        ];
+    }
+
+    ensureOccupied(coordinate: Coordinate): void {
+        if (this.isVacant(coordinate)) {
+            throw Error(`There's no piece at ${coordinate}.`);
+        }
+    }
+
+    isEnemyCamp(coordinate: Coordinate): boolean {
+        return (
+            (between(6, coordinate.y, 8) && this.turn === 'sente') ||
+            (between(0, coordinate.y, 2) && this.turn === 'gote')
+        );
+    }
+
+    put(piece: Piece | undefined, coordinate: Coordinate): void {
+        this.cells.splice(coordinate.absolute, 1, piece);
+    }
+
+    pickUp(coordinate: Coordinate): Piece {
+        console.log("BEFORE PICKUP:", this.at(coordinate));
+        const piece = this.at(coordinate);
+
+        if (piece === undefined) {
+            throw Error("Cannot pick up a piece from a vacant cell.");
+        }
+
+        this.put(undefined, coordinate);
+
+        console.log("AFTER PICKUP:", this.at(coordinate));
+        return piece;
+    }
+
+    at(coordinate: Coordinate): Piece | undefined {
+        return this.cells[coordinate.absolute];
+    }
+
+    isVacant(coordinate: Coordinate): boolean {
+        return this.at(coordinate) === undefined;
+    }
+
+    isEnemy(coordinate: Coordinate): boolean {
+        this.ensureOccupied(coordinate);
+        return this.at(coordinate)?.player !== this.turn;
+    }
+
+    getMoveType(source: Coordinate, destination: Coordinate): MoveType {
+        this.ensureOccupied(source);
+
+        if (source.equals(destination)) {
+            return 'back';
+        }
+
+        if (this.isEnemy(source)) {
+            return 'prohibited';
+        }
+
+        if (this.isVacant(destination)) {
+            return this.isEnemyCamp(destination) ? "travel+" : "travel";
+        }
+
+        if (this.isEnemy(destination)) {
+            return 'attack+';
+        }
+
+        return 'prohibited';
+    }
+
+    move(source: Coordinate, destination: Coordinate, moveType: MoveType = this.getMoveType(source, destination)): MoveType {
+        if (moveType === 'attack') {
+            const victim = this.at(destination);
+
+            if (victim) {
+                this.getInventoryOf(this.turn).add(victim.type);
+            }
+        }
+
+        if (moveType !== 'prohibited' && moveType !== 'back') {
+            const piece = this.pickUp(source);
+            this.put(piece, destination);
+            this.switchPlayer();
+
+            if (this.isEnemyCamp(destination) && piece.type.promotable && !piece.type.promoted) {
+                piece.promote();
+            }
+
+            piece.state = 'drop';
+        }
+
+        console.info(`Perfomed a move: ${source} ---${moveType}--> ${destination}`);
+
+        console.log("BOARD AFTER MOVE IS: ", this.cells);
+
+        return moveType;
+    }
+
+    drop(destination: Coordinate, type: PieceType) {
+        this.put(new Piece(type, this.turn, 'drop'), destination);
+        this.getInventoryOf(this.turn).take(type);
+        this.switchPlayer();
+    }
+
+    switchPlayer(): void {
+        this.turn = getEnemyOf(this.turn);
+    }
+
+    getInventoryOf(player: Player): Inventory {
+        for (const inventory of this.inventories) {
+            if (inventory.isOwnedBy(player)) {
+                return inventory;
+            }
+        }
+
+        throw Error(`There's no inventory for ${player}.`);
+    }
+}
+
+export default Board;
